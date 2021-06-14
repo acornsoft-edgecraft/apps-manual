@@ -1,0 +1,74 @@
+# Istio Getting Start
+
+Follow these steps to get started with Istio:
+
+- 1. Download and install Istio
+- 2. Deploy the sample application
+- 3. Open the application to outside traffic
+- 4. View the dashboard
+
+## Download Istio
+- 다운로드 페이지: Go to the [Istio release](https://github.com/istio/istio/releases) page to download the installation file for your OS
+- 다운로드 명령어 사용 (Linux or macOS)
+  ```sh
+  ## latest release 다운로드
+  curl -L https://istio.io/downloadIstio | sh -
+
+  ## 특정 버전 다운로드
+  curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.6.8 TARGET_ARCH=x86_64 sh -
+  ```
+- Istio package directory로 이동 한다.
+  ```sh
+  cd istio-1.10.0
+  ```
+- client binary **istioctl** 사용 하기
+  ```sh
+  # 패스 등록
+  export PATH=$PWD/bin:$PATH
+
+  # 또는 bin/sbin 패스로 copy
+  copy /usr/sbin
+  ```
+
+## Install Istio
+- Istio installations with istioctl 
+  - enable access logs
+  - 
+```sh
+istioctl install --set meshConfig.accessLogFile=/dev/stdout \
+  --set profile=default \
+
+```
+
+- vi istio-op.yaml
+```yaml
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: istiocontrolplane
+spec:
+  profile: default
+  values:
+    global:
+      # namespqce 변경 - default: istio-system
+      istioNamespace: monitoring
+  meshConfig:
+    accessLogFile: /dev/stdout
+    enableTracing: true
+    defaultConfig:
+      tracing:
+        sampling: 100.0
+        max_path_tag_length: 256
+```
+
+## 
+
+## Uninstall Istio
+- 클러스터에서 Istio를 완전히 제거 하기
+```sh
+istioctl x uninstall --purge
+```
+
+# 참조
+> [IstioOperator Options](https://istio.io/latest/docs/reference/config/istio.operator.v1alpha1/)
+> [istioctl commands]([참조링크](https://istio.io/latest/docs/reference/commands/istioctl/))
