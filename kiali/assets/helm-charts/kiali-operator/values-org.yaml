@@ -2,8 +2,8 @@ nameOverride: ""
 fullnameOverride: ""
 
 image:
-  repo: quay.io/kiali/kiali-operator
-  tag: v1.35.0
+  repo: ${HELM_IMAGE_REPO}
+  tag: ${HELM_IMAGE_TAG}
   pullPolicy: Always
   pullSecrets: []
 
@@ -66,19 +66,5 @@ cr:
 
   spec:
     deployment:
-      logger:
-        log_level: debug
-        log_format: text
-        sampler_rate: "1"
-        time_field_format: "2006-01-02T15:04:05Z07:00"
       accessible_namespaces:
       - '**'
-    external_services:
-      grafana:
-        in_cluster_url: http://grafana.monitoring:3000
-        url: ''
-      prometheus:
-        url: http://prometheus-server.monitoring:9090
-      tracing:
-        in_cluster_url: http://tracing.monitoring/jaeger
-        url: ''

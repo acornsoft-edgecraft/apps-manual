@@ -26,6 +26,14 @@ helm upgrade prometheus -i \
 
 ## Prometheus configuration
 - values 수정
+  - pushgateway 설치 안한다.
+  - persistentVolume 테스트시 emptyDir 사용.
+  - 프로메테우스 환경설정 추가 
+    - storage.tsdb.no-lockfile (db locking 해제)
+    - storage.tsdb.wal-compression (WAL 압축)
+  - 메트릭 수집 주기 설정 (15초)
+  - server:
+    - service port를 9090으로 지정한다. (kiali에서 프로메테우스 url로 사용 된다.)
 ```yaml
 ## Define serviceAccount names for components. Defaults to component's fully qualified name.
 ##
@@ -35,6 +43,12 @@ serviceAccounts:
     create: false
     name:
     annotations: {}
+
+...
+server:
+  ## Prometheus server container name
+  ##
+  enabled: true
 
 ...
 
@@ -66,6 +80,22 @@ serviceAccounts:
     ##
     ### 1m -> 15s
     scrape_interval: 15s
+
+...
+
+  service:
+    annotations: {}
+    labels: {}
+    clusterIP: ""
+
+    ## List of IP addresses at which the Prometheus server service is available
+    ## Ref: https://kubernetes.io/docs/user-guide/services/#external-ips
+    ##
+    externalIPs: []
+
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    servicePort: 9090
 
 ```
 

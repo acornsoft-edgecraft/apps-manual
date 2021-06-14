@@ -1008,7 +1008,8 @@ server:
 
     loadBalancerIP: ""
     loadBalancerSourceRanges: []
-    servicePort: 80
+    ### 80 -> 9090
+    servicePort: 9090
     sessionAffinity: None
     type: ClusterIP
 

@@ -38,6 +38,10 @@ Follow these steps to get started with Istio:
 istioctl install --set meshConfig.accessLogFile=/dev/stdout \
   --set profile=default \
 
+or
+
+# IstioOperator 사용
+istioctl -n monitoring install -f istio-op.yaml
 ```
 
 - vi istio-op.yaml
@@ -70,5 +74,6 @@ istioctl x uninstall --purge
 ```
 
 # 참조
-> [IstioOperator Options](https://istio.io/latest/docs/reference/config/istio.operator.v1alpha1/)
+> [Installation Configuration Profiles](https://istio.io/latest/docs/setup/additional-setup/config-profiles/)  
+> [IstioOperator Options](https://istio.io/latest/docs/reference/config/istio.operator.v1alpha1/)  
 > [istioctl commands]([참조링크](https://istio.io/latest/docs/reference/commands/istioctl/))

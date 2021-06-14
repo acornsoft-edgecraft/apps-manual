@@ -4,6 +4,9 @@ Follow these steps to get started with Istio:
 - 1. 사전 준비 helm3
 - 2. Kiali 리소스를 이미 설치 한 경우 먼저 제거해야 한다
   
+## Architecture
+
+
 ## Kiali Operator Helm 차트 설치
 - Helm 차트를 사용하여 Kiali CR (istio 네임 스페이스에 Kiali 서버가 설치되도록 트리거)과 함께 최신 Kiali Operator를 설치하려면 다음을 실행한다.
 ```sh
@@ -15,10 +18,110 @@ helm upgrade kiali-operator -i \
   --set cr.namespace=monitoring \
   --set auth.strategy="token" \
   --repo https://kiali.org/helm-charts \
-  kiali-operator
-  
+  kiali-operator \
+  -f values.yaml
 ```
 - To install a specific version X.Y.Z, simply pass --version X.Y.Z to the helm command
+
+## Kiali CR Configuration
+- values 설정:
+  - logger 설정: debug
+  - prometheus
+    - url 설정: k8s service DNS:port (prometheus-server.monitoring:9090)
+  - grafana
+    - in_cluster_url 설정: k8s service DNS:port (grafana.monitoring:3000)
+    - url 설정: 외부 url 주소
+  - tracing
+    - in_cluster_url 설정: k8s service DNS:port (tracing.monitoring/jaeger)
+    - url 설정: 외부 url 주소
+
+```yaml
+# vi values.yaml
+nameOverride: ""
+fullnameOverride: ""
+
+image:
+  repo: quay.io/kiali/kiali-operator
+  tag: v1.35.0
+  pullPolicy: Always
+  pullSecrets: []
+
+# Deployment options for the operator pod.
+nodeSelector: {}
+podAnnotations: {}
+env: []
+tolerations: []
+resources: {}
+affinity: {}
+replicaCount: 1
+priorityClassName: ""
+
+# metrics.enabled: set to true if you want Prometheus to collect metrics from the operator
+metrics:
+  enabled: true
+
+# debug.enabled: when true the full ansible logs are dumped after each reconciliation run
+# debug.verbosity: defines the amount of details the operator will log (higher numbers are more noisy)
+# debug.enableProfiler: when true (regardless of debug.enabled), timings for the most expensive tasks will be logged after each reconciliation loop
+debug:
+  enabled: true
+  verbosity: "1"
+  enableProfiler: false
+
+# Defines where the operator will look for Kial CR resources. "" means "all namespaces".
+watchNamespace: ""
+
+# Set to true if you want the operator to be able to create cluster roles. This is necessary
+# if you want to support Kiali CRs with spec.deployment.accessible_namespaces of '**'.
+# Note that this will be overriden to "true" if cr.create is true and cr.spec.deployment.accessible_namespaces is ['**'].
+clusterRoleCreator: true
+
+# Set to true if you want to allow the operator to only be able to install Kiali in view-only-mode.
+# The purpose for this setting is to allow you to restrict the permissions given to the operator itself.
+onlyViewOnlyMode: false
+
+# allowAdHocKialiNamespace tells the operator to allow a user to be able to install a Kiali CR in one namespace but
+# be able to install Kiali in another namespace. In other words, it will allow the Kiali CR spec.deployment.namespace
+# to be something other than the namespace where the CR is installed. You may want to disable this if you are
+# running in a multi-tenant scenario in which you only want a user to be able to install Kiali in the same namespace
+# where the user has permissions to install a Kiali CR.
+allowAdHocKialiNamespace: true
+
+# allowAdHocKialiImage tells the operator to allow a user to be able to install a custom Kiali image as opposed
+# to the image the operator will install by default. In other words, it will allow the
+# Kiali CR spec.deployment.image_name and spec.deployment.image_version to be configured by the user.
+# You may want to disable this if you do not want users to install their own Kiali images.
+allowAdHocKialiImage: false
+
+# For what a Kiali CR spec can look like, see:
+# https://github.com/kiali/kiali-operator/blob/master/deploy/kiali/kiali_cr.yaml
+cr:
+  create: true
+  name: kiali
+  # If you elect to create a Kiali CR (--set cr.create=true)
+  # and the operator is watching all namespaces (--set watchNamespace="")
+  # then this is the namespace where the CR will be created (the default will be the operator namespace).
+  namespace: ""
+
+  spec:
+    deployment:
+      logger:
+        log_level: debug
+        log_format: text
+        sampler_rate: "1"
+        time_field_format: "2006-01-02T15:04:05Z07:00"
+      accessible_namespaces:
+      - '**'
+    external_services:
+      grafana:
+        in_cluster_url: http://grafana.monitoring:3000
+        url: ''
+      prometheus:
+        url: http://prometheus-server.monitoring:9090
+      tracing:
+        in_cluster_url: http://tracing.monitoring/jaeger
+        url: ''
+```
 
 
 ## Kiali Operator 및 Kiali 제거
@@ -32,4 +135,5 @@ kubectl delete crd kialis.kiali.io
 ```
 
 # 참조
-> [참조명](참조링크)
+> [다른 Prometheus 인스턴스 사용](https://kiali.io/documentation/latest/runtimes-monitoring/)
+> [Kiali에 대한 로그는 어떻게 얻습니까?](https://kiali.io/documentation/latest/faq/#logs)

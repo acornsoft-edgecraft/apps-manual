@@ -40,7 +40,11 @@ kubectl create ns monitoring
           sampling: 100.0
           max_path_tag_length: 256
   ```
-
+  - 설치
+  ```sh
+  # IstioOperator 사용
+  istioctl -n monitoring install -f istio-op.yaml
+  ```
 
 ## Uninstall Istio
 - 클러스터에서 Istio를 완전히 제거 하기
