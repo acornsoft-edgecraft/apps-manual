@@ -29,6 +29,42 @@ $ sudo -i
     3. Nginx로 deb파일을 다른 node에서 access 할 수 있도록 설정
  * apt-get 주요 사용볍은 [apt-get cheat sheet](apt-get cheat sheet.md) 을 참고한다.
 
+## 2.1-1 apt 명령어 설명
+```sh
+## 패키지 설치: apt-get install
+apt install
+
+## 	패키지 삭제: apt-get remove
+apt remove
+
+## 패키지와 관련 설정 제거: apt-get purge
+apt purge
+
+## 레파지토리 인덱스 갱신: apt-get update
+apt update
+
+## 업그레이드 가능한 모든 패키지 업그레이드: apt-get upgrade	
+apt upgrade
+
+## 불필요한 패키지 제거: apt-get autoremove
+apt autoremove
+
+## 의존성 고려한 패키지 업그레이드: apt-get dist-upgrade
+apt full-upgrade
+
+## 프로그램 검색: apt-cache search
+apt search
+
+## 패키지 상세 정보 출력: apt-cache show
+apt show
+
+## 패키지 리스트
+apt list
+
+## 소스 리스트 편집
+apt edit-sources
+```
+
 ## 2.2 deb package download
  * docker, kubernetes repository 설정
 ```bash
@@ -52,6 +88,8 @@ EOF
  * deb package download
 ```bash
 $ apt-get update
+## upgrade를 하면 /var/cache/apt/archives 디렉토리에 저장된다.
+$ apt-get upgrade
 $ apt-get install -y -d --reinstall nfs-common
 $ apt-get install -y -d --reinstall nfs-kernel-server
 $ apt-get install -y -d --reinstall nginx

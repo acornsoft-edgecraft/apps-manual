@@ -21,7 +21,7 @@ source onassis-openrc.sh
 admin 암호 입력
 
 # API Access 확인
-openstack netwrk list
+openstack network list
 openstack server list
 
 ```

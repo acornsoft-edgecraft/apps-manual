@@ -8,3 +8,4 @@
 .history/
 .vscode/
 /cluster/assets/
+openstack-vm/doc/onassis-openrc.sh
