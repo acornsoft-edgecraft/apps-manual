@@ -29,42 +29,6 @@ $ sudo -i
     3. Nginx로 deb파일을 다른 node에서 access 할 수 있도록 설정
  * apt-get 주요 사용볍은 [apt-get cheat sheet](apt-get cheat sheet.md) 을 참고한다.
 
-## 2.1-1 apt 명령어 설명
-```sh
-## 패키지 설치: apt-get install
-apt install
-
-## 	패키지 삭제: apt-get remove
-apt remove
-
-## 패키지와 관련 설정 제거: apt-get purge
-apt purge
-
-## 레파지토리 인덱스 갱신: apt-get update
-apt update
-
-## 업그레이드 가능한 모든 패키지 업그레이드: apt-get upgrade	
-apt upgrade
-
-## 불필요한 패키지 제거: apt-get autoremove
-apt autoremove
-
-## 의존성 고려한 패키지 업그레이드: apt-get dist-upgrade
-apt full-upgrade
-
-## 프로그램 검색: apt-cache search
-apt search
-
-## 패키지 상세 정보 출력: apt-cache show
-apt show
-
-## 패키지 리스트
-apt list
-
-## 소스 리스트 편집
-apt edit-sources
-```
-
 ## 2.2 deb package download
  * docker, kubernetes repository 설정
 ```bash
@@ -130,8 +94,11 @@ $ apt-get install -y dpkg-dev
 
 $ cp /var/cache/apt/archives/*.deb /data/localrepo
 $ cd /data/localrepo
+
+## 패키지들의 인덱스를 생성 후 압축 한다.
 $ dpkg-scanpackages -m . | gzip -c > Packages.gz
 
+## 패키지 확인
 $ zcat Packages.gz
 ```
 
@@ -146,11 +113,13 @@ $ mv /etc/apt/sources.list /etc/apt/sources.list.bak
 $ mv /etc/apt/sources.list.d/docker.list /etc/apt/sources.list.d/docker.list.bak
 $ mv /etc/apt/sources.list.d/kubernetes.list /etc/apt/sources.list.d/kubernetes.list.bak
 
+## 로컬 레파지토리를 로컬 디렉토리로 지정한다. (nginx를 설치 하기 위해서)
 $ cat > /etc/apt/sources.list.d/localrepo.list <<EOF
 #deb [trusted=yes] http://172.16.0.134:8080/ ./
 deb [trusted=yes] file:///data/localrepo/ ./
 EOF
 
+## 위에서 dpkg-scanpackages 명령어로 패키지 인덱스를 재구성 했기 때문에 패키지 인덱스를 업데이트 한다. 
 $ apt-get update
 $ apt-get install -y nginx
 
@@ -166,6 +135,7 @@ $ vi /etc/nginx/sites-available/default
 
 $ systemctl restart nginx
 
+## local repository 검증
 $ cat > /etc/apt/sources.list.d/localrepo.list <<EOF
 deb [trusted=yes] http://172.16.0.134:8080/ ./
 EOF

@@ -24,6 +24,10 @@ $ swapoff -a
 $ vi /etc/fstab
 UUID=8ac075e3-1124-4bb6-bef7-a6811bf8b870 /    xfs     defaults    0 0
 #/swapfile none swap defaults 0 0
+
+or
+
+$ sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 ```
 
 ## Firewall stop & disable
@@ -33,6 +37,8 @@ $ systemctl stop firewalld
 $ systemctl disable firewalld
 
 # Ubuntu
+## 상태 확인 - 비활성화(inactive)
+$ ufw status
 $ ufw disable
 
 ```
@@ -57,6 +63,22 @@ $ cat > /etc/NetworkManager/conf.d/90-dns-none.conf <<EOF
 [main]
 dns=none
 EOF
+```
+
+## Kernel Modules Command-Line
+```sh
+$ lsmod | grep ip_set : load되어 있는 module들을 보여준다.
+$ insmod : insert module. module을 load 시켜준다.
+$ rmmod : remove module. module을 제거 해준다.
+$ modprobe : 모듈을 관리하는 명령어다.
+    옵션:
+        - 옵션 없음 : 모듈을 추가한다. (사용방법 : modprobe [모듈명])
+        - -l : 모든 모듈 목록을 출력한다. (사용방법 : modprobe -l)
+        - -r : 모듈을 제거한다. 의존성이 있는 모듈이 사용되고 있지 않으면 알아서 같이 제거한다. (사용방법 : modprobe -r [모듈명]
+        - -c: 모듈 관련 환경설정파일의 내용을 전부 출력한다. (사용방법 : modprobe -c)
+$ demode : module과 연관된, 혹은 module광 상관성이 있는 
+$ modinfo : module에 대한 정보를 출력해 준다.
+$ grep -rn 'ip_set' /lib/modules/$(uname -r) : 모듈의 사용 가능 여부를 확인하는 방법
 ```
 
 ## Ubuntu kernel modules for Calico
