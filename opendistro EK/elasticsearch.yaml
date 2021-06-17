@@ -1,0 +1,712 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: elasticsearch
+  name: elasticsearch
+  namespace: cocktail-addon
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: Role
+metadata:
+  name: elasticsearch
+  namespace: cocktail-addon
+  labels:
+    app: elasticsearch
+rules:
+- apiGroups: ['extensions']
+  resources: ['podsecuritypolicies']
+  verbs:     ['use']
+  resourceNames:
+  - elasticsearch-psp
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app: elasticsearch
+  name: elasticsearch-rolebinding
+roleRef:
+  kind: Role
+  name: elasticsearch
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: elasticsearch
+  namespace: cocktail-addon
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: elasticsearch
+  namespace: cocktail-addon
+type: Opaque
+data:
+  tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURaRENDQWt5Z0F3SUJBZ0lVQzVCdFVQRjZIdisybWFRNkdFeDBnTWtSaytBd0RRWUpLb1pJaHZjTkFRRUwKQlFBd0VURVBNQTBHQTFVRUF3d0dVbTl2ZEVOQk1CNFhEVEl3TURneU5qQXlNekUxTTFvWERUTXdNRGd5TkRBeQpNekUxTTFvd0R6RU5NQXNHQTFVRUF3d0VibTlrWlRDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDCkFRb0NnZ0VCQU1SVEkwaW5LcGxEMnVlNXRtUlBBU0RTWWVhTll3OGsrUi9aSlJSTlNhbGJuUTUvdHcyNGpoUjcKazY2aEZnN2krcndrNTZidXdGZG9GR2tYbkpXMW1RZUVzTW83R1FPVDcwOUUrajkwbkRoNjVGQTBDc1picTVDRgorQlovU3FVT1gzVmVXalkrbEZwUVZYNEhnWEZQYlRtNHpTWk9WODRhYUViSDdBN2Y5MEM5S1hGTnhRZTBWTHhQCi9kcUNvcjh0RHY3b3VCRFY4czVLcm53RnFMT256cm9CVWVuN0RoVmhXd05nOHE1K0hBd1F4MlViRFRybmdXUzcKeTc3ckFSQkxvY2l4M3lTdTJiM3R4cE81ZS9lRWhCOXZaQXhRb2xDSWhSb3RmSVEwdzdFdzZhZGkyRTJsRGN1VgpXMVhQZ29VQ2xXZjl5YUVxUWNxZDBzWG52MFpVL1hNQ0F3RUFBYU9CdFRDQnNqQUpCZ05WSFJNRUFqQUFNQTRHCkExVWREd0VCL3dRRUF3SUU4REFkQmdOVkhTVUVGakFVQmdnckJnRUZCUWNEQVFZSUt3WUJCUVVIQXdJd2RnWUQKVlIwUkJHOHdiWUlKYkc5allXeG9iM04wZ2h4bGJHRnpkR2xqYzJWaGNtTm9MbU52WTJ0MFlXbHNMV0ZrWkc5dQpnaUJsYkdGemRHbGpjMlZoY21Ob0xtTnZZMnQwWVdsc0xXRmtaRzl1TG5OMlk0SVVhR1JqWVhKa0xXVnpMbUZqCmJHOTFaQzV5ZFc2SEJIOEFBQUdIQkdVM1JXNHdEUVlKS29aSWh2Y05BUUVMQlFBRGdnRUJBS2FvcjhLaXhDTEsKRk0rU2JaMDBUQnRvTU56a0Iyb0xtMEV3em0yRTBOdHBIYkJxZDEwV01laE9SbjRGaWtlQW5DWE14WUd4UTU3WAo2VndoV3d3TWovOGx6YTNRYmpVbi8xbFF0OHBVU0VzaFdBa3IwUTJ2TExuZTZGbFl5dmd2RVZ3ZFJDdnByQTRUCi8rcXY0ZTBvdUxwNExsdnlReDRwbG1FYnN4MjVqQkJBS0RnaEhTRnlLZTVZK1ZMbXlmckVpZ3V2V0EwZVdSaksKMytoZzlETkorenkya1poam1mNkRTVlFZYjRtWlhiOTNpNHBtSVlHcWZhcU8xYzJRNVAvSHZEVkpHTnpJWXMyWApvTHJJclB6M3B6Z0d6T2xISEpkbTNOYTNiKzFCMnlKYTQ1a0ErY2V3Yk1aVFU4cW0xZVEzZC9vNXBHRTVwTXNkCldhVnlPbWQxNEdVPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlDMERDQ0FiaWdBd0lCQWdJVWNaSW1IWWdBNlB4VFRUbWd0UDYxbUR4dUtoVXdEUVlKS29aSWh2Y05BUUVMCkJRQXdFVEVQTUEwR0ExVUVBd3dHVW05dmRFTkJNQjRYRFRJd01EZ3lOakF5TXpBd09Wb1hEVE13TURneU5EQXkKTXpBd09Wb3dFVEVQTUEwR0ExVUVBd3dHVW05dmRFTkJNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QQpNSUlCQ2dLQ0FRRUF3ZnhmV3d5enFFV1FZVmhJQXBuK1VVVUdYbitRZ25iQmJQU3BEY3dBMUg1VENPRUFCLzhNCkxrL0xMakxKVnlBakZYTTRJYThBdVRNckVHR1BseU9vRllURGZpenU1U3dvUWdRMG91L2ZCL0E5dXR2Q1VKZmEKa0ppbG1xbUlxNXh5ZEtSM1BCUE5ZZUpDS1NObHVIN1VydVY0eDAxcE4ySmszV09lWENEUTBLbDdQbDZmTUt6NApqWGNIUHczMkJFQ3pLWHVQUkZEajN6N2xObFl1ZC9QdUtBUHd6QzZ0ZEU5UCtRQ0Z1dXdaRkRidzdYQlZZT1EyCmE4M0d5cHd1QUtVd3pxbDdqZXU1ckJJaXZXMFpCMUVtdlFxVzdtU3ZIQUxWZWtCVXdrQWY1clpxeVRzYU1vTUcKengxUEZvWlFidmY2UjltVHdyU0lRYVV1eE9IZ3d3YVlXd0lEQVFBQm95QXdIakFNQmdOVkhSTUVCVEFEQVFILwpNQTRHQTFVZER3RUIvd1FFQXdJQmhqQU5CZ2txaGtpRzl3MEJBUXNGQUFPQ0FRRUFlbmorNmFrcUZleDFIcm84CmZLMXFCMDdTZ1YyYVdBZ1ZHSys2TkF1bzNHZTMzNEI4TStoOVI5UjdxdWswVkl2NjNFMFlMazF1RUZQSkxTMGwKNWFnS1NiaWVHaVNhSDIwZmt3L2E1L0dnTW1uVzRmNW9RQXcycU85SXRHVmV0d2NZbkozU1NuR25tQlVBZFNNTgpjaFpGUDV0T213WnpFSU1nTloxYktKK0E1UnRCMXpIL1lTblVneWJrVHA5RzIyczBBQmpLK1UzV3ZvZG5LWEI4Cm1RZ2hwNGdhdktQVEc2M3ZaRDFkTnBKdWtYbUpyRzV3OFlNQXJuN3BJdUNsQTlhSnNEczUzVTFSOFhETjhmZlMKK3ArV3NjMHEycWdqNVpNaVd5bTlwcFI3QjQxYjlXV3k5M0tKaDRlNFJEaEx6V1M5eUZYTEZvQ3YwYW1ycjBSegpQeFJtQWc9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+  tls.key: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2UUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktjd2dnU2pBZ0VBQW9JQkFRREVVeU5JcHlxWlE5cm4KdWJaa1R3RWcwbUhtaldNUEpQa2YyU1VVVFVtcFc1ME9mN2NOdUk0VWU1T3VvUllPNHZxOEpPZW03c0JYYUJScApGNXlWdFprSGhMREtPeGtEays5UFJQby9kSnc0ZXVSUU5BckdXNnVRaGZnV2YwcWxEbDkxWGxvMlBwUmFVRlYrCkI0RnhUMjA1dU0wbVRsZk9HbWhHeCt3TzMvZEF2U2x4VGNVSHRGUzhULzNhZ3FLL0xRNys2TGdRMWZMT1NxNTgKQmFpenA4NjZBVkhwK3c0VllWc0RZUEt1Zmh3TUVNZGxHdzA2NTRGa3U4dSs2d0VRUzZISXNkOGtydG05N2NhVAp1WHYzaElRZmIyUU1VS0pRaUlVYUxYeUVOTU94TU9tbll0aE5wUTNMbFZ0Vno0S0ZBcFZuL2NtaEtrSEtuZExGCjU3OUdWUDF6QWdNQkFBRUNnZ0VCQU1NU2xNbVpDTFBYZjRpbXVEdDlZUEthK0pvY1BLU01xVmxpNnZ2OE84Z2kKOXJDMGFGQWk1RkluNURzdFpueU9Qbk41L0ErYnhkUlQzNHY0NFNiRWxYU3AvUHhFc25zaW9EUFVwdzhzTUJuUwp5aytERm4yNEVvWDlCK0JheFBHeWtWbE8walo2QWZDblIvdDlPN282SUo2dEtITDZmemFVZUs1ejhmTnB5UVV4CjhneXI4Uk9uT3RmY2luQlFQcEgyOFdVV1ozY0Myb0VxUEU5UlNHZkdMajdKWmt5eDRpMW9TcDhNTUY5ZHRUOTcKK09GM0JkditMVUpGSmhrRE9STitSd1FJY3JQQVZTODZwcXZtSVdjYS9TUHk0RFVScGl1MzlOREFGVDFoSFJNSApsUVVNL01WVFg2VjlvWXZ4TVhuZEFhZ0taUE5JSDdiMFNibVVOZzNVSmpFQ2dZRUE2Nk1KaXBGY3Z1eUVhaXVJCmUrdGpLUDBvQ0NrVkVEdkFDcktUTzZJRno3MG5nRHp3cWpNSkZvUnJZYjk3R25aTlBQc056ZTg1eUFJNk5abFIKWmIwRFJLMEk5MEdyeHRTbVNZSW9LN0tHOGREL21rbWZvVHMweG9ZQlN6TmtrUnR0VkxVUGhXaHI2ZkUvSGpRRQowdXdlK0QvYmNGR3dCYlJQbmg2c3c0NDFNWWtDZ1lFQTFVcG5jaFJYcFdvZWtwTlJhaFlqZG9vbkVpQlV1ZUE3CmMxSHlMWER1cE5JQ1k2ekR3ZlZLcVUzVHVXTmFiMkpzc1pWcSs2aDgzWXYydFkrYjl4UUY5M0cvckR5bURISXYKcVZzb1lndTE0RWFBMldVMjRlc3gvUTg5d3ZHUXNiQ3B2YzQvak4xV0ppSXYvODVTL0RLYmhqVzFhTjRraklROQpSbVZEbUJ6VnBCc0NnWUFhUk1DcGkrNzA4ZFVKS1BVOEswK1FvRGc0UUt3eWRSYkJtb3JEV1JxZ3dBdUpSa0htCkYyNXA3alV5WG5CUTBPTm5hdTF0Q2NBOVJkSkxhMTRobzJLYjQxWmVpaG1tUHNxUzQwbXJKV25aeDF6WFRHSFoKVFlwaW4wbkJvbWNScmljUURHZEFqaFdKclBWR1hySXkrVk95aFJ2bmQ1UFI3dm41UEo0eDVzYVRVUUtCZ0M4OApaU0I4cE5SN1pmM3NKbEdxU1h4TktFMzVYd296UUxkUFpLVHZwOHBVd0RhMjRqdW9TVHFwZzhSQTNweGdYZFlPClV6MGNtVnF2VHBuekRnVndKOG9mSk9YT0lMQU04Y1U5N1BtWndsUERDWEliMmtXNlFyM2FqRUVLSXBOWG5wL3MKZDJLSStqVkR5UUdML2hEZ1hGVWl1K1JYbmh5SWhORjhSN1grWE1vVkFvR0FXYzVaaXJvakQwWG5tQjM1SjhkWgozalF1M0MrUUZGaXRTemRxZ0wrOXRIdWQ1cHU4a3lCR3BodzVzd3ZES0hIVFdmWFJCN0tiSENFK1JWZ2xDS1QxCktvSVhiRGhhVlk1T0lUMHVZTUxRVDNGdjNVOWVKdjMyb3dHbnNubVhJZmRIcFFBQzE1TVNIc1FqYkxXc1JCUzcKdU14SFBqWlhtdEZMOU5pY3NRcG1XZEU9Ci0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0K
+  node.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURaRENDQWt5Z0F3SUJBZ0lVQzVCdFVQRjZIdisybWFRNkdFeDBnTWtSaytBd0RRWUpLb1pJaHZjTkFRRUwKQlFBd0VURVBNQTBHQTFVRUF3d0dVbTl2ZEVOQk1CNFhEVEl3TURneU5qQXlNekUxTTFvWERUTXdNRGd5TkRBeQpNekUxTTFvd0R6RU5NQXNHQTFVRUF3d0VibTlrWlRDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDCkFRb0NnZ0VCQU1SVEkwaW5LcGxEMnVlNXRtUlBBU0RTWWVhTll3OGsrUi9aSlJSTlNhbGJuUTUvdHcyNGpoUjcKazY2aEZnN2krcndrNTZidXdGZG9GR2tYbkpXMW1RZUVzTW83R1FPVDcwOUUrajkwbkRoNjVGQTBDc1picTVDRgorQlovU3FVT1gzVmVXalkrbEZwUVZYNEhnWEZQYlRtNHpTWk9WODRhYUViSDdBN2Y5MEM5S1hGTnhRZTBWTHhQCi9kcUNvcjh0RHY3b3VCRFY4czVLcm53RnFMT256cm9CVWVuN0RoVmhXd05nOHE1K0hBd1F4MlViRFRybmdXUzcKeTc3ckFSQkxvY2l4M3lTdTJiM3R4cE81ZS9lRWhCOXZaQXhRb2xDSWhSb3RmSVEwdzdFdzZhZGkyRTJsRGN1VgpXMVhQZ29VQ2xXZjl5YUVxUWNxZDBzWG52MFpVL1hNQ0F3RUFBYU9CdFRDQnNqQUpCZ05WSFJNRUFqQUFNQTRHCkExVWREd0VCL3dRRUF3SUU4REFkQmdOVkhTVUVGakFVQmdnckJnRUZCUWNEQVFZSUt3WUJCUVVIQXdJd2RnWUQKVlIwUkJHOHdiWUlKYkc5allXeG9iM04wZ2h4bGJHRnpkR2xqYzJWaGNtTm9MbU52WTJ0MFlXbHNMV0ZrWkc5dQpnaUJsYkdGemRHbGpjMlZoY21Ob0xtTnZZMnQwWVdsc0xXRmtaRzl1TG5OMlk0SVVhR1JqWVhKa0xXVnpMbUZqCmJHOTFaQzV5ZFc2SEJIOEFBQUdIQkdVM1JXNHdEUVlKS29aSWh2Y05BUUVMQlFBRGdnRUJBS2FvcjhLaXhDTEsKRk0rU2JaMDBUQnRvTU56a0Iyb0xtMEV3em0yRTBOdHBIYkJxZDEwV01laE9SbjRGaWtlQW5DWE14WUd4UTU3WAo2VndoV3d3TWovOGx6YTNRYmpVbi8xbFF0OHBVU0VzaFdBa3IwUTJ2TExuZTZGbFl5dmd2RVZ3ZFJDdnByQTRUCi8rcXY0ZTBvdUxwNExsdnlReDRwbG1FYnN4MjVqQkJBS0RnaEhTRnlLZTVZK1ZMbXlmckVpZ3V2V0EwZVdSaksKMytoZzlETkorenkya1poam1mNkRTVlFZYjRtWlhiOTNpNHBtSVlHcWZhcU8xYzJRNVAvSHZEVkpHTnpJWXMyWApvTHJJclB6M3B6Z0d6T2xISEpkbTNOYTNiKzFCMnlKYTQ1a0ErY2V3Yk1aVFU4cW0xZVEzZC9vNXBHRTVwTXNkCldhVnlPbWQxNEdVPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlDMERDQ0FiaWdBd0lCQWdJVWNaSW1IWWdBNlB4VFRUbWd0UDYxbUR4dUtoVXdEUVlKS29aSWh2Y05BUUVMCkJRQXdFVEVQTUEwR0ExVUVBd3dHVW05dmRFTkJNQjRYRFRJd01EZ3lOakF5TXpBd09Wb1hEVE13TURneU5EQXkKTXpBd09Wb3dFVEVQTUEwR0ExVUVBd3dHVW05dmRFTkJNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QQpNSUlCQ2dLQ0FRRUF3ZnhmV3d5enFFV1FZVmhJQXBuK1VVVUdYbitRZ25iQmJQU3BEY3dBMUg1VENPRUFCLzhNCkxrL0xMakxKVnlBakZYTTRJYThBdVRNckVHR1BseU9vRllURGZpenU1U3dvUWdRMG91L2ZCL0E5dXR2Q1VKZmEKa0ppbG1xbUlxNXh5ZEtSM1BCUE5ZZUpDS1NObHVIN1VydVY0eDAxcE4ySmszV09lWENEUTBLbDdQbDZmTUt6NApqWGNIUHczMkJFQ3pLWHVQUkZEajN6N2xObFl1ZC9QdUtBUHd6QzZ0ZEU5UCtRQ0Z1dXdaRkRidzdYQlZZT1EyCmE4M0d5cHd1QUtVd3pxbDdqZXU1ckJJaXZXMFpCMUVtdlFxVzdtU3ZIQUxWZWtCVXdrQWY1clpxeVRzYU1vTUcKengxUEZvWlFidmY2UjltVHdyU0lRYVV1eE9IZ3d3YVlXd0lEQVFBQm95QXdIakFNQmdOVkhSTUVCVEFEQVFILwpNQTRHQTFVZER3RUIvd1FFQXdJQmhqQU5CZ2txaGtpRzl3MEJBUXNGQUFPQ0FRRUFlbmorNmFrcUZleDFIcm84CmZLMXFCMDdTZ1YyYVdBZ1ZHSys2TkF1bzNHZTMzNEI4TStoOVI5UjdxdWswVkl2NjNFMFlMazF1RUZQSkxTMGwKNWFnS1NiaWVHaVNhSDIwZmt3L2E1L0dnTW1uVzRmNW9RQXcycU85SXRHVmV0d2NZbkozU1NuR25tQlVBZFNNTgpjaFpGUDV0T213WnpFSU1nTloxYktKK0E1UnRCMXpIL1lTblVneWJrVHA5RzIyczBBQmpLK1UzV3ZvZG5LWEI4Cm1RZ2hwNGdhdktQVEc2M3ZaRDFkTnBKdWtYbUpyRzV3OFlNQXJuN3BJdUNsQTlhSnNEczUzVTFSOFhETjhmZlMKK3ArV3NjMHEycWdqNVpNaVd5bTlwcFI3QjQxYjlXV3k5M0tKaDRlNFJEaEx6V1M5eUZYTEZvQ3YwYW1ycjBSegpQeFJtQWc9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+  node.key: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2UUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktjd2dnU2pBZ0VBQW9JQkFRREVVeU5JcHlxWlE5cm4KdWJaa1R3RWcwbUhtaldNUEpQa2YyU1VVVFVtcFc1ME9mN2NOdUk0VWU1T3VvUllPNHZxOEpPZW03c0JYYUJScApGNXlWdFprSGhMREtPeGtEays5UFJQby9kSnc0ZXVSUU5BckdXNnVRaGZnV2YwcWxEbDkxWGxvMlBwUmFVRlYrCkI0RnhUMjA1dU0wbVRsZk9HbWhHeCt3TzMvZEF2U2x4VGNVSHRGUzhULzNhZ3FLL0xRNys2TGdRMWZMT1NxNTgKQmFpenA4NjZBVkhwK3c0VllWc0RZUEt1Zmh3TUVNZGxHdzA2NTRGa3U4dSs2d0VRUzZISXNkOGtydG05N2NhVAp1WHYzaElRZmIyUU1VS0pRaUlVYUxYeUVOTU94TU9tbll0aE5wUTNMbFZ0Vno0S0ZBcFZuL2NtaEtrSEtuZExGCjU3OUdWUDF6QWdNQkFBRUNnZ0VCQU1NU2xNbVpDTFBYZjRpbXVEdDlZUEthK0pvY1BLU01xVmxpNnZ2OE84Z2kKOXJDMGFGQWk1RkluNURzdFpueU9Qbk41L0ErYnhkUlQzNHY0NFNiRWxYU3AvUHhFc25zaW9EUFVwdzhzTUJuUwp5aytERm4yNEVvWDlCK0JheFBHeWtWbE8walo2QWZDblIvdDlPN282SUo2dEtITDZmemFVZUs1ejhmTnB5UVV4CjhneXI4Uk9uT3RmY2luQlFQcEgyOFdVV1ozY0Myb0VxUEU5UlNHZkdMajdKWmt5eDRpMW9TcDhNTUY5ZHRUOTcKK09GM0JkditMVUpGSmhrRE9STitSd1FJY3JQQVZTODZwcXZtSVdjYS9TUHk0RFVScGl1MzlOREFGVDFoSFJNSApsUVVNL01WVFg2VjlvWXZ4TVhuZEFhZ0taUE5JSDdiMFNibVVOZzNVSmpFQ2dZRUE2Nk1KaXBGY3Z1eUVhaXVJCmUrdGpLUDBvQ0NrVkVEdkFDcktUTzZJRno3MG5nRHp3cWpNSkZvUnJZYjk3R25aTlBQc056ZTg1eUFJNk5abFIKWmIwRFJLMEk5MEdyeHRTbVNZSW9LN0tHOGREL21rbWZvVHMweG9ZQlN6TmtrUnR0VkxVUGhXaHI2ZkUvSGpRRQowdXdlK0QvYmNGR3dCYlJQbmg2c3c0NDFNWWtDZ1lFQTFVcG5jaFJYcFdvZWtwTlJhaFlqZG9vbkVpQlV1ZUE3CmMxSHlMWER1cE5JQ1k2ekR3ZlZLcVUzVHVXTmFiMkpzc1pWcSs2aDgzWXYydFkrYjl4UUY5M0cvckR5bURISXYKcVZzb1lndTE0RWFBMldVMjRlc3gvUTg5d3ZHUXNiQ3B2YzQvak4xV0ppSXYvODVTL0RLYmhqVzFhTjRraklROQpSbVZEbUJ6VnBCc0NnWUFhUk1DcGkrNzA4ZFVKS1BVOEswK1FvRGc0UUt3eWRSYkJtb3JEV1JxZ3dBdUpSa0htCkYyNXA3alV5WG5CUTBPTm5hdTF0Q2NBOVJkSkxhMTRobzJLYjQxWmVpaG1tUHNxUzQwbXJKV25aeDF6WFRHSFoKVFlwaW4wbkJvbWNScmljUURHZEFqaFdKclBWR1hySXkrVk95aFJ2bmQ1UFI3dm41UEo0eDVzYVRVUUtCZ0M4OApaU0I4cE5SN1pmM3NKbEdxU1h4TktFMzVYd296UUxkUFpLVHZwOHBVd0RhMjRqdW9TVHFwZzhSQTNweGdYZFlPClV6MGNtVnF2VHBuekRnVndKOG9mSk9YT0lMQU04Y1U5N1BtWndsUERDWEliMmtXNlFyM2FqRUVLSXBOWG5wL3MKZDJLSStqVkR5UUdML2hEZ1hGVWl1K1JYbmh5SWhORjhSN1grWE1vVkFvR0FXYzVaaXJvakQwWG5tQjM1SjhkWgozalF1M0MrUUZGaXRTemRxZ0wrOXRIdWQ1cHU4a3lCR3BodzVzd3ZES0hIVFdmWFJCN0tiSENFK1JWZ2xDS1QxCktvSVhiRGhhVlk1T0lUMHVZTUxRVDNGdjNVOWVKdjMyb3dHbnNubVhJZmRIcFFBQzE1TVNIc1FqYkxXc1JCUzcKdU14SFBqWlhtdEZMOU5pY3NRcG1XZEU9Ci0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0K
+  admin.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUM0VENDQWNtZ0F3SUJBZ0lVQzVCdFVQRjZIdisybWFRNkdFeDBnTWtSazk4d0RRWUpLb1pJaHZjTkFRRUwKQlFBd0VURVBNQTBHQTFVRUF3d0dVbTl2ZEVOQk1CNFhEVEl3TURneU5qQXlNekEwTUZvWERUTXdNRGd5TkRBeQpNekEwTUZvd0VERU9NQXdHQTFVRUF3d0ZZV1J0YVc0d2dnRWlNQTBHQ1NxR1NJYjNEUUVCQVFVQUE0SUJEd0F3CmdnRUtBb0lCQVFDeVBQc0ZZdVNTRmFZWlJNWVo1bnQwQmlNYkttK3Z4MUFPbUJBTjhHcXVrRlFZdzY3aWFWdVkKb3lKT043aHpnQWNpYWFjL0I3cVhubVNETUNwUVlPbytFeUppMldRRDFvWXRCbUFIRHlEWDZiU2YwMFJ1ZW01RApkZXJWaW5JZnZvMkgyRUovN0V1RVhWZnJBSUJsa1lKejhFZzJ3SnQ5M0FaSEZSbk4xdXRGVUZaSVowbWZpTjhaCmJudytWKzh6UUtoSjczTmxPWFR2RkRWOGxMWkZwTGJabU1YQUdqa0ZkTU1CWGVpMHZGMEZHZUsxVmpXZFFGSmgKeGJwYlo5SW1WblE2d21Ka2FMQlZCTENOYUluU2t3ZkhKayt3L29rL05Tc1dtUDVrWVVKeTZHOGxMN1h6eUFVMAppN25UVHU3VVZONDQ3a0wxcDRDRFg3b1ZIdWRIRm5OWkFnTUJBQUdqTWpBd01Ba0dBMVVkRXdRQ01BQXdEZ1lEClZSMFBBUUgvQkFRREFnVHdNQk1HQTFVZEpRUU1NQW9HQ0NzR0FRVUZCd01DTUEwR0NTcUdTSWIzRFFFQkN3VUEKQTRJQkFRQm9lbTN0OTc3TVAzOUFSVnVHRVFtc3h6ZFZFMmJya0FlZUxiamcrK0VzT0lZZzJZQUJUanh1OHVZRwo1UUJPUWtuWE52bThXWXNFVjlpY3RJME00MjJGaHh5RVdlVlBqMy82R2JYL1VoSStIcjVOQ1NCMkhvQXdaT0dCCmY2d1FRVllvMWhIUC9oaGQyWmtBUE5jcitCN2hrYlhZUUhRTTZZN1V5anNOYXNmVmkrQWNQQW9sUEpIaG1JbzkKMDBPSjFRc09pcEU4UmJ3Q2lCdW5oWXNQUzEveTM0aUEyK252MlR0Qjg2TUl1cXRaYjNQTWNnNVRLTzRUbjdGcwo5dEJCMU9LaEIyZ2MxSVhuN3J3c240VGthSXlqVEkxTi9QOFNGMWNjaWI2TGtXWHMxSTB0dElvWHFNeXRQbE14CmptYkwzTVNFNE9saHplUFBaSHloU3dGSGNveTUKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQotLS0tLUJFR0lOIENFUlRJRklDQVRFLS0tLS0KTUlJQzBEQ0NBYmlnQXdJQkFnSVVjWkltSFlnQTZQeFRUVG1ndFA2MW1EeHVLaFV3RFFZSktvWklodmNOQVFFTApCUUF3RVRFUE1BMEdBMVVFQXd3R1VtOXZkRU5CTUI0WERUSXdNRGd5TmpBeU16QXdPVm9YRFRNd01EZ3lOREF5Ck16QXdPVm93RVRFUE1BMEdBMVVFQXd3R1VtOXZkRU5CTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEEKTUlJQkNnS0NBUUVBd2Z4Zld3eXpxRVdRWVZoSUFwbitVVVVHWG4rUWduYkJiUFNwRGN3QTFINVRDT0VBQi84TQpMay9MTGpMSlZ5QWpGWE00SWE4QXVUTXJFR0dQbHlPb0ZZVERmaXp1NVN3b1FnUTBvdS9mQi9BOXV0dkNVSmZhCmtKaWxtcW1JcTV4eWRLUjNQQlBOWWVKQ0tTTmx1SDdVcnVWNHgwMXBOMkprM1dPZVhDRFEwS2w3UGw2Zk1LejQKalhjSFB3MzJCRUN6S1h1UFJGRGozejdsTmxZdWQvUHVLQVB3ekM2dGRFOVArUUNGdXV3WkZEYnc3WEJWWU9RMgphODNHeXB3dUFLVXd6cWw3amV1NXJCSWl2VzBaQjFFbXZRcVc3bVN2SEFMVmVrQlV3a0FmNXJacXlUc2FNb01HCnp4MVBGb1pRYnZmNlI5bVR3clNJUWFVdXhPSGd3d2FZV3dJREFRQUJveUF3SGpBTUJnTlZIUk1FQlRBREFRSC8KTUE0R0ExVWREd0VCL3dRRUF3SUJoakFOQmdrcWhraUc5dzBCQVFzRkFBT0NBUUVBZW5qKzZha3FGZXgxSHJvOApmSzFxQjA3U2dWMmFXQWdWR0srNk5BdW8zR2UzMzRCOE0raDlSOVI3cXVrMFZJdjYzRTBZTGsxdUVGUEpMUzBsCjVhZ0tTYmllR2lTYUgyMGZrdy9hNS9HZ01tblc0ZjVvUUF3MnFPOUl0R1ZldHdjWW5KM1NTbkdubUJVQWRTTU4KY2haRlA1dE9td1p6RUlNZ05aMWJLSitBNVJ0QjF6SC9ZU25VZ3lia1RwOUcyMnMwQUJqSytVM1d2b2RuS1hCOAptUWdocDRnYXZLUFRHNjN2WkQxZE5wSnVrWG1Kckc1dzhZTUFybjdwSXVDbEE5YUpzRHM1M1UxUjhYRE44ZmZTCitwK1dzYzBxMnFnajVaTWlXeW05cHBSN0I0MWI5V1d5OTNLSmg0ZTRSRGhMeldTOXlGWExGb0N2MGFtcnIwUnoKUHhSbUFnPT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+  admin.key: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2Z0lCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktnd2dnU2tBZ0VBQW9JQkFRQ3lQUHNGWXVTU0ZhWVoKUk1ZWjVudDBCaU1iS20rdngxQU9tQkFOOEdxdWtGUVl3NjdpYVZ1WW95Sk9ON2h6Z0FjaWFhYy9CN3FYbm1TRApNQ3BRWU9vK0V5SmkyV1FEMW9ZdEJtQUhEeURYNmJTZjAwUnVlbTVEZGVyVmluSWZ2bzJIMkVKLzdFdUVYVmZyCkFJQmxrWUp6OEVnMndKdDkzQVpIRlJuTjF1dEZVRlpJWjBtZmlOOFpibncrVis4elFLaEo3M05sT1hUdkZEVjgKbExaRnBMYlptTVhBR2prRmRNTUJYZWkwdkYwRkdlSzFWaldkUUZKaHhicGJaOUltVm5RNndtSmthTEJWQkxDTgphSW5Ta3dmSEprK3cvb2svTlNzV21QNWtZVUp5Nkc4bEw3WHp5QVUwaTduVFR1N1VWTjQ0N2tMMXA0Q0RYN29WCkh1ZEhGbk5aQWdNQkFBRUNnZ0VBSStaRWFRRlNLRnBUNmlNQUE1ZDRwaFhXWEZKZnpIZkltQ2ZvaytZb2xxQmIKVCtHYUIrQlFvcDI0K3lnZDdxV0t5bE9kYkFTU2dKZFdoMVhjTC9SVk9jdUEwWWdYck80NGVEa2dma3Q5d2Y5QQpjakNMUi9WQTREV1A1eExMaWJsSHFHVFdnQTJINkZFa3RDQ1Z1OTlpOXhjZWRHaTI2Tks0TVBqL0NZYVFQSlZyCmZvMzZkQWlwbk1vc01MUnFzVXY2WW9LNFBiNWxSeTNtMXhxSzUxUTQ0K0N0bkt4bGJiWXRBUnB3M2NXM21KakUKbmRxdUpWZ0JmRGN3d3V5NFEwY2JSbkl2VEhJMjhUMnNwdC9xVWtyVE9jUnBKZFNUMVM4dmZPVDRMOXdoQ2J2TwpsbFBuT2RQcFBIRk1KNUdOcmJsWWh1R3RSOXlxcWdiQnJJeUI2RHBoUVFLQmdRRG1tRllzTzlKRDd2ckRKaHVoCjVpRzE0U1QzTFlwV3JiTDg1dytzdTJDckVlbkRjZzFvUlBSaGNaOU5rUzRMMUdPeS9tVVpzbkV6WlBHWVVyRisKY3UwcCtlRjl4RitLN3cybkErZ3gxTzBTQTM5eUJ0empQejZ3eTJuRlRmUlFEN3lQU1RyZ1FBMFk4T2hEQVdtNwpOMWp2WWVIMUZPc2c3RnRXcGdkRUJpOFNmd0tCZ1FERjMvcm9tVlhXVS9XUTJzaWw3K2FPTmZVWk9NdnE4b0JLCkxKeEZaRzBBYzdkYnVUaUhBNXk0blpCVktWTHg5Yjg5UFZFUi9LLzFVendrb1c0ZW81a2EweFNhTGRDYTc2Wm0KT3NBK01WNTd1ZUpqTk9HSjRoMThPMFhHeld1d0xkeEdoeklERE9HbXY5MmlacE11Q3JIMXFZdkNEbmUvVi8rQgp4NUJnSXVCZUp3S0JnUUNuYVpuR2EzZndVaVJFWWZwVnhCcGRUYVBrd0c5YkZxaUg2OGo1Z3VCZjBwV0FpK0VuCi9rZmVKdnVjK1BZUktKVnBja0E4TTh6em55bTNpUEhMOSt3dk9YZDRNNFdaL0l4UTRRbEdoR3ZKVkRqR3RDelIKM3l6SWRpWElWUncycy9ZVm9QalpyaWJVSUxLL1V0dE1USmFJMU91VFh5aUZzcE50aVFSbFlvZnlTUUtCZ1FDVgo5d09OSnpEajUrdlRwY3l0M2x5STZTSGh4S2JmWUh5VU9xMFE5bVNhRkJraC9nVjJaZWx3RFpKbXlKUGhaeE5TCkVWZVEzMFpvRW5ZaGVPc2hjM0hFMzdiY2h0NXpuaThwaVZ0TGgxVUpSajdxV3hpWHpIUDJSR0hFb3NqNzFEWCsKaWRZQWM5SE04OXJBaXliK25RSjBvZE9XOWlvUkxWc3ErNWxURXZ1aXZ3S0JnRG5VYU5RZDJrMWtJeEpnSWRiVgpWNGpjZURrUHFQR1dPRXdkc0FjNmhVNTdta2dGZ2lld2plRG5HSDFNYmdCYzh4cEp4bzZtZjQxVTlqVU44ekhzCnhKeW03RkpJRllaWW5LWTl6eXI3WlJOWjZjNVU2TUVJT21SZXFsZGdWbmI2ZnZRbXYzNE52TGZ6MGpWQXpWZ0QKWXRGYTBvNUVIbjVNekhsS2pRS1NYSG5jCi0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0K
+  ca.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMwRENDQWJpZ0F3SUJBZ0lVY1pJbUhZZ0E2UHhUVFRtZ3RQNjFtRHh1S2hVd0RRWUpLb1pJaHZjTkFRRUwKQlFBd0VURVBNQTBHQTFVRUF3d0dVbTl2ZEVOQk1CNFhEVEl3TURneU5qQXlNekF3T1ZvWERUTXdNRGd5TkRBeQpNekF3T1Zvd0VURVBNQTBHQTFVRUF3d0dVbTl2ZEVOQk1JSUJJakFOQmdrcWhraUc5dzBCQVFFRkFBT0NBUThBCk1JSUJDZ0tDQVFFQXdmeGZXd3l6cUVXUVlWaElBcG4rVVVVR1huK1FnbmJCYlBTcERjd0ExSDVUQ09FQUIvOE0KTGsvTExqTEpWeUFqRlhNNElhOEF1VE1yRUdHUGx5T29GWVREZml6dTVTd29RZ1Ewb3UvZkIvQTl1dHZDVUpmYQprSmlsbXFtSXE1eHlkS1IzUEJQTlllSkNLU05sdUg3VXJ1VjR4MDFwTjJKazNXT2VYQ0RRMEtsN1BsNmZNS3o0CmpYY0hQdzMyQkVDektYdVBSRkRqM3o3bE5sWXVkL1B1S0FQd3pDNnRkRTlQK1FDRnV1d1pGRGJ3N1hCVllPUTIKYTgzR3lwd3VBS1V3enFsN2pldTVyQklpdlcwWkIxRW12UXFXN21TdkhBTFZla0JVd2tBZjVyWnF5VHNhTW9NRwp6eDFQRm9aUWJ2ZjZSOW1Ud3JTSVFhVXV4T0hnd3dhWVd3SURBUUFCb3lBd0hqQU1CZ05WSFJNRUJUQURBUUgvCk1BNEdBMVVkRHdFQi93UUVBd0lCaGpBTkJna3Foa2lHOXcwQkFRc0ZBQU9DQVFFQWVuais2YWtxRmV4MUhybzgKZksxcUIwN1NnVjJhV0FnVkdLKzZOQXVvM0dlMzM0QjhNK2g5UjlSN3F1azBWSXY2M0UwWUxrMXVFRlBKTFMwbAo1YWdLU2JpZUdpU2FIMjBma3cvYTUvR2dNbW5XNGY1b1FBdzJxTzlJdEdWZXR3Y1luSjNTU25Hbm1CVUFkU01OCmNoWkZQNXRPbXdaekVJTWdOWjFiS0orQTVSdEIxekgvWVNuVWd5YmtUcDlHMjJzMEFCaksrVTNXdm9kbktYQjgKbVFnaHA0Z2F2S1BURzYzdlpEMWROcEp1a1htSnJHNXc4WU1Bcm43cEl1Q2xBOWFKc0RzNTNVMVI4WEROOGZmUworcCtXc2MwcTJxZ2o1Wk1pV3ltOXBwUjdCNDFiOVdXeTkzS0poNGU0UkRoTHpXUzl5RlhMRm9DdjBhbXJyMFJ6ClB4Um1BZz09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: elasticsearch-security
+  namespace: cocktail-addon
+  labels:
+    app: elasticsearch
+data:
+  config.yml: |-
+    config:
+      dynamic:
+        # Set filtered_alias_mode to 'disallow' to forbid more than 2 filtered aliases per index
+        # Set filtered_alias_mode to 'warn' to allow more than 2 filtered aliases per index but warns about it (default)
+        # Set filtered_alias_mode to 'nowarn' to allow more than 2 filtered aliases per index silently
+        #filtered_alias_mode: warn
+        #do_not_fail_on_forbidden: false
+        #kibana:
+        # Kibana multitenancy
+        #multitenancy_enabled: true
+        #server_username: kibanaserver
+        #index: '.kibana'
+        http:
+          anonymous_auth_enabled: false
+          xff:
+            enabled: false
+            internalProxies: '192\.168\.0\.10|192\.168\.0\.11' # regex pattern
+            #internalProxies: '.*' # trust all internal proxies, regex pattern
+            #remoteIpHeader:  'x-forwarded-for'
+        authc:
+          basic_internal_auth_domain:
+            description: "Authenticate via HTTP Basic against internal users database"
+            http_enabled: true
+            transport_enabled: true
+            order: 0
+            http_authenticator:
+              type: basic
+              challenge: false
+            authentication_backend:
+              type: internal
+          openid_auth_domain:
+            http_enabled: true
+            transport_enabled: true
+            order: 1
+            http_authenticator:
+              type: openid
+              challenge: false
+              config:
+                subject_key: preferred_username
+                roles_key: roles
+                openid_connect_url: https://hdcard-sso.acloud.run/auth/realms/paas-admin/.well-known/openid-configuration
+            authentication_backend:
+              type: noop
+        authz:
+          roles_from_myldap:
+            description: "Authorize via LDAP or Active Directory"
+            http_enabled: false
+            transport_enabled: false
+            authorization_backend:
+              # LDAP authorization backend (gather roles from a LDAP or Active Directory, you have to configure the above LDAP authentication backend settings too)
+              type: ldap
+              config:
+                # enable ldaps
+                enable_ssl: false
+                # enable start tls, enable_ssl should be false
+                enable_start_tls: false
+                # send client certificate
+                enable_ssl_client_auth: false
+                # verify ldap hostname
+                verify_hostnames: true
+                hosts:
+                - localhost:8389
+                bind_dn: null
+                password: null
+                rolebase: 'ou=groups,dc=example,dc=com'
+                rolesearch: '(member={0})'
+                # Specify the name of the attribute which value should be substituted with {2} above
+                userroleattribute: null
+                # Roles as an attribute of the user entry
+                userrolename: disabled
+                #userrolename: memberOf
+                # The attribute in a role entry containing the name of that role, Default is "name".
+                # Can also be "dn" to use the full DN as rolename.
+                rolename: cn
+                # Resolve nested roles transitive (roles which are members of other roles and so on ...)
+                resolve_nested_roles: true
+                userbase: 'ou=people,dc=example,dc=com'
+                # Filter to search for users (currently in the whole subtree beneath userbase)
+                # {0} is substituted with the username
+                usersearch: '(uid={0})'
+                # Skip users matching a user name, a wildcard or a regex pattern
+                #skip_users:
+                #  - 'cn=Michael Jackson,ou*people,o=TEST'
+                #  - '/\S*/'
+          roles_from_another_ldap:
+            description: "Authorize via another Active Directory"
+            http_enabled: false
+            transport_enabled: false
+            authorization_backend:
+              type: ldap
+              #config goes here ...
+          #auth_failure_listeners:
+          #  ip_rate_limiting:
+          #    type: ip
+          #    allowed_tries: 10
+          #    time_window_seconds: 3600
+          #    block_expiry_seconds: 600
+          #    max_blocked_clients: 100000
+          #    max_tracked_clients: 100000
+          #  internal_authentication_backend_limiting:
+          #    type: username
+          #    authentication_backend: intern
+          #    allowed_tries: 10
+          #    time_window_seconds: 3600
+          #    block_expiry_seconds: 600
+          #    max_blocked_clients: 100000
+          #    max_tracked_clients: 100000
+    _meta:
+      type: "config"
+      config_version: 2
+
+  roles_mapping.yml: |-
+    manage_snapshots:
+      reserved: true
+      hidden: false
+      backend_roles:
+      - "snapshotrestore"
+      hosts: []
+      users: []
+      and_backend_roles: []
+    logstash:
+      reserved: false
+      hidden: false
+      backend_roles:
+      - "logstash"
+      hosts: []
+      users: []
+      and_backend_roles: []
+    own_index:
+      reserved: false
+      hidden: false
+      backend_roles: []
+      hosts: []
+      users:
+      - "*"
+      and_backend_roles: []
+      description: "Allow full access to an index named like the username"
+    kibana_user:
+      reserved: false
+      hidden: false
+      backend_roles:
+      - "kibanauser"
+      hosts: []
+      users: []
+      and_backend_roles: []
+      description: "Maps kibanauser to kibana_user"
+    all_access:
+      reserved: true
+      hidden: false
+      backend_roles:
+      - "admin"
+      hosts: []
+      users: ["admin","kibana-admin@acornsoft.io"]
+      and_backend_roles: []
+      description: "Maps admin to all_access"
+    readall:
+      reserved: true
+      hidden: false
+      backend_roles:
+      - "readall"
+      hosts: []
+      users: []
+      and_backend_roles: []
+    kibana_server:
+      reserved: true
+      hidden: false
+      backend_roles: []
+      hosts: []
+      users:
+      - "kibanaserver"
+      and_backend_roles: []
+    _meta:
+      type: "rolesmapping"
+      config_version: 2
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: elasticsearch
+  namespace: cocktail-addon
+  labels:
+    app: elasticsearch
+data:
+  elasticsearch.yml: |-
+    cluster:
+      name: logging-acloud
+      initial_master_nodes: ["es-master-0"]
+      remote.connect: false
+      routing.allocation.disk.threshold_enabled: false
+    discovery:
+      seed_hosts: ["es-master-0.elasticsearch-discovery.${NAMESPACE}.svc","es-client-0.elasticsearch-discovery.${NAMESPACE}.svc"]
+    node:
+      name: ${NODE_NAME}
+      master: ${NODE_MASTER}
+      data: ${NODE_DATA}
+      ingest: ${NODE_INGEST}
+      max_local_storage_nodes: 1
+      attr.box_type: hot
+      processors: ${PROCESSORS:1}
+    network:
+      host: 0.0.0.0
+    path:
+      data: /usr/share/elasticsearch/data
+      logs: /usr/share/elasticsearch/logs
+    http:
+      compression: true
+    opendistro_security.ssl.transport.pemcert_filepath: node.crt
+    opendistro_security.ssl.transport.pemkey_filepath: node.key
+    opendistro_security.ssl.transport.pemtrustedcas_filepath: ca.crt
+    opendistro_security.ssl.transport.enforce_hostname_verification: false
+    opendistro_security.ssl.transport.resolve_hostname: false
+    opendistro_security.ssl.http.enabled: true
+    #opendistro_security.ssl.http.clientauth_mode: REQUIRE
+    opendistro_security.ssl.http.pemcert_filepath: node.crt
+    opendistro_security.ssl.http.pemkey_filepath: node.key
+    opendistro_security.ssl.http.pemtrustedcas_filepath: ca.crt
+    opendistro_security.authcz.admin_dn: ["CN=admin"]
+    opendistro_security.nodes_dn: ["CN=node"]
+    opendistro_security.allow_unsafe_democertificates: false
+    opendistro_security.allow_default_init_securityindex: true
+    opendistro_security.enable_snapshot_restore_privilege: true
+    opendistro_security.check_snapshot_restore_write_privileges: true
+    opendistro_security.restapi.roles_enabled: ["all_access", "security_rest_api_access"]
+    opendistro_security.audit.type: internal_elasticsearch
+    opendistro_security.audit.config.disabled_rest_categories: NONE
+    opendistro_security.audit.config.disabled_transport_categories: NONE
+    opendistro_security.audit.log_request_body: false
+    opendistro_security.audit.ignore_users: ["kibanaserver"]
+    opendistro_security.roles_mapping_resolution: BOTH
+  logging.yml: |-
+    es.logger.level: INFO
+    rootLogger: ${es.logger.level}, console
+    logger:
+      action: DEBUG
+      com.amazonaws: WARN
+    appender:
+      console:
+        type: console
+        layout:
+          type: consolePattern
+          conversionPattern: "[%d{ISO8601}][%-5p][%-25c] %m%n"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch
+  namespace: cocktail-addon
+  labels:
+    app: elasticsearch
+spec:
+  #externalTrafficPolicy: Local
+  ports:
+    - name: http
+      port: 9200
+    - name: metrics
+      port: 9600
+    - name: rca
+      port: 9650
+  selector:
+    app: elasticsearch
+    role: client
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch-discovery
+  namespace: cocktail-addon
+  labels:
+    app: elasticsearch
+spec:
+  clusterIP: None
+  ports:
+    - name: transport
+      port: 9300
+    - name: metrics
+      port: 9600
+    - name: rca
+      port: 9650
+  publishNotReadyAddresses: true
+  selector:
+    app: elasticsearch
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+  labels:
+    app: elasticsearch
+  name: elasticsearch
+  namespace: cocktail-addon
+spec:
+  #ingressClassName: "nginx"
+  rules:
+  - host: "hdcard-es.acloud.run"
+    http:
+      paths:
+      - backend:
+          serviceName: elasticsearch
+          servicePort: http
+        path: /
+  tls:
+  - hosts:
+    - "hdcard-es.acloud.run"
+    secretName: elasticsearch
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: elasticsearch
+    role: master
+  name: es-master
+  namespace: cocktail-addon
+spec:
+  serviceName: elasticsearch-discovery
+  replicas: 1
+  selector:
+    matchLabels:
+      app: elasticsearch
+      role: master
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+        role: master
+    spec:
+      serviceAccountName: elasticsearch
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                      - management
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              podAffinityTerm:
+                topologyKey: "kubernetes.io/hostname"
+                labelSelector:
+                  matchLabels:
+                    app: elasticsearch
+      tolerations:
+        - effect: NoSchedule
+          key: node-type
+          operator: Equal
+          value: management
+      initContainers:
+        - name: init-sysctl
+          image: busybox:1.28
+          command:
+            - sysctl
+            - -w
+            - vm.max_map_count=262144
+          securityContext:
+            privileged: true
+        - name: fixmount
+          command: [ 'sh', '-c', 'chown -R 1000:1000 /usr/share/elasticsearch/data' ]
+          image: busybox:1.28
+          volumeMounts:
+            - mountPath: /usr/share/elasticsearch/data
+              name: data
+      containers:
+        - name: elasticsearch
+          securityContext:
+            capabilities:
+              add: ["SYS_CHROOT"]
+          env:
+            - name: NODE_MASTER
+              value: "true"
+            - name: NODE_INGEST
+              value: "true"
+            - name: NODE_DATA
+              value: "true"
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: PROCESSORS
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.cpu
+            - name: ES_JAVA_OPTS
+              value: "-Xms2048m -Xmx2048m"
+          resources:
+            limits:
+              cpu: 2
+              memory: 4096Mi
+            requests:
+              cpu: 2
+              memory: 4096Mi
+          image: opendistroforelasticsearch/opendistroforelasticsearch:1.9.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9200
+              name: http
+            - containerPort: 9300
+              name: transport
+            - containerPort: 9600
+              name: metrics
+            - containerPort: 9650
+              name: rca
+          livenessProbe:
+            tcpSocket:
+              port: transport
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          volumeMounts:
+            - mountPath: /usr/share/elasticsearch/data
+              name: data
+            - mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
+              name: config
+              subPath: elasticsearch.yml
+            - mountPath: /usr/share/elasticsearch/config/logging.yml
+              name: config
+              subPath: logging.yml
+            - mountPath: /usr/share/elasticsearch/config/node.crt
+              name: certs
+              subPath: node.crt
+            - mountPath: /usr/share/elasticsearch/config/node.key
+              name: certs
+              subPath: node.key
+            - mountPath: /usr/share/elasticsearch/config/admin.crt
+              name: certs
+              subPath: admin.crt
+            - mountPath: /usr/share/elasticsearch/config/admin.key
+              name: certs
+              subPath: admin.key
+            - mountPath: /usr/share/elasticsearch/config/ca.crt
+              name: certs
+              subPath: ca.crt
+            - mountPath: /usr/share/elasticsearch/plugins/opendistro_security/securityconfig/config.yml
+              name: security-config
+              subPath: config.yml
+            - mountPath: /usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml
+              name: security-config
+              subPath: roles_mapping.yml
+            #- mountPath: /usr/share/elasticsearch/plugins/opendistro_security/securityconfig/action_groups.yml
+            #  name: security-config
+            #  subPath: action_groups.yml
+            #- mountPath: /usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
+            #  name: security-config
+            #  subPath: internal_users.yml
+            #- mountPath: /usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles.yml
+            #  name: security-config
+            #  subPath: roles.yml
+            #- mountPath: /usr/share/elasticsearch/plugins/opendistro_security/securityconfig/tenants.yml
+            #  name: security-config
+            #  subPath: tenants.yml
+            #- mountPath: /usr/share/elasticsearch/plugins/opendistro_security/securityconfig
+            #  name: security-config
+      volumes:
+        - name: config
+          configMap:
+            name: elasticsearch
+        - name: certs
+          secret:
+            secretName: elasticsearch
+        - name: security-config
+          configMap:
+            name: elasticsearch-security
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: [ ReadWriteOnce ]
+        resources:
+          requests:
+            storage: 8Gi
+        storageClassName: default-storage
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: elasticsearch
+    role: client
+  name: es-client
+  namespace: cocktail-addon
+spec:
+  serviceName: elasticsearch-discovery
+  replicas: 1
+  selector:
+    matchLabels:
+      app: elasticsearch
+      role: client
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+        role: client
+    spec:
+      serviceAccountName: elasticsearch
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                      - management
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              podAffinityTerm:
+                topologyKey: "kubernetes.io/hostname"
+                labelSelector:
+                  matchLabels:
+                    app: elasticsearch
+      tolerations:
+        - effect: NoSchedule
+          key: node-type
+          operator: Equal
+          value: management
+      initContainers:
+        - name: init-sysctl
+          image: busybox:1.28
+          command:
+            - sysctl
+            - -w
+            - vm.max_map_count=262144
+          securityContext:
+            privileged: true
+      containers:
+        - name: elasticsearch
+          securityContext:
+            capabilities:
+              add: ["SYS_CHROOT"]
+          env:
+            - name: NODE_MASTER
+              value: "false"
+            - name: NODE_INGEST
+              value: "false"
+            - name: NODE_DATA
+              value: "false"
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: PROCESSORS
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.cpu
+            - name: ES_JAVA_OPTS
+              value: "-Xms2048m -Xmx2048m"
+          resources:
+            limits:
+              cpu: 2
+              memory: 4096Mi
+            requests:
+              cpu: 2
+              memory: 4096Mi
+          image: opendistroforelasticsearch/opendistroforelasticsearch:1.9.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9200
+              name: http
+            - containerPort: 9300
+              name: transport
+            - containerPort: 9600
+              name: metrics
+            - containerPort: 9650
+              name: rca
+          livenessProbe:
+            tcpSocket:
+              port: transport
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          volumeMounts:
+            - mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
+              name: config
+              subPath: elasticsearch.yml
+            - mountPath: /usr/share/elasticsearch/config/logging.yml
+              name: config
+              subPath: logging.yml
+            - mountPath: /usr/share/elasticsearch/config/node.crt
+              name: certs
+              subPath: node.crt
+            - mountPath: /usr/share/elasticsearch/config/node.key
+              name: certs
+              subPath: node.key
+            - mountPath: /usr/share/elasticsearch/config/admin.crt
+              name: certs
+              subPath: admin.crt
+            - mountPath: /usr/share/elasticsearch/config/admin.key
+              name: certs
+              subPath: admin.key
+            - mountPath: /usr/share/elasticsearch/config/ca.crt
+              name: certs
+              subPath: ca.crt
+            - mountPath: /usr/share/elasticsearch/plugins/opendistro_security/securityconfig/config.yml
+              name: security-config
+              subPath: config.yml
+            - mountPath: /usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles_mapping.yml
+              name: security-config
+              subPath: roles_mapping.yml
+            #- mountPath: /usr/share/elasticsearch/plugins/opendistro_security/securityconfig/action_groups.yml
+            #  name: security-config
+            #  subPath: action_groups.yml
+            #- mountPath: /usr/share/elasticsearch/plugins/opendistro_security/securityconfig/internal_users.yml
+            #  name: security-config
+            #  subPath: internal_users.yml
+            #- mountPath: /usr/share/elasticsearch/plugins/opendistro_security/securityconfig/roles.yml
+            #  name: security-config
+            #  subPath: roles.yml
+            #- mountPath: /usr/share/elasticsearch/plugins/opendistro_security/securityconfig/tenants.yml
+            #  name: security-config
+            #  subPath: tenants.yml
+            #- mountPath: /usr/share/elasticsearch/plugins/opendistro_security/securityconfig
+            #  name: security-config
+      volumes:
+        - name: config
+          configMap:
+            name: elasticsearch
+        - name: certs
+          secret:
+            secretName: elasticsearch
+        - name: security-config
+          configMap:
+            name: elasticsearch-security

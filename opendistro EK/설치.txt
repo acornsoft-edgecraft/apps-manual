@@ -1,0 +1,119 @@
+0. 구조
+  #########################################################################################################################
+  #########################################################################################################################
+  fluent-bit ---> elasticsearch ---> kibana <---> keycloak
+  #########################################################################################################################
+
+1. 인증서 생성 및 secret 설정
+# openssl.cnf 변경
+  alt_names_kb: Ingress에 사용할 domainname, 해당 domainname에 매치되는 IP 등록
+  alt_names_es: Ingress에 사용할 domainname, 해당 domainname에 매치되는 IP 등록
+
+# Root CA
+openssl genrsa -out ca.key 2048
+openssl req -x509 -new -sha256 -nodes -key ca.key -days 3650 -subj "/CN=RootCA" -out ca.crt -extensions v3_ca -config ./openssl.cnf
+
+# Admin Cert
+openssl genrsa -out admin.key.temp 2048
+openssl pkcs8 -inform PEM -outform PEM -in admin.key.temp -topk8 -nocrypt -v1 PBE-SHA1-3DES -out admin.key
+
+openssl req -new -key admin.key -out admin.csr -subj "/CN=admin" -config ./openssl.cnf
+openssl x509 -req -in admin.csr -CA ca.crt -CAkey ca.key -CAcreateserial -sha256 -out admin.crt -days 3650 -extensions v3_req_client -extfile ./openssl.cnf
+
+# Node Cert
+openssl genrsa -out node.key.temp 2048
+openssl pkcs8 -inform PEM -outform PEM -in node.key.temp -topk8 -nocrypt -v1 PBE-SHA1-3DES -out node.key
+
+openssl req -new -key node.key -out node.csr -subj "/CN=node" -config ./openssl.cnf
+openssl x509 -req -in node.csr -CA ca.crt -CAkey ca.key -CAcreateserial -sha256 -out node.crt -days 3650 -extensions v3_req_es -extfile ./openssl.cnf
+
+# Kibana Cert
+openssl genrsa -out kibana.key.temp 2048
+openssl pkcs8 -inform PEM -outform PEM -in kibana.key.temp -topk8 -nocrypt -v1 PBE-SHA1-3DES -out kibana.key
+
+openssl req -new -key kibana.key -out kibana.csr -subj "/CN=kibana" -config ./openssl.cnf
+openssl x509 -req -in kibana.csr -CA ca.crt -CAkey ca.key -CAcreateserial -sha256 -out kibana.crt -days 3650 -extensions v3_req_kb -extfile ./openssl.cnf
+
+* 주의할 점은 crt 설정시, chain으로 구성된 인증서를 사용해야 함.
+cat admin.crt ca.crt | base64 -w0
+cat admin.key | base64 -w0
+cat node.crt ca.crt | base64 -w0
+cat node.key | base64 -w0
+cat kibana.crt ca.crt | base64 -w0
+cat kibana.key | base64 -w0
+
+elasticsearch
+  ca.crt:     CA 인증서
+  node.crt:   ES 노드용 인증서
+  node.key:   ES 노드용 개인키
+  admin.crt:  Admin용 인증서
+  admin.key:  Admin용 개인키
+  tls.crt:    Web용 인증서(node.crt와 동일)
+  tls.key:    Web용 개인키(node.key와 동일)
+
+kibana
+  ca.crt:     CA 인증서
+  kibana.crt: ES 접속용 인증서
+  kibana.key: ES 접속용 개인키
+  tls.crt:    Web용 인증서(공인 인증서 이용)
+  tls.key:    Web용 개인키(공인 인증서 이용)
+
+fluent-bit
+  ca.crt:     CA 인증서
+
+2. 그외 설정
+elasticsearch
+  Ingress 등록 전, host 변경
+  StatefulSet의 환경변수 ES_JAVA_OPTS 변경 (memory resource의 50% 설정)
+  StatefulSet의 resource 설정
+  StatefulSet의 volumeClaimTemplates 의 storage 및 storageClassName 변경
+  #########################################################################################################################
+  # elasticsearch 설정 변경 사항 및 StatefulSet 변경 사항
+  #########################################################################################################################
+  ConfigMap elasticsearch-security 추가됨.
+  ConfigMap elasticsearch-security의 config.yml 내 openid_connect_url 설정
+  ConfigMap elasticsearch-security의 roles_mapping.yml 내 all_access.users 에 kibana admin으로 사용할 ID 등록. 일반 사용자의 경우는 kibana_user.users 내에 ID 등록
+  StatefulSet에 volume 및 volumeMounts 추가됨(elasticsearch-security)
+  #########################################################################################################################
+
+kibana
+  Ingress 등록 전, host 변경
+  #########################################################################################################################
+  # kibana 설정 변경 사항
+  #########################################################################################################################
+  ConfigMap kibana 에 다음이 추가됨.
+      opendistro_security.auth.type: openid
+      opendistro_security.openid.connect_url: https://hdcard-sso.acloud.run/auth/realms/paas-admin/.well-known/openid-configuration
+      opendistro_security.openid.client_id: kibana
+      opendistro_security.openid.client_secret: bf6ce89c-c889-4c7e-aec6-09cad89f7c30
+      opendistro_security.openid.logout_url: https://hdcard-sso.acloud.run/auth/realms/paas-admin/protocol/openid-connect/logout
+      opendistro_security.openid.base_redirect_url: https://dev-kb.acloud.run/
+      opendistro_security.openid.header: Authorization
+      위에서 openid.connect_url, openid.client_id, openid.client_secret, logout_url, base_redirect_url 을 Keycloak에 등록된 정보를 이용하여 변경
+  Deployment kibana의 container.ports에 name 추가함.(관련하여 Service의 targetPort 변경함.
+  #########################################################################################################################
+
+fluent-bit
+  DaemonSet의 환경변수 변경
+    FLUENT_ELASTICSEARCH_HOST:   ES 주소(elasticsearch의 Ingress에 등록한 host)
+    FLUENT_ELASTICSEARCH_PORT:   ES 포트(elasticsearch의 Ingress에 등록한 port)
+    FLUENT_ELASTICSEARCH_USER:   ES 접속 계정 아이디
+    FLUENT_ELASTICSEARCH_PASSWD: ES 접속 계정 암호
+    CLUSTER_ID:                  Cluster ID
+  DaemonSet의 Volume 및 VolumeMount 변경
+    Volume
+      varlibdockercontainers: Container 로그 수집을 위한 Docker Data 디렉토리의 하위 Containers 디렉토리 경로
+      datadocker:             Docker Data 디렉토리
+	VolumeMount
+	  datadocker: Docker Container들의 로그 파일들은 symbolic link로 연결되어 있음. 그런 이유로 Docker Data 디렉토리를 Host와 동일한 경로로 mount해야 컨테이너 내에서 로그 파일을 Access할 수 있음.
+
+3. elasticsearch 설치, kibana 설치, fluent 설치
+  #########################################################################################################################
+  #########################################################################################################################
+  # 기존 설치를 제거하고 새로 설치할 것.
+  # 특히, StatefulSet에서 만든 PVC를 삭제할 것.
+  #########################################################################################################################
+  kubectl apply -f psp.yaml           (관리 클러스터)
+  kubectl apply -f elasticsearch.yaml (관리 클러스터)
+  kubectl apply -f kibana.yaml        (관리 클러스터)
+  kubectl apply -f fluentbit.yaml     (모든 클러스터)

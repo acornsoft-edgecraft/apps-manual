@@ -1,0 +1,43 @@
+[ req ]
+distinguished_name = req_distinguished_name
+[req_distinguished_name]
+
+[ v3_ca ]
+basicConstraints = CA:TRUE
+keyUsage = critical, digitalSignature, keyCertSign, cRLSign
+
+[ v3_req_server ]
+basicConstraints = CA:FALSE
+keyUsage = critical, nonRepudiation, digitalSignature, keyEncipherment, dataEncipherment
+extendedKeyUsage = serverAuth
+
+[ v3_req_client ]
+basicConstraints = CA:FALSE
+keyUsage = critical, nonRepudiation, digitalSignature, keyEncipherment, dataEncipherment
+extendedKeyUsage = clientAuth
+
+[ v3_req_es ]
+basicConstraints = CA:FALSE
+keyUsage = critical, nonRepudiation, digitalSignature, keyEncipherment, dataEncipherment
+extendedKeyUsage = serverAuth, clientAuth
+subjectAltName = @alt_names_es
+[ alt_names_es ]
+DNS.1 = localhost
+DNS.2 = elasticsearch.cocktail-addon
+DNS.3 = elasticsearch.cocktail-addon.svc
+DNS.4 = hdcard-es.acloud.run
+IP.1 = 127.0.0.1
+IP.2 = 101.55.69.110
+
+[ v3_req_kb ]
+basicConstraints = CA:FALSE
+keyUsage = critical, nonRepudiation, digitalSignature, keyEncipherment, dataEncipherment
+extendedKeyUsage = serverAuth, clientAuth
+subjectAltName = @alt_names_kb
+[ alt_names_kb ]
+DNS.1 = localhost
+DNS.2 = kibana.cocktail-addon
+DNS.3 = kibana.cocktail-addon.svc
+DNS.4 = hdcard-kb.acloud.run
+IP.1 = 127.0.0.1
+IP.2 = 101.55.69.110

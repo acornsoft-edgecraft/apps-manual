@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: plantuml
+  name: plantuml
+  namespace: gitlab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: plantuml
+  template:
+    metadata:
+      labels:
+        app: plantuml
+    spec:
+      containers:
+      - image: "plantuml/plantuml-server:tomcat-v1.2021.7"
+        imagePullPolicy: Always
+        name: plantuml
+        ports:
+        - containerPort: 8080
+          name: http
+        resources:
+          limits:
+            cpu: 200m
+            memory: '200Mi'
+          requests:
+            cpu: 200m
+            memory: '200Mi'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: plantuml
+  name: plantuml
+  namespace: gitlab
+spec:
+  type: ClusterIP
+  selector:
+    app: plantuml
+  ports:
+  - name: "8080"
+    port: 8080
+    protocol: TCP
+    targetPort: 8080

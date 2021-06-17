@@ -1,0 +1,213 @@
+변경 사항.
+
+1. Elasticsearch 관련 변경
+  ES를 클러스터를 Coordiantion Node(Service전용)를 분리함.
+  ES master => ES Master + ES Client
+  elasticsearch 리소스 설정 변경
+
+  * elasticsearch ConfigMap 수정
+    discovery.seed_hosts 에 es-client 추가
+    seed_hosts: ["es-master-0.elasticsearch-discovery.${NAMESPACE}.svc"]
+    =>
+    seed_hosts: ["es-master-0.elasticsearch-discovery.${NAMESPACE}.svc","es-client-0.elasticsearch-discovery.${NAMESPACE}.svc"]
+
+  * elasticsearch Service 수정
+    Coordiantion 노드 분리에 따라 해당 노드의 Port 및 Selector 수정
+    ports:
+      - name: http
+        port: 9200
+    selector:
+      app: elasticsearch
+    =>
+    ports:
+      - name: http
+        port: 9200
+      - name: metrics
+        port: 9600
+      - name: rca
+        port: 9650
+    selector:
+      app: elasticsearch
+      role: client
+
+  * elasticsearch StatefulSet NodeAffinity 및 Toleration 추가
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: node-type
+                operator: In
+                values:
+                  - management
+    tolerations:
+      - effect: NoSchedule
+        key: node-type
+        operator: Equal
+        value: management
+
+  * elasticsearch StatefulSet 리소스 변경
+    env:
+      - name: ES_JAVA_OPTS
+        value: "-Xms512m -Xmx512m"
+    resources:
+      limits:
+        cpu: 1
+        memory: 1024Mi
+      requests:
+        cpu: 200m
+        memory: 1024Mi
+    =>
+    env:
+      - name: ES_JAVA_OPTS
+        value: "-Xms2048m -Xmx2048m"
+    resources:
+      limits:
+        cpu: 2
+        memory: 4096Mi
+      requests:
+        cpu: 2
+        memory: 4096Mi
+
+  * coordinate node용 StatefulSet 추가
+ StatefulSet명: es-client
+ pod 실행 후, 초기 설정을 위해 다음 명령을 실행.
+    $ kubectl -n cocktail-addon exec -it es-client-0 -- chmod +x /usr/share/elasticsearch/plugins/opendistro_security/tools/securityadmin.sh
+    $ kubectl -n cocktail-addon exec -it es-client-0 -- /usr/share/elasticsearch/plugins/opendistro_security/tools/securityadmin.sh -cacert /usr/share/elasticsearch/config/ca.crt -cert /usr/share/elasticsearch/config/admin.crt -key /usr/share/elasticsearch/config/admin.key -cd /usr/share/elasticsearch/plugins/opendistro_security/securityconfig/ -icl -nhnv -h es-client-0
+
+2. Kibana 관련 변경
+  ES 접속 계정 Secret으로 변경
+  RoleBinding 버그 수정
+  NodeAffinity 및 Toleration 추가
+  
+  * kibana-rolebinding RoleBinding에 metadata.namespace 추가
+    metadata:
+      labels:
+        app: kibana
+      name: kibana-rolebinding
+      namespace: cocktail-addon
+
+  * kibana Secret에 ES 접속용 항목 추가
+    kb-username: a2liYW5hc2VydmVy
+    kb-password: a2liYW5hc2VydmVy
+
+  * kibana ConfigMap 수정
+    elasticsearch.username: kibanaserver
+	elasticsearch.password: kibanaserver
+    =>
+    username: ${KIBANA_USERNAME}
+    password: ${KIBANA_PASSWORD}
+
+  * kibana Deployment에 환경 변수 추가
+    env:
+      - name: KIBANA_USERNAME
+        valueFrom:
+          secretKeyRef:
+            name: kibana
+            key: kb-username
+      - name: KIBANA_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: kibana
+            key: kb-password
+
+  * kibana Deployment PodAffinity 수정, NodeAffinity 추거 및 Toleration 추가
+      tolerations:
+        - effect: NoSchedule
+          key: node-type
+          operator: Equal
+          value: management
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                      - management
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              podAffinityTerm:
+                topologyKey: "kubernetes.io/hostname"
+                labelSelector:
+                  matchLabels:
+                    app: elasticsearch
+                    role: client
+
+3. FluentBit 솬련 변경
+  ES 접속 계정 Secret으로 변경
+  SystemLog 수집 추가
+  Application 수집 추가
+  
+  * fluent-bit Secret에 ES 접속용 항목 추가
+    es-username: YWRtaW4=
+    es-password: YWRtaW4=
+
+  * fluent-bit DaemonSet에 환걍 변수 수정 및 추가
+    env:
+    - name: FLUENT_ELASTICSEARCH_USER
+      value: "admin"
+    - name: FLUENT_ELASTICSEARCH_PASSWD
+      value: "admin"
+    =>
+    env:
+    - name: FLUENT_ELASTICSEARCH_USER
+      valueFrom:
+        secretKeyRef:
+          name: fluent-bit
+          key: es-username
+    - name: FLUENT_ELASTICSEARCH_PASSWD
+      valueFrom:
+        secretKeyRef:
+          name: fluent-bit
+          key: es-password
+    - name: HOST_IP
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: status.hostIP
+
+  * fluent-bit-config ConfigMap의 fluent-bit.conf에 다음을 추가
+    @INCLUDE input-varlogmsg.conf
+    @INCLUDE input-applog.conf
+    @INCLUDE filter-varlogmsg.conf
+    @INCLUDE filter-applog.conf
+
+  * fluent-bit-config ConfigMap에 위에 추가한 conf 파일 추가
+    input-varlogmsg.conf: |
+      [INPUT]
+          Name               tail
+          Path               /var/log/messages
+          Parser             syslog-rfc3164
+          Tag                varlogmsg.*
+          Refresh_Interval   10
+          Mem_Buf_Limit      5MB
+          Skip_Long_Lines    On
+          Ignore_Older       1h
+    input-applog.conf: |
+      [INPUT]
+          Name               tail
+          Path               /applog/cri/logs/**/*.log
+          Path_Key           filepath
+          Parser             syslog-rfc3164
+          Tag                app.*
+          Tag_Regex          (app.applog.cri.logs.)(?<namespace_name>[a-z0-9]([-a-z0-9]*[a-z0-9])?).(?<pod_name>[a-z0-9]([-a-z0-9]*[a-z0-9])?).(?<log_kind>(log|prodlog)).(?<extra>([a-z0-9_.]*)).log$
+          Refresh_Interval   10
+          Mem_Buf_Limit      5MB
+          Skip_Long_Lines    On
+          Ignore_Older       1h
+    filter-varlogmsg.conf: |
+      [FILTER]
+          Name                record_modifier
+          Match               varlogmsg.*
+          Record              clusterid ${CLUSTER_ID}
+          Record              hostip ${HOST_IP}
+          Record              kind SystemLog
+    filter-applog.conf: |
+      [FILTER]
+          Name                record_modifier
+          Match               app.*
+          Record              clusterid ${CLUSTER_ID}
+          Record              hostip ${HOST_IP}
+          Record              kind ApplicationLog

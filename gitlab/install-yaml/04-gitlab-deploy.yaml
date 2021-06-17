@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+  labels:
+    release: gitlab-ce
+  name: gitlab-ce
+  namespace: gitlab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gitlab-ce
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: gitlab-ce
+    spec:
+      containers:
+      - env:
+        - name: EXTERNAL_URL
+          value: https://k3lab-git.acornsoft.io
+        image: gitlab/gitlab-ce:13.9.1-ce.0
+        imagePullPolicy: IfNotPresent
+        name: gitlab-ce-gitlab-ce
+        ports:
+        - containerPort: 22
+          name: ssh
+          protocol: TCP
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        - containerPort: 443
+          name: https
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 4096m
+            memory: "8589934592"
+          requests:
+            cpu: 500m
+            memory: "1073741824"
+        securityContext:
+          privileged: true
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /etc/gitlab
+          name: gitlab-etc
+        - mountPath: /var/opt/gitlab
+          name: gitlab-data
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: gitlab-etc
+        persistentVolumeClaim:
+          claimName: gitlab-etc
+      - name: gitlab-data
+        persistentVolumeClaim:
+          claimName: gitlab-data
