@@ -9,3 +9,4 @@
 .vscode/
 /cluster/assets/
 openstack-vm/doc/onassis-openrc.sh
+*.DS_Store

@@ -6,7 +6,12 @@ Follow these steps to get started with Istio:
 - 2. Deploy the sample application
 - 3. Open the application to outside traffic
 - 4. View the dashboard
+## Architecture
+![Istio Architecture](./images/istio-architecture-1.png)
 
+- Or another one:
+![Istio Architecture](./images/istio-architecture-2.png)
+![Istio Architecture](./images/istio-architecture-3.png)
 ## Download Istio
 - 다운로드 페이지: Go to the [Istio release](https://github.com/istio/istio/releases) page to download the installation file for your OS
 - 다운로드 명령어 사용 (Linux or macOS)
@@ -32,16 +37,10 @@ Follow these steps to get started with Istio:
 
 ## Install Istio
 - Istio installations with istioctl 
-  - enable access logs
-  - 
+  - IstioOperator 사용
 ```sh
-istioctl install --set meshConfig.accessLogFile=/dev/stdout \
-  --set profile=default \
-
-or
-
 # IstioOperator 사용
-istioctl -n monitoring install -f istio-op.yaml
+istioctl install -f istio-op.yaml
 ```
 
 - vi istio-op.yaml
@@ -50,6 +49,7 @@ apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
   name: istiocontrolplane
+  namespace: monitoring
 spec:
   profile: default
   values:
@@ -65,7 +65,12 @@ spec:
         max_path_tag_length: 256
 ```
 
-## 
+## Istio IngressGateway 설정
+- Service Type을 NodePort로 변경 한다.
+```sh
+## LoadBalancer -> NodePort
+kubectl -n monitoring edit svc istio-ingressgateway
+```
 
 ## Uninstall Istio
 - 클러스터에서 Istio를 완전히 제거 하기
