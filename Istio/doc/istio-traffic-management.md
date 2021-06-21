@@ -19,9 +19,47 @@ Istio는 회로 차단기(circuit breakers), 시간 초과 및 재시도와 같�
 - Sidecars
   - 기본적으로 Istio는 연결된 워크로드의 모든 포트에서 트래픽을 허용하고 트래픽을 전달할 때 메시의 모든 워크로드에 도달하도록 모든 Envoy 프록시를 구성한다.
 
-## 
+## 트래픽 분할 - A/B test, Canary Deployment
+트래픽 분할은 서로 다른 버전의 서비스를 배포해놓고, 버전별로 트래픽의 양을 조절할 수 있는 기능이다. 예를 들어 새 버전의 서비스를 배포할때, 기존 버전으로 90%의 트래픽을 보내고, 새 버전으로 10%의 트래픽만 보내서 테스트하는 것이 가능하다. (카날리 테스트)
+```sh
+## reviews의  Destination rules 정의 - 버전 v1, v2, v3에 대한 트래픽 규칙(RANDOM) 정의
+kubectl -n bookinfo apply -f samples/bookinfo/networking/destination-rule-reviews.yaml 
+
+## 라우팅 규칙 정의 - 커넥션 트래픽의 양을 조절
+kubectl -n bookinfo apply -f samples/bookinfo/networking/virtual-service-reviews-90-10.yaml
+```
+
+## 컨텐츠 기반의 트래픽 분할
+단순하게 커넥션 기반으로 트래픽을 분할하는 것이 아니라, 조금 더 발전된 기능으로 네트워크 패킷의 내용을 기반으로 라우팅이 가능하다. 
+
+예를 들어 아래 우측 그림과 같이 HTTP 헤더의 end-user 필드에 따라서, 필드 값이 json 이면 revice-v2 서비스로 라우팅을 하고, 아닐 경우에는 v1 서비스로 라우팅을 할 수 있다.
+
+```sh
+## reviews의  Destination rules 정의 - 버전 v1, v2, v3에 대한 트래픽 규칙(RANDOM) 정의
+kubectl -n bookinfo apply -f samples/bookinfo/networking/destination-rule-reviews.yaml 
+
+## 라우팅 규칙 정의 - HTTP 헤더의 User-agent 필드의 값
+kubectl -n bookinfo apply -f samples/bookinfo/networking/virtual-service-reviews-jason-v2.yaml
+```
+![컨텐츠 기반의 트래픽 분할](images/istio-traffic-jason-v2-1.png)
+![컨텐츠 기반의 트래픽 분할](images/istio-traffic-jason-v2-2.png)
+
+## HTTP 지연 구성 테스트
+- 복원력을 위해 Bookinfo 애플리케이션 마이크로 서비스를 테스트하려면 사용자에 대한 마이크로 서비스 reviews:v2와 ratings마이크로 서비스 사이에 7 초 지연을 삽입합니다 jason. 이 테스트는 Bookinfo 앱에 의도적으로 도입 된 버그를 발견한다.
+
+
+```sh
+## ratings 서비스의  Destination rules 정의
+kubectl -n bookinfo apply -f samples/bookinfo/networking/destination-rule-all.yaml
+
+## 라우팅 규칙 정의 - HTTP 헤더의 User-agent 필드의 값
+kubectl apply -f samples/bookinfo/networking/virtual-service-ratings-test-delay.yaml
+```
+
 
 # 참조
 > [Istio Gateway](https://istio.io/latest/docs/reference/config/networking/gateway/)
 > [Istio Traffic Management](https://istio.io/latest/docs/concepts/traffic-management/)
 > [Istio Service Entry](https://istio.io/latest/docs/reference/config/networking/service-entry/)
+> [Istio Destination Rule](https://istio.io/latest/docs/reference/config/networking/destination-rule/)
+> [Istio Fault Injection](https://istio.io/latest/docs/tasks/traffic-management/fault-injection/)

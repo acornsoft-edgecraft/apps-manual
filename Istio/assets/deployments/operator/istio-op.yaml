@@ -15,3 +15,5 @@ spec:
       tracing:
         sampling: 100.0
         max_path_tag_length: 256
+        zipkin:
+          address: 'jaeger-operator-jaeger-collector.monitoring.svc:9411'

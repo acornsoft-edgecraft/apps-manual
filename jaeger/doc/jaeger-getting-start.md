@@ -50,6 +50,8 @@ jaeger:
     strategy: production
     agent:
       strategy: DaemonSet
+    ingress:
+      enabled: false
     storage:
       type: elasticsearch
       options:
@@ -58,6 +60,7 @@ jaeger:
           index-prefix: jaeger-prefix
           tls:
             ca: /es/certificates/ca.crt
+          tags-as-fields: all
       secretName: jaeger-secret
     volumeMounts:
       - name: certificates
@@ -131,9 +134,9 @@ spec:
       paths:
       - backend:
           service:
-            name: jaeger-operator-query
+            name: jaeger-operator-jaeger-query
             port:
-              number: 80
+              number: 16686
         path: /
         pathType: Prefix
   tls:
@@ -147,7 +150,7 @@ EOF
 - 환경 변수 ES_PASSWORD및 ES_USERNAME의 값을 secret으로 생성 한다.
 ```sh
 ## changeme를 elastic user명과 패스워드로 수정 한다.
-kubectl -n monitoring create secret generic jaeger-secret --from-literal=ES_PASSWORD=changeme --from-literal=ES_USERNAME=changeme
+kubectl -n monitoring create secret generic jaeger-secret --from-literal=ES_PASSWORD=admin --from-literal=ES_USERNAME=admin
 ```
 
 - tls 설정: eslastic 에서 생성한 인증서를 사용 한다.

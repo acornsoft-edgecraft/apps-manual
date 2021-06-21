@@ -35,16 +35,24 @@ Follow these steps to get started with Istio:
   copy /usr/sbin
   ```
 
-## Install Istio
+## Install Istio with istioctl
 - Istio installations with istioctl 
   - IstioOperator 사용
+    - --watchedNamespaces<string> : 운영자 컨트롤러가 감시하는 네임 스페이스는 예를 들어 쉼표로 구분 된 네임 스페이스 목록 일 수 있습니다. 'ns1, ns2'(기본값 'istio-system')
+    - --operatorNamespace <string> : 운영자 컨트롤러가 설치된 네임 스페이스입니다. (기본값 'istio-operator')
 ```sh
-# IstioOperator 사용
+# IstioOperator Init
+istioctl operator init \
+--watchedNamespaces=monitoring \
+--operatorNamespace=monitoring
+
+# IstioOperator Install
 istioctl install -f istio-op.yaml
 ```
 
 - vi istio-op.yaml
 ```yaml
+cat <<EOF | kubectl apply -f -
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
@@ -63,6 +71,9 @@ spec:
       tracing:
         sampling: 100.0
         max_path_tag_length: 256
+        zipkin:
+          address: 'jaeger-operator-jaeger-collector.monitoring.svc:9411'
+EOF
 ```
 
 ## Istio IngressGateway 설정
@@ -70,6 +81,12 @@ spec:
 ```sh
 ## LoadBalancer -> NodePort
 kubectl -n monitoring edit svc istio-ingressgateway
+```
+
+## Istio 검증
+```sh
+## istio proxy 상태 정보
+istioctl proxy-status -i monitoring
 ```
 
 ## Uninstall Istio

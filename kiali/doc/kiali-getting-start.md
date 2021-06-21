@@ -104,6 +104,7 @@ cr:
 
   spec:
     deployment:
+      ingress_enabled: false
       logger:
         log_level: debug
         log_format: text
@@ -122,19 +123,18 @@ cr:
         url: ''
 ```
 
-## Kiali CR 수정
-- kialioperator
+- Kiali CR 수정
+```sh
+kubectl -n monitoring edit Kiali kiali
 ```
 
-```
-
-## Kiali log in Token 확인
+## Kiali login Token 확인
 - linux 일때 아래 명령어 사용:
 ```sh
 k -n monitoring get secrets kiali-operator-token-xxxxx -o go-template='{{range $k,$v := .data}}{{"### "}}{{$k}}{{"\n"}}{{$v|base64decode}}{{"\n\n"}}{{end}}' 
 ```
 
-- window 일때 라애 명령어 사요:
+- window 일때 아래 명령어 사요:
 ```
 powershell "[convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes(\"Hello world!\"))"
 ```

@@ -15,18 +15,20 @@ crd:
 
 jaeger:
   # Specifies whether Jaeger instance should be created
-  create: false
+  create: true
   # namespace where Jaeger resource should be created default to .Release.Namespace
   namespace:
   spec:
     strategy: production
     agent:
       strategy: DaemonSet
+    ingress:
+      enabled: false
     storage:
       type: elasticsearch
       options:
         es:
-          server-urls: https://quickstart-es-http.default.svc:9200
+          server-urls: https://elasticsearch.cocktail-addon.svc:9200
           index-prefix: jaeger-prefix
           tls:
             ca: /es/certificates/ca.crt
