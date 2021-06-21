@@ -2,6 +2,7 @@ apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 metadata:
   name: istiocontrolplane
+  namespace: monitoring
 spec:
   profile: default
   values:
@@ -14,3 +15,5 @@ spec:
       tracing:
         sampling: 100.0
         max_path_tag_length: 256
+        zipkin:
+          address: 'jaeger-operator-jaeger-collector.monitoring.svc:9411'

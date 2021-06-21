@@ -5,8 +5,7 @@ Follow these steps to get started with Istio:
 - 2. Kiali 리소스를 이미 설치 한 경우 먼저 제거해야 한다
   
 ## Architecture
-
-
+![Kiali Architecture](./images/kiali-architecture.png)
 ## Kiali Operator Helm 차트 설치
 - Helm 차트를 사용하여 Kiali CR (istio 네임 스페이스에 Kiali 서버가 설치되도록 트리거)과 함께 최신 Kiali Operator를 설치하려면 다음을 실행한다.
 ```sh
@@ -105,6 +104,7 @@ cr:
 
   spec:
     deployment:
+      ingress_enabled: false
       logger:
         log_level: debug
         log_format: text
@@ -123,6 +123,49 @@ cr:
         url: ''
 ```
 
+- Kiali CR 수정
+```sh
+kubectl -n monitoring edit Kiali kiali
+```
+
+## Kiali login Token 확인
+- linux 일때 아래 명령어 사용:
+```sh
+k -n monitoring get secrets kiali-operator-token-xxxxx -o go-template='{{range $k,$v := .data}}{{"### "}}{{$k}}{{"\n"}}{{$v|base64decode}}{{"\n\n"}}{{end}}' 
+```
+
+- window 일때 아래 명령어 사요:
+```
+powershell "[convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes(\"Hello world!\"))"
+```
+
+## Kiali Ingress 설정
+- tls secret을 생성후 적용 한다.
+- Kiali operator CR 에서 관리 하는 ingress 이름과 같으면 operator의 영향을 받는다. - CR에서 ingress 설정을 직접 관리 할 수 있다.
+```sh
+cat <<EOF | kubectl -n monitoring apply -f -
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kiali-ingress
+spec:
+  rules:
+  - host: kiali.k3.acornsoft.io
+    http:
+      paths:
+      - backend:
+          service:
+            name: kiali
+            port:
+              number: 20001
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - kiali.k3.acornsoft.io
+    secretName: tls-acornsoft-star
+EOF
+```
 
 ## Kiali Operator 및 Kiali 제거
 - Kiali CR을 먼저 삭제하지 못하면 클러스터에서 CR이 배포 된 네임 스페이스를 삭제할 수 없으며 Kiali 서버의 나머지는 삭제되지 않는다

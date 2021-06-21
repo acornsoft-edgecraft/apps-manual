@@ -1,0 +1,86 @@
+# Default values for jaeger-operator.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+nameOverride: ""
+
+image:
+  repository: jaegertracing/jaeger-operator
+  tag: 1.23.0
+  pullPolicy: IfNotPresent
+  imagePullSecrets: []
+
+crd:
+  install: true
+
+jaeger:
+  # Specifies whether Jaeger instance should be created
+  create: true
+  # namespace where Jaeger resource should be created default to .Release.Namespace
+  namespace:
+  spec:
+    strategy: production
+    agent:
+      strategy: DaemonSet
+    ingress:
+      enabled: false
+    storage:
+      type: elasticsearch
+      options:
+        es:
+          server-urls: https://elasticsearch.cocktail-addon.svc:9200
+          index-prefix: jaeger-prefix
+          tls:
+            ca: /es/certificates/ca.crt
+      secretName: jaeger-secret
+    volumeMounts:
+      - name: certificates
+        mountPath: /es/certificates/
+        readOnly: true
+    volumes:
+      - name: certificates
+        secret:
+          secretName: es-certs-public
+
+rbac:
+  # Specifies whether RBAC resources should be created
+  create: true
+  # PodSecurityPolicy는 Kubernetes v1.21부터 더 이상 사용되지 않으며 v1.25에서 제거됩니다.
+  pspEnabled: false
+  clusterRole: true
+
+service:
+  type: ClusterIP
+  # Specify a specific node port when type is NodePort
+  # nodePort: 32500
+
+serviceAccount:
+  # Specifies whether a ServiceAccount should be created
+  create: true
+  # The name of the ServiceAccount to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name:
+
+# Specifies extra environment variables passed to the operator:
+extraEnv: []
+  # Specifies log-level for the operator:
+  # - name: LOG-LEVEL
+  #   value: debug
+
+resources:
+  limits:
+   cpu: 100m
+   memory: 128Mi
+  requests:
+   cpu: 100m
+   memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+securityContext: {}
+
+priorityClassName:
