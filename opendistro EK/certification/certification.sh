@@ -26,20 +26,20 @@ openssl req -new -key kibana.key -out kibana.csr -subj "/CN=kibana" -config ./op
 openssl x509 -req -in kibana.csr -CA ca.crt -CAkey ca.key -CAcreateserial -sha256 -out kibana.crt -days 36500 -extensions v3_req_kb -extfile ./openssl.cnf
 
 # Elasticsearch cert
-sed -i "" "s/ca.crt:/ca.crt: $(cat ca.crt | base64)/g" ../elasticsearch.yaml
-sed -i "" "s/node.crt:/node.crt: $(cat node.crt ca.crt | base64)/g" ../elasticsearch.yaml
-sed -i "" "s/node.key:/node.key: $(cat node.key | base64)/g" ../elasticsearch.yaml
-sed -i "" "s/admin.crt:/admin.crt: $(cat admin.crt ca.crt | base64)/g" ../elasticsearch.yaml
-sed -i "" "s/admin.key:/admin.key: $(cat admin.key | base64)/g" ../elasticsearch.yaml
-sed -i "" "s/tls.crt:/tls.crt: $(cat node.crt ca.crt | base64)/g" ../elasticsearch.yaml
-sed -i "" "s/tls.key:/tls.key: $(cat node.key | base64)/g" ../elasticsearch.yaml
+sed -i "" "s/ca.crt:/ca.crt: $(cat ca.crt | base64)/g" ../install-yaml/elasticsearch.yaml
+sed -i "" "s/node.crt:/node.crt: $(cat node.crt ca.crt | base64)/g" ../install-yaml/elasticsearch.yaml
+sed -i "" "s/node.key:/node.key: $(cat node.key | base64)/g" ../install-yaml/elasticsearch.yaml
+sed -i "" "s/admin.crt:/admin.crt: $(cat admin.crt ca.crt | base64)/g" ../install-yaml/elasticsearch.yaml
+sed -i "" "s/admin.key:/admin.key: $(cat admin.key | base64)/g" ../install-yaml/elasticsearch.yaml
+sed -i "" "s/tls.crt:/tls.crt: $(cat node.crt ca.crt | base64)/g" ../install-yaml/elasticsearch.yaml
+sed -i "" "s/tls.key:/tls.key: $(cat node.key | base64)/g" ../install-yaml/elasticsearch.yaml
 
 # Kibana cert
-sed -i "" "s/ca.crt:/ca.crt: $(cat ca.crt | base64)/g" ../kibana.yaml
-sed -i "" "s/kibana.crt:/kibana.crt: $(cat kibana.crt ca.crt | base64)/g" ../kibana.yaml
-sed -i "" "s/kibana.key:/kibana.key: $(cat kibana.key | base64)/g" ../kibana.yaml
-sed -i "" "s/tls.crt:/tls.crt: $(cat k3lab-star-tls.crt | base64)/g" ../kibana.yaml
-sed -i "" "s/tls.key:/tls.key: $(cat k3lab-star-tls.key | base64)/g" ../kibana.yaml
+sed -i "" "s/ca.crt:/ca.crt: $(cat ca.crt | base64)/g" ../install-yaml/kibana.yaml
+sed -i "" "s/kibana.crt:/kibana.crt: $(cat kibana.crt ca.crt | base64)/g" ../install-yaml/kibana.yaml
+sed -i "" "s/kibana.key:/kibana.key: $(cat kibana.key | base64)/g" ../install-yaml/kibana.yaml
+sed -i "" "s/tls.crt:/tls.crt: $(cat k3lab-star-tls.crt | base64)/g" ../install-yaml/kibana.yaml
+sed -i "" "s/tls.key:/tls.key: $(cat k3lab-star-tls.key | base64)/g" ../install-yaml/kibana.yaml
 
 # Fluentbit cert
-sed -i "" "s/ca.crt:/ca.crt: $(cat ca.crt | base64)/g" ../fluentbit.yaml
+sed -i "" "s/ca.crt:/ca.crt: $(cat ca.crt | base64)/g" ../install-yaml/fluentbit.yaml
