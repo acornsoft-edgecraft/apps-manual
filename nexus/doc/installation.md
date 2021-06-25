@@ -1,12 +1,12 @@
-## Nexus 설치 방법
+# Nexus 설치 방법
 
-### 1. Repository 등록
+## 1. Repository 등록
 > ca.crt  다운로드 URL : https://regi.k3.acornsoft.io/ca.crt
 ```sh
 helm repo add --ca-file ./ca.crt k3lab https://192.168.77.30/chartrepo/k3lab-charts
 ```
 
-### 2. nexus-values.yaml 정의
+## 2. nexus-values.yaml 정의
 ```yaml
 .......................
 
@@ -26,12 +26,12 @@ ingress:
 
 ```
 
-### 3. nexus 설치
+## 3. nexus 설치
 ```
 $ helm upgrade -i nexus k3lab/nexus-repository-manager --cleanup-on-fail -f nexus-values.yaml -n namespaces
 ```
 
-### 4. nexus 접속
+## 4. nexus 접속
 - url : https://nexus.k3.acornsoft.io
 - id  : admin
 - pwd : @c0rns0ft@@
@@ -39,19 +39,29 @@ $ helm upgrade -i nexus k3lab/nexus-repository-manager --cleanup-on-fail -f nexu
 ![jaeger-spans-traces](images/login.png)
 
 
-### 5. 사용자 생성
+## 5. 사용자 생성
 - 위치 : Configration > Security > Users > Create local user
 - 계정 정보 입력
 
 ![jaeger-spans-traces](images/user.png)
 
-### 6. Repository 생성
-- 위치 : Configration > Repository > Repositories > Create repository
-- pypi(hosted) repository 구성 정보 입력
+## 6. Repository 생성
+> 위치 : Configration > Repository > Repositories > Create repository
+
+### 6-1. Hosted 방식
+
+- pypi(hosted) repository 선택 후 구성 정보 입력
 
 ![jaeger-spans-traces](images/repository.png)
 
-### 7. 패키지 다운로드(for pypi)
+### 6-2. Proxy 방식
+
+- pypi(proxy) repository 선택 후 구성 정보 입력
+
+![jaeger-spans-traces](images/proxy.png)
+
+## 7. 패키지 다운로드(Pypi > Local)
+- Hosted Repository 인 경우만 해당됨.
 - 필요한 패키지명을 requirements.txt 생성한다.
 
 ```
@@ -91,9 +101,10 @@ boto3-1.15.18-py2.py3-none-any.whl                            pandocfilters-1.4.
 botocore-1.18.18-py2.py3-none-any.whl                         parso-0.8.2-py2.py3-none-any.whl
 cached_property-1.5.2-py2.py3-none-any.whl                    pexpect-4.8.0-py2.py3-none-any.whl
 ```
-> https://hugovk.github.io/top-pypi-packages/
 
-### 8. 패키지 업로드(for Nexus)
+
+## 8. 패키지 업로드(Local > Nexus)
+- Hosted Repository 인 경우만 해당됨.
 - 업로드에 필요한 twine 패키지 설치
 
 ```sh
@@ -128,12 +139,29 @@ Uploading Markdown-3.3.4-py3-none-any.whl
 
 ![jaeger-spans-traces](images/pypi.png)
 
-### 9. 패키지 다운로드(for Nexus)
-
+## 9. 패키지 다운로드(Nexus > Local)
+- ~/pip/pip.conf 설정
+- conf 파일이 존재하지 않으면 수동으로 생성한다.
 ```
-# single
-  $ pip install zipp -i https://nexus.k3.acornsoft.io/repository/pypi-hosted/sample
+[distutils]
+index-servers =
+    global
 
-# multiple
- $ pip install -r requirements.txt -i https://nexus.k3.acornsoft.io/repository/pypi-hosted/sample
+[global]
+index-url = https://nexus.k3.acornsoft.io/repository/pypi-proxy/simple/
+repository: https://nexus.k3.acornsoft.io/repository/pypi-proxy/
+#username: admin
+#password: @c0rns0ft@@
+```
+
+- 패키지 설치
+```
+# 수동설치 방식(pip.conf가 설정이 안된 경우)
+
+  $ pip install zipp -i https://nexus.k3.acornsoft.io/repository/pypi-proxy/sample
+  $ pip install -r requirements.txt -i https://nexus.k3.acornsoft.io/repository/pypi-proxy/sample
+
+# 자동설치(pip.conf가 설정된 경우)
+  $ pip install zipp
+  $ pip install -r requirements.txt
 ```
