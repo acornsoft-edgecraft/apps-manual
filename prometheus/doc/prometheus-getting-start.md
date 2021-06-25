@@ -160,5 +160,244 @@ serverFiles:
 - By default this chart installs additional, dependent charts:
   - [stable/kube-state-metrics](https://github.com/helm/charts/tree/master/stable/kube-state-metrics)
 
+
+## Prometheus configmap 내용 추가  - m3coordinator  
+```yaml
+  prometheus.yml: |
+    global:
+      evaluation_interval: 1m
+      scrape_interval: 15s
+      scrape_timeout: 10s
+    ## m3coordinator 설정
+    remote_write:
+      - url: http://m3coordinator.m3db:7201/api/v1/prom/remote/write
+    remote_read:
+      - url: http://m3query.m3db:7201/api/v1/prom/remote/read
+        read_recent: true
+```
+## Metric 수집 설정 - for application
+- service에 수집 요청을 한다.
+```sh
+# 메트릭 수집 요첨 설정
+kubectl -n m3db edit svc m3dbnode-persistent-cluster
+
+# annotations에 아래요 같이 프로메테우스 메트릭 수집 설정을 추가 한다.
+# prometheus.io/port: 수집 포트
+# prometheus.io/scrape: 수집 활성화
+# prometheus.io/path: 수집 경로 (default: /metrics)
+metadata:
+  annotations:
+    operator.m3db.io/app: m3db
+    operator.m3db.io/cluster: persistent-cluster
+    prometheus.io/port: "7203"
+    prometheus.io/scrape: "true"
+```
+
+- m3coordinator-monitor 서비스 수집 포트 : 7203
+- m3dbnode-cluster 서비스 수집 포트 : 9004
+- m3aggregator 서비스 수집 포트 : 6002
+
+
+## Remote Endpoints and Storage 설정 추가 - Helm Chart 수정
+- ConfigMap에 remoteStorage 사용 여부 추가
+```yaml
+## vi helm-charts/prometheus/templates/server/cm.yaml
+## 아래 내용 추가
+{{- if $root.Values.server.remoteStorage.enabled }}
+{{- if $root.Values.server.remoteStorage.remoteWrite }}
+    remote_write:
+{{ $root.Values.server.remoteStorage.remoteWrite | toYaml | indent 4 }}
+{{- end }}
+{{- if $root.Values.server.remoteStorage.remoteRead }}
+    remote_read:
+{{ $root.Values.server.remoteStorage.remoteRead | toYaml | indent 4 }}
+{{- end }}
+{{- end }}
+```
+
+- Deployment 수정 - storage-volume 사용여부 추가, atguments 수정
+```yaml
+## vi helm-charts/prometheus/templates/server/deploy.yaml
+## volumeMounts - 사용 여부 추가
+          volumeMounts:
+            {{- if not .Values.server.remoteStorage.enabled }}
+            - name: storage-volume
+              mountPath: {{ .Values.server.persistentVolume.mountPath }}
+              subPath: "{{ .Values.server.persistentVolume.subPath }}"
+            {{- end }}
+
+## volumes - 사용 여부 추가
+      volumes:
+        {{- if not .Values.server.remoteStorage.enabled }}
+        - name: storage-volume
+        {{- if .Values.server.persistentVolume.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ if .Values.server.persistentVolume.existingClaim }}{{ .Values.server.persistentVolume.existingClaim }}{{- else }}{{ template "prometheus.server.fullname" . }}{{- end }}
+        {{- else }}
+          emptyDir:
+          {{- if .Values.server.emptyDir.sizeLimit }}
+            sizeLimit: {{ .Values.server.emptyDir.sizeLimit }}
+          {{- else }}
+            {}
+          {{- end -}}
+        {{- end -}}
+        {{- end -}}
+
+## atguments 수정 - tsdb 사용 여부 추가
+          args:
+          {{- if .Values.server.retention and not .Values.server.remoteStorage.enabled }}
+            - --storage.tsdb.retention.time={{ .Values.server.retention }}
+          {{- end }}
+            - --config.file={{ .Values.server.configPath }}
+            {{- if .Values.server.storagePath and not .Values.server.remoteStorage.enabled }}
+            - --storage.tsdb.path={{ .Values.server.storagePath }}
+            {{- else }}
+            - --storage.tsdb.path={{ .Values.server.persistentVolume.mountPath }}
+            {{- end }}
+```
+
+- Statefulset 수정 - volume 사용 여부 추가, atguments 수정
+```yaml
+## vi helm-charts/prometheus/templates/server/sts.yaml
+## volumeMounts - 사용 여부 추가
+          volumeMounts:
+            {{- if not .Values.server.remoteStorage.enabled }}
+            - name: storage-volume
+              mountPath: {{ .Values.server.persistentVolume.mountPath }}
+              subPath: "{{ .Values.server.persistentVolume.subPath }}"
+            {{- end }}
+
+## volumeClaimTemplates - 사용 여부 추가
+{{- if .Values.server.persistentVolume.enabled and not .Values.server.remoteStorage.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: storage-volume
+        {{- if .Values.server.persistentVolume.annotations }}
+        annotations:
+{{ toYaml .Values.server.persistentVolume.annotations | indent 10 }}
+        {{- end }}
+      spec:
+        accessModes:
+{{ toYaml .Values.server.persistentVolume.accessModes | indent 10 }}
+        resources:
+          requests:
+            storage: "{{ .Values.server.persistentVolume.size }}"
+      {{- if .Values.server.persistentVolume.storageClass }}
+      {{- if (eq "-" .Values.server.persistentVolume.storageClass) }}
+        storageClassName: ""
+      {{- else }}
+        storageClassName: "{{ .Values.server.persistentVolume.storageClass }}"
+      {{- end }}
+      {{- end }}
+{{- else }}
+        - name: storage-volume
+          emptyDir:
+          {{- if .Values.server.emptyDir.sizeLimit }}
+            sizeLimit: {{ .Values.server.emptyDir.sizeLimit }}
+          {{- else }}
+            {}
+          {{- end -}}
+{{- end }}
+
+## atguments 수정 - tsdb 사용 여부 추가
+          args:
+          {{- if .Values.server.retention and not .Values.server.remoteStorage.enabled }}
+            - --storage.tsdb.retention.time={{ .Values.server.retention }}
+          {{- end }}
+            - --config.file={{ .Values.server.configPath }}
+            {{- if .Values.server.storagePath and not .Values.server.remoteStorage.enabled }}
+            - --storage.tsdb.path={{ .Values.server.storagePath }}
+            {{- else }}
+            - --storage.tsdb.path={{ .Values.server.persistentVolume.mountPath }}
+            {{- end }}
+```
+
+## m3db 사용 values 설정
+- vi values.yaml - server: 하위 설정들을 수정 한다.
+```yaml
+  ## extraFlags - tsdb 설정 주석 처리
+  extraFlags:
+    - web.enable-lifecycle
+    ## web.enable-admin-api flag controls access to the administrative HTTP API which includes functionality such as
+    ## deleting time series. This is disabled by default.
+    # - web.enable-admin-api
+    ##
+    ## storage.tsdb.no-lockfile flag controls BD locking
+    ### 주석 : m3db 사용
+    # - storage.tsdb.no-lockfile
+    ##
+    ## storage.tsdb.wal-compression flag enables compression of the write-ahead log (WAL)
+    ### 주석 -> m3db 사용
+    # - storage.tsdb.wal-compression
+
+  ### m3db 사용
+  remoteStorage:
+    enabled: true
+  
+    remoteWrite:
+      - url: "http://m3coordinator.m3db:7201/api/v1/prom/remote/write"
+
+    ## https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_read
+    remoteRead:
+      - url: "http://m3query.m3db:7201/api/v1/prom/remote/read"
+        read_recent: true
+```
+
+## m3db 검증
+- 명령어
+```sh
+kubectl -n m3db exec m3-cluster-rep2-0 -- curl -X "POST" -G "http://localhost:7201/api/v1/query_range" \
+  -d "query=query_fetch_success" \
+  -d "start=$(date "+%s" -d "10 hours ago")" \
+  -d "end=$( date "+%s" -d "5 hours ago" )" \
+  -d "step=30m" | jq .
+
+
+  curl -X "POST" -G "http://192.168.77.33:32558/api/v1/query_range" \
+  -d "query=query_fetch_success" \
+  -d "start=1624501501" \
+  -d "end=1624519620" \
+  -d "step=30m" | jq .
+
+
+curl 'http://192.168.77.34:32558/api/v1/query_range?query=abs(prometheus_http_requests_total)&start=1624507982&end=1624519290&step=15s'
+
+
+kubectl -n m3db exec m3-cluster-rep2-0 -- 
+
+
+
+kubectl -n m3db exec m3-cluster-rep2-0 -- curl -X POST http://localhost:7201/api/v1/json/write -d '{
+  "tags": 
+    {
+      "__name__": "dongmook_test",
+      "city": "new_york",
+      "checkout": "1"
+    },
+    "timestamp": '\"$(date "+%s")\"',
+    "value": 100
+}' | jq .
+
+## linux
+kubectl -n m3db exec m3-cluster-rep2-0 -- curl -X "POST" -G "http://localhost:7201/api/v1/query_range" \
+  -d "query=dongmook_test" \
+  -d "start=$(date "+%s" -d "45 seconds ago")" \
+  -d "end=$( date +%s )" \
+  -d "step=5s" | jq .
+
+## mac
+kubectl -n m3db exec m3-cluster-rep2-0 -- curl -X "POST" -G "http://localhost:7201/api/v1/query_range" \
+  -d "query=prometheus_http_requests_total" \
+  -d "start=$(date -v -15M "+%s")" \
+  -d "end=$( date +%s )" \
+  -d "step=5s" | jq .
+
+  kubectl -n m3db exec m3-cluster-rep2-0 -- curl -X "POST" -G "http://localhost:7201/api/v1/query_range" \
+  -d "query=kube_pod_status_phase{origin_prometheus=~\".*\",pod=~\".*\",container =~\".*\",namespace=~\"monitoring\"}" \
+  -d "start=$(date -v -15M "+%s")" \
+  -d "end=$( date +%s )" \
+  -d "step=5s" | jq .
+```
+
 # 참조
 > [Prometheus Monitoring Community]([참조링크](https://github.com/prometheus-community/helm-charts))

@@ -666,15 +666,18 @@ server:
     # - web.enable-admin-api
     ##
     ## storage.tsdb.no-lockfile flag controls BD locking
-    ### 주석 -> 주석 해제
-    - storage.tsdb.no-lockfile
+    ### 주석 : m3db 사용
+    # - storage.tsdb.no-lockfile
     ##
     ## storage.tsdb.wal-compression flag enables compression of the write-ahead log (WAL)
-    ### 주석 -> 주석 해제
-    - storage.tsdb.wal-compression
+    ### 주석 -> m3db 사용
+    # - storage.tsdb.wal-compression
 
   ## Path to a configuration file on prometheus server container FS
   configPath: /etc/config/prometheus.yml
+
+  ## 
+
 
   ### The data directory used by prometheus to set --storage.tsdb.path
   ### When empty server.persistentVolume.mountPath is used instead
@@ -691,16 +694,19 @@ server:
     ## How frequently to evaluate rules
     ##
     evaluation_interval: 1m
+
   ## https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write
   ### m3db 사용
-  remoteWrite:
-    - url: "http://m3coordinator.m3db:7201/api/v1/prom/remote/write"
+  remoteStorage:
+    enabled: true
+  
+    remoteWrite:
+      - url: "http://m3coordinator.m3db:7201/api/v1/prom/remote/write"
 
-  ## https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_read
-  ### m3db 사용
-  remoteRead:
-    - url: "http://m3query.m3db:7201/api/v1/prom/remote/read"
-      read_recent: true
+    ## https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_read
+    remoteRead:
+      - url: "http://m3query.m3db:7201/api/v1/prom/remote/read"
+        read_recent: true
 
   ## Additional Prometheus server container arguments
   ##
