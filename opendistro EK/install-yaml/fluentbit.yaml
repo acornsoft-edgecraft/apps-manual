@@ -3,7 +3,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: fluent-bit
-  namespace: cocktail-addon
+  namespace: monitoring
   labels:
     k8s-app: fluent-bit
 ---
@@ -37,24 +37,24 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: fluent-bit
-  namespace: cocktail-addon
+  namespace: monitoring
 ---
 apiVersion: v1
 kind: Secret
 metadata:
   name: fluent-bit
-  namespace: cocktail-addon
+  namespace: monitoring
 type: Opaque
 data:
   es-username: YWRtaW4=
   es-password: YWRtaW4=
-  ca.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUMwRENDQWJpZ0F3SUJBZ0lVY1pJbUhZZ0E2UHhUVFRtZ3RQNjFtRHh1S2hVd0RRWUpLb1pJaHZjTkFRRUwKQlFBd0VURVBNQTBHQTFVRUF3d0dVbTl2ZEVOQk1CNFhEVEl3TURneU5qQXlNekF3T1ZvWERUTXdNRGd5TkRBeQpNekF3T1Zvd0VURVBNQTBHQTFVRUF3d0dVbTl2ZEVOQk1JSUJJakFOQmdrcWhraUc5dzBCQVFFRkFBT0NBUThBCk1JSUJDZ0tDQVFFQXdmeGZXd3l6cUVXUVlWaElBcG4rVVVVR1huK1FnbmJCYlBTcERjd0ExSDVUQ09FQUIvOE0KTGsvTExqTEpWeUFqRlhNNElhOEF1VE1yRUdHUGx5T29GWVREZml6dTVTd29RZ1Ewb3UvZkIvQTl1dHZDVUpmYQprSmlsbXFtSXE1eHlkS1IzUEJQTlllSkNLU05sdUg3VXJ1VjR4MDFwTjJKazNXT2VYQ0RRMEtsN1BsNmZNS3o0CmpYY0hQdzMyQkVDektYdVBSRkRqM3o3bE5sWXVkL1B1S0FQd3pDNnRkRTlQK1FDRnV1d1pGRGJ3N1hCVllPUTIKYTgzR3lwd3VBS1V3enFsN2pldTVyQklpdlcwWkIxRW12UXFXN21TdkhBTFZla0JVd2tBZjVyWnF5VHNhTW9NRwp6eDFQRm9aUWJ2ZjZSOW1Ud3JTSVFhVXV4T0hnd3dhWVd3SURBUUFCb3lBd0hqQU1CZ05WSFJNRUJUQURBUUgvCk1BNEdBMVVkRHdFQi93UUVBd0lCaGpBTkJna3Foa2lHOXcwQkFRc0ZBQU9DQVFFQWVuais2YWtxRmV4MUhybzgKZksxcUIwN1NnVjJhV0FnVkdLKzZOQXVvM0dlMzM0QjhNK2g5UjlSN3F1azBWSXY2M0UwWUxrMXVFRlBKTFMwbAo1YWdLU2JpZUdpU2FIMjBma3cvYTUvR2dNbW5XNGY1b1FBdzJxTzlJdEdWZXR3Y1luSjNTU25Hbm1CVUFkU01OCmNoWkZQNXRPbXdaekVJTWdOWjFiS0orQTVSdEIxekgvWVNuVWd5YmtUcDlHMjJzMEFCaksrVTNXdm9kbktYQjgKbVFnaHA0Z2F2S1BURzYzdlpEMWROcEp1a1htSnJHNXc4WU1Bcm43cEl1Q2xBOWFKc0RzNTNVMVI4WEROOGZmUworcCtXc2MwcTJxZ2o1Wk1pV3ltOXBwUjdCNDFiOVdXeTkzS0poNGU0UkRoTHpXUzl5RlhMRm9DdjBhbXJyMFJ6ClB4Um1BZz09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+  ca.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUN4ekNDQWErZ0F3SUJBZ0lKQUlXMXlDVFJEODhYTUEwR0NTcUdTSWIzRFFFQkN3VUFNQkV4RHpBTkJnTlYKQkFNTUJsSnZiM1JEUVRBZ0Z3MHlNVEEyTWpFd01EVTRNalphR0E4eU1USXhNRFV5T0RBd05UZ3lObG93RVRFUApNQTBHQTFVRUF3d0dVbTl2ZEVOQk1JSUJJakFOQmdrcWhraUc5dzBCQVFFRkFBT0NBUThBTUlJQkNnS0NBUUVBCnVHZTVhS2VBWmFEOTkxMFpzcmFjb2pTUnhIbjFDUFFCQW5FMUt2M2dMWjhiS3pBZ0ZDZ3p0T1RQVmJsMExmelAKbjBLTnlGSFJVek9WVHM3Z29kaGhRZXBFbXlLWGxyVWlZZ05Nb2RQSW5Zb2t6OUMzMjJWYkRramNpY0pPNjBVRQpWc3R4K0NuTU95ZWp0bW96MVpiUmpZK2p0NCtvVEcwamtOZ1NDZm1QWThpdUF6cTdlZFFNQVA5Y085bEdYU3ZCCjhGdHdyL2VVUlNDNHM3TVV6MWVNOFVlcGYyWFNPenRITkVIaHh4TmJTQktEa3p3UUtMTXNsYkJLMXR4ajBrMnkKM1BENXhkTDVEMDJUM0o1MFMyMHowOE51Y0NPcTRYNEppUzl0NFk1SUQxTDNuc2lFWlRZeUQzYkdqUkd1RTlDawpCbmdGRXBDKytBbW9DTWY0U3RIL2dRSURBUUFCb3lBd0hqQU1CZ05WSFJNRUJUQURBUUgvTUE0R0ExVWREd0VCCi93UUVBd0lCaGpBTkJna3Foa2lHOXcwQkFRc0ZBQU9DQVFFQWwvYTdycEJLck1YSWNHNm1rR0lQZ0QvdU9ZbloKaysweXRJL3VXWmNqWnRYczlBQk5qcm8wT2pvSmVHYTZ1NVJoT1BEY0FqOVAyRi9hMWlEZlRlRWl5dS90L1lsVApFaWxkcE0waEVrQitSYUxjOXlWajhvQTI2ay9SdkxhRlV4WHh2bmZsazd6QlUyTS94WkpMeG5pVnQ5cWJoN1k2CjdiUkRsK0IycEMxNWlTamVOZm13dGQwSTQvUjBqTGdrT1ljWHNPcnZVSWcxUWZEVFI4bi9VbE9PbnRGZUFyd0EKR0lnZ2dHM09lTlhQb0Z4MmNPUHFjTU5Yc092TWRQWVBpWlYrRUo3NnFyYmdrOEhmaXdTbHZWancrc1dWOXZrUgo5MC96ai8wU0NjbWs3OEloWExyQkZVVXJBTmN1NkRMSURlWlYrQVczd1NxUjZuNExkcmpHb3RRSElRPT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: fluent-bit-config
-  namespace: cocktail-addon
+  namespace: monitoring
   labels:
     k8s-app: fluent-bit
 data:
@@ -247,7 +247,7 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: fluent-bit
-  namespace: cocktail-addon
+  namespace: monitoring
   labels:
     k8s-app: fluent-bit
 spec:
@@ -286,13 +286,11 @@ spec:
               name: fluent-bit
               key: es-password
         - name: FLUENT_ELASTICSEARCH_HOST
-          value: "hdcard-es.acloud.run"
-          #value: "elasticsearch.cocktail-addon.svc"
+          #value: "hdcard-es.acloud.run"
+          value: "elasticsearch.monitoring.svc"
         - name: FLUENT_ELASTICSEARCH_PORT
           value: "443"
           #value: "9200"
-        - name: CLUSTER_ID
-          value: "play-apps10-cluster"
         - name: HOST_IP
           valueFrom:
             fieldRef:
@@ -302,8 +300,8 @@ spec:
         - name: config-volume
           mountPath: /fluent-bit/etc/
         - name: datadocker
-          mountPath: /prod/cri/docker
-          #mountPath: /data/docker
+          #mountPath: /prod/cri/docker
+          mountPath: /data/docker
         - name: varlog
           mountPath: /var/log
         - name: varlibdockercontainers
@@ -322,12 +320,12 @@ spec:
           path: /var/log
       - name: datadocker
         hostPath:
-          path: /prod/cri/docker
-          #path: /data/docker
+          #path: /prod/cri/docker
+          path: /data/docker
       - name: varlibdockercontainers
         hostPath:
-          path: /prod/cri/docker/containers
-          #path: /data/docker/containers
+          #path: /prod/cri/docker/containers
+          path: /data/docker/containers
           #path: /var/lib/docker/containers
       - name: secret-volume
         secret:

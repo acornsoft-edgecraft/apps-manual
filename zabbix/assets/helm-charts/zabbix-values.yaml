@@ -196,7 +196,7 @@ ingress:
     - host: zbx.k3.acornsoft.io
       paths: [/]
   # -- Ingress TLS configuration
-  tls: []
+  tls:
     - secretName: tls-acornsoft-star
       hosts:
         - zbx.k3.acornsoft.io

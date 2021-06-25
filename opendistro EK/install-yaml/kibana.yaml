@@ -1,0 +1,245 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kibana
+  namespace: monitoring
+  labels:
+    app: kibana
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: kibana
+  namespace: monitoring
+  labels:
+    app: kibana
+rules:
+- apiGroups: ['extensions']
+  resources: ['podsecuritypolicies']
+  verbs:     ['use']
+  resourceNames:
+  - elasticsearch-psp
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app: kibana
+  name: kibana-rolebinding
+  namespace: monitoring
+roleRef:
+  kind: Role
+  name: kibana
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: kibana
+  namespace: monitoring
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kibana
+  namespace: monitoring
+type: Opaque
+data:
+  kb-username: a2liYW5hc2VydmVy
+  kb-password: a2liYW5hc2VydmVy
+  kibana.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURLekNDQWhPZ0F3SUJBZ0lKQUpMQ0Z3ZXFuZjg3TUEwR0NTcUdTSWIzRFFFQkN3VUFNQkV4RHpBTkJnTlYKQkFNTUJsSnZiM1JEUVRBZ0Z3MHlNVEEyTWpFd01EVTRNalphR0E4eU1USXhNRFV5T0RBd05UZ3lObG93RVRFUApNQTBHQTFVRUF3d0dhMmxpWVc1aE1JSUJJakFOQmdrcWhraUc5dzBCQVFFRkFBT0NBUThBTUlJQkNnS0NBUUVBCi9CYytyOFFzMjMrUW9uWHdtL21rdXdsSkZVUXBhUVYvemJWeEp0cTA3SUsxWmFObWp5STdHN3NmejNKQzhnZUMKODd4bVhFSVBydHpkMzJmOXhyRkV2Y21DZ20yQ3VjYzNWOG5BKytMN0gwUHFqajVsZCtuR1RVSWlMOWxqNDlSNwpGWjIwcnBEeDVVa2RrMEx4VGtzblpMNWhycEVMaWpOaEYzRVdzRzA1NnNpcmsrbDdBaVc5eHRMNWZTeGsxejlmCmZsUDNKN1NVRlN6TTI4ellhSTVYODYzYWNqTCtqS2lhdGVtTXFHMlpuZEJXWW9kRkdPUmN1eEo1WFZQaWRoNWkKUzZhc1daU09iOVc4ZS9RN0xITndhKzVvVlVSTTVzckhYRHZrUFd1ODlMVDdtT0FSVkovL0c0ZytSd2NHdCtGZQoxblJkUUN5emJ3d2NJUkF4cFU4UUdRSURBUUFCbzRHRE1JR0FNQWtHQTFVZEV3UUNNQUF3RGdZRFZSMFBBUUgvCkJBUURBZ1R3TUIwR0ExVWRKUVFXTUJRR0NDc0dBUVVGQndNQkJnZ3JCZ0VGQlFjREFqQkVCZ05WSFJFRVBUQTcKZ2dsc2IyTmhiR2h2YzNTQ0VXdHBZbUZ1WVM1dGIyNXBkRzl5YVc1bmdoVnJhV0poYm1FdWJXOXVhWFJ2Y21sdQpaeTV6ZG1PSEJIOEFBQUV3RFFZSktvWklodmNOQVFFTEJRQURnZ0VCQUcwUnpVMG5PWE5UNmxHVUdGMDRyNm1lCkY4Q3V4aWw3KzdCYUFXZThOeW9WeVp1TkJKTGgvSjVZcHhQc1VJdndscGpmcVVFT2dSZzBBY0tGRG9ScUJEdnYKYXR6Z2R0THgzZFNjbE9WTVlLazBYMDU0cXljbXlRYXMvaG94bW1weUNVa0M1L3l2Vy96cWNDMjliazAyM25KdQpvNldFN1drcGNialIzRlVid0NpQTlRY3AxQVFlRjJZYmcxeHZsMDN0K3NKek9wR2pSMzY3Q0czWTBCL1dLUytVCnNQUG5lQ2pKMUw3Nk9vb2JKVERCdWF3eEgxWGttd0lkQUY5em5meFIzUDRrKzNqSFJMY1ovY1oyclEzNStSdkgKTnJMKzdBZVhTbExrZ3QzVWl4c051Wk5tMzRES2l0TmFlNFF3TGFUMEd0bG9hMENFLzNBN3lhSzR0Wjd6UzlvPQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlDeHpDQ0FhK2dBd0lCQWdJSkFJVzF5Q1RSRDg4WE1BMEdDU3FHU0liM0RRRUJDd1VBTUJFeER6QU5CZ05WCkJBTU1CbEp2YjNSRFFUQWdGdzB5TVRBMk1qRXdNRFU0TWpaYUdBOHlNVEl4TURVeU9EQXdOVGd5Tmxvd0VURVAKTUEwR0ExVUVBd3dHVW05dmRFTkJNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQQp1R2U1YUtlQVphRDk5MTBac3JhY29qU1J4SG4xQ1BRQkFuRTFLdjNnTFo4Ykt6QWdGQ2d6dE9UUFZibDBMZnpQCm4wS055RkhSVXpPVlRzN2dvZGhoUWVwRW15S1hsclVpWWdOTW9kUEluWW9rejlDMzIyVmJEa2pjaWNKTzYwVUUKVnN0eCtDbk1PeWVqdG1vejFaYlJqWStqdDQrb1RHMGprTmdTQ2ZtUFk4aXVBenE3ZWRRTUFQOWNPOWxHWFN2Qgo4RnR3ci9lVVJTQzRzN01VejFlTThVZXBmMlhTT3p0SE5FSGh4eE5iU0JLRGt6d1FLTE1zbGJCSzF0eGowazJ5CjNQRDV4ZEw1RDAyVDNKNTBTMjB6MDhOdWNDT3E0WDRKaVM5dDRZNUlEMUwzbnNpRVpUWXlEM2JHalJHdUU5Q2sKQm5nRkVwQysrQW1vQ01mNFN0SC9nUUlEQVFBQm95QXdIakFNQmdOVkhSTUVCVEFEQVFIL01BNEdBMVVkRHdFQgovd1FFQXdJQmhqQU5CZ2txaGtpRzl3MEJBUXNGQUFPQ0FRRUFsL2E3cnBCS3JNWEljRzZta0dJUGdEL3VPWW5aCmsrMHl0SS91V1pjalp0WHM5QUJOanJvME9qb0plR2E2dTVSaE9QRGNBajlQMkYvYTFpRGZUZUVpeXUvdC9ZbFQKRWlsZHBNMGhFa0IrUmFMYzl5Vmo4b0EyNmsvUnZMYUZVeFh4dm5mbGs3ekJVMk0veFpKTHhuaVZ0OXFiaDdZNgo3YlJEbCtCMnBDMTVpU2plTmZtd3RkMEk0L1Iwakxna09ZY1hzT3J2VUlnMVFmRFRSOG4vVWxPT250RmVBcndBCkdJZ2dnRzNPZU5YUG9GeDJjT1BxY01OWHNPdk1kUFlQaVpWK0VKNzZxcmJnazhIZml3U2x2Vmp3K3NXVjl2a1IKOTAvemovMFNDY21rNzhJaFhMckJGVVVyQU5jdTZETElEZVpWK0FXM3dTcVI2bjRMZHJqR290UUhJUT09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+  kibana.key: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2Z0lCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktnd2dnU2tBZ0VBQW9JQkFRRDhGejZ2eEN6YmY1Q2kKZGZDYithUzdDVWtWUkNscEJYL050WEVtMnJUc2dyVmxvMmFQSWpzYnV4L1Bja0x5QjRMenZHWmNRZyt1M04zZgpaLzNHc1VTOXlZS0NiWUs1eHpkWHljRDc0dnNmUStxT1BtVjM2Y1pOUWlJdjJXUGoxSHNWbmJTdWtQSGxTUjJUClF2Rk9TeWRrdm1HdWtRdUtNMkVYY1Jhd2JUbnF5S3VUNlhzQ0piM0cwdmw5TEdUWFAxOStVL2NudEpRVkxNemIKek5ob2psZnpyZHB5TXY2TXFKcTE2WXlvYlptZDBGWmloMFVZNUZ5N0VubGRVK0oySG1KTHBxeFpsSTV2MWJ4Nwo5RHNzYzNCcjdtaFZSRXpteXNkY08rUTlhN3owdFB1WTRCRlVuLzhiaUQ1SEJ3YTM0VjdXZEYxQUxMTnZEQndoCkVER2xUeEFaQWdNQkFBRUNnZ0VBZVFrSUZnZ1FxWXJEL055M200dnZKY1k5aXJKaFY0VkdhWlFXTWR1TVJvb3oKWWd0a01KRDA1RW1oNms0b0NtREU1Uld0NTlub0FjTVYzQy9uenNCS0N2MTNaZndDYWdSV2RCWHdUSUFjcGxSTApoK1E1ZjZ1RWhJK2VMbThuNExtaUp5ekRGWldPTHRJK0d2aG5OM29wL2RyU3Q2ZjRiSEJpeTRpR3BrcXJKaWdqCkYya3E5RVhuZElCT3JqUFlMVDNYWDFpbXFrZThwa3ZndFBNcFZ0aFJncXNHUUlRK1h3a2lLaVA4ZWpVNFR5UlIKN0VBZUlNaVcxeHNLYUcrUXhJYnQ2azJDSkVwTGNGY04wZXByc0krR09ZaEFqaldxSXhMeDkyZ21CYitsYXdUagorYkZ4ZHRyYm5HVzY2ZjVXaVJud1ZwdU1SbXFDTFNLRFV6MnM2TkNwYVFLQmdRRCtpRzRZZHhrQWNpaDBIbHhtCkMyUHhmclZDOVVaMi9VeFRNTzhmbE9pN3JLbkJpa0V2YzFiZmtBc0xaOE9LYUJHbE9uTGhUU3ByUVAwbmZyMVcKcGVIdXpYcXZueWptaDFUVDlIa05tbzF3cnpxVzd2N3MySW1vRmFoSGJNWWd0aGRoTHFCTC9jdjNIYnZFWGhSRApjTFdwcDg4bVBQU0xhNXBuVHBGcmZGWmYwd0tCZ1FEOWl6WWRNczFoWkszaEs1RzBiVFNiNUE1SEZydVRLTU10CnFBa3llUUJCbXJxSzRDVi9GTlVVMDRTSTJZM1hJcU1TRUs1TWxkUkdEd3pVZkQ0L1BTVGFsRW9lVko5TnpyM2cKWG9vL3ArZG9nRHZJUENBOW9xaUF4WmRjRWtuNTBSYm1QRkc5MGIyalJ0U3FtTHhZdER3bGhETzJ1bVhicysrVQpROUY3SlBDSTR3S0JnUUNQbTRvQ1k2L0hnS0V5WXE3ZkpDNFBZdDRDR1VEWWdiRStmcTFydENoYk90L01RcVRrCmtMN0RCQkkzTFNRMlF1RXh4L2hwQlpDWlV1R0NGdy9jZzFzbDBPa1hqVVVXUytTZ2NaNmEva2d1KzY2aTJkVWEKN0ZFK2RIbXRVc0cyVXdaOTNrQ3luMDhrN2JHeTZTR2xxMEhUcHNwSldMcmdycVUvQkNVbjc4OEw0UUtCZ0NHLwpMTVc0SkZRSlJZZUorQXZPMlVqQ2t3L3RPNnc3cWJiaS9jNWxBcDY0eklsOWlpQWZFcm1CNmNzWlFlTFhybUxTCks1RHdCR0FLMHNkWmZpT0dyT2dYQXNLRXV1dHRVQ0tVRXN5a09ZM1VPNkRNTi9KY094ZGd0V1BBMzIzTDRjTmwKVmUveEFjL0F0cis2TXArUDVjMk1paUdSTDh1TmFKOFFZOHFEUVN6SEFvR0JBT2xLKytzY0p6cDBVM1U5ODdMYgpJRStaOG5aUC93Zzk0SW9DR2pQR1pUME53cnRLQWdyU2pUMjg3b1dYbElnTldWeitsUzZJWTJvcWVhQXlpdDZsCitac2ZTUzJ3bVA4d0FBYTZIZ2dqSGVkeGlwVWI3YTllMURqUW5mMHhSaGJxMHgxSTQ5WVkrcGJ0cThoYng0V2EKL2FrMVFuVEhrbWp0cUI5aXJGaTZpbnJPCi0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0K
+  tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUZKakNDQkE2Z0F3SUJBZ0lTQkZNZkdZckhOaWIvWjBCK0RManFIZHlzTUEwR0NTcUdTSWIzRFFFQkN3VUEKTURJeEN6QUpCZ05WQkFZVEFsVlRNUll3RkFZRFZRUUtFdzFNWlhRbmN5QkZibU55ZVhCME1Rc3dDUVlEVlFRRApFd0pTTXpBZUZ3MHlNVEEyTVRnd01UUXlORFphRncweU1UQTVNVFl3TVRReU5EVmFNQnd4R2pBWUJnTlZCQU1NCkVTb3Vhek11WVdOdmNtNXpiMlowTG1sdk1JSUJJakFOQmdrcWhraUc5dzBCQVFFRkFBT0NBUThBTUlJQkNnS0MKQVFFQTlOQ2xYUTlUeTEyTS9wRkI3U2tKMFJUTnlxR1h5NTFOUi95MmE1VktkbjY0dHhxTmgxN0NjTGJEZ0UxTQozR0k5bDdPV1l4V3NHaHNuSUhBVW1oYnFYYTJYbDJiL2FTSTZqbnZxam83SVZtNk5ZN3BDaXA2SHJYeFlQVllkCm9QQ0d2cGM4TEMxVXdkVllRSXBzTW9lV0tsTVRoa3pmZWFDYXFKdWEyS00yTXFPRkYzYk83Zzc5dmM2aHRCWCsKT2Zvc1ZDS0xNbURNTXB5VXJyd1U5ckVYMlZZK3ZNZG9SZUlwT29kQ1gzaUhTWDA2Mk9SM0NVdkJFTDV4UktxWAp3VlJjVGgzVjMyQUw5UllHS21MbmFVRGdSUklJZ1RBRWFiVGtFcjNrSFY2ZG9DWGo5U3Rtc0twZVlJNHpzNm0vCk9uWUExNlM0bHlFcUtWMWsrQVoyWG4yNW1RSURBUUFCbzRJQ1NqQ0NBa1l3RGdZRFZSMFBBUUgvQkFRREFnV2cKTUIwR0ExVWRKUVFXTUJRR0NDc0dBUVVGQndNQkJnZ3JCZ0VGQlFjREFqQU1CZ05WSFJNQkFmOEVBakFBTUIwRwpBMVVkRGdRV0JCU3VsSzZrVmtrYUpialJYekxQNUZxeFNUUTloakFmQmdOVkhTTUVHREFXZ0JRVUxyTVh0MWhXCnk2NVFDVURtSDYrZGl4VEN4akJWQmdnckJnRUZCUWNCQVFSSk1FY3dJUVlJS3dZQkJRVUhNQUdHRldoMGRIQTYKTHk5eU15NXZMbXhsYm1OeUxtOXlaekFpQmdnckJnRUZCUWN3QW9ZV2FIUjBjRG92TDNJekxta3ViR1Z1WTNJdQpiM0puTHpBY0JnTlZIUkVFRlRBVGdoRXFMbXN6TG1GamIzSnVjMjltZEM1cGJ6Qk1CZ05WSFNBRVJUQkRNQWdHCkJtZUJEQUVDQVRBM0Jnc3JCZ0VFQVlMZkV3RUJBVEFvTUNZR0NDc0dBUVVGQndJQkZocG9kSFJ3T2k4dlkzQnoKTG14bGRITmxibU55ZVhCMExtOXlaekNDQVFJR0Npc0dBUVFCMW5rQ0JBSUVnZk1FZ2ZBQTdnQjFBSlFndkI2TwoxWTFzaUhNZmdvc2lMQTNSMmsxZWJFK1VQV0hiVGk5WVRhTENBQUFCZWh6LzJETUFBQVFEQUVZd1JBSWdCQy8xCkxkQXY0bXRUMFNoa05ZSS92U3NSOGEvYjBSUjhCVHF0dFNtOWxYZ0NJRTZVY0t1cDBVMWNua2NpalpSdlRsb0gKdEt1QzhZRUk3TUZFcmIyQlhaNGhBSFVBZlQ3eStJLy9pRlZvSk1MQXlwNVNpWGtyeFE1NENYOHVhcGRvbVg0aQo4TmNBQUFGNkhQL1lhUUFBQkFNQVJqQkVBaUFpRVpQRmt1WDNsOUwxK0hoV2VxenU3Tnkyd0hvTURrSHZDaXpZCjFFdU5NUUlnZFNJNGtBZ0syazY3bUpJMWZZTkhzcG96S2VHbDc2U0FxVFRlempoTXRnc3dEUVlKS29aSWh2Y04KQVFFTEJRQURnZ0VCQUFrc053VkhKTUkvZlJuVU9rTDZRZEFXZnVFU3dYZjhFQ2lhMEU2Wk5vUVh4RDB2eGdUVgpqYThMaG1yamR2c2Qxb0FKcnpnc2xvV2wvTG1KaEtZeHpvZFp5M1hzYkFSVWxRbEJFVy9NbEJuTE5BQTVyNjVlCm16UE5CZjNMOUxDNDlGTE1FMVpRT2pJNE5HRVpaamhpMlM4clQ1Mmlia0tZSlhpYXVVUGltWWZqNkR4M3RhSUkKNzVnNGp3a0IzV0tkaGJkaEFhVjU4Sktnd3E1NHhUcDVLUG5XTWk1MzRSTFE2Q1hhNHJIeDBqZ3RENVVoUzROcwpkdHlKZDlHRXcyeUttWmRlaTl5dFZmdXZGcTFVVU5HVm1MMzVVM3k1NmN6Uk12Y0J1M3dFZlpFLzF2R2gvRHc3Ckdod1pLUk9wdHdUYXZoNzdMNjh2eVVMdTNvNG4zcTZBZ3k0PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCi0tLS0tQkVHSU4gQ0VSVElGSUNBVEUtLS0tLQpNSUlGRmpDQ0F2NmdBd0lCQWdJUkFKRXJDRXJQREJpblUvYldMaVduWDFvd0RRWUpLb1pJaHZjTkFRRUxCUUF3ClR6RUxNQWtHQTFVRUJoTUNWVk14S1RBbkJnTlZCQW9USUVsdWRHVnlibVYwSUZObFkzVnlhWFI1SUZKbGMyVmgKY21Ob0lFZHliM1Z3TVJVd0V3WURWUVFERXd4SlUxSkhJRkp2YjNRZ1dERXdIaGNOTWpBd09UQTBNREF3TURBdwpXaGNOTWpVd09URTFNVFl3TURBd1dqQXlNUXN3Q1FZRFZRUUdFd0pWVXpFV01CUUdBMVVFQ2hNTlRHVjBKM01nClJXNWpjbmx3ZERFTE1Ba0dBMVVFQXhNQ1VqTXdnZ0VpTUEwR0NTcUdTSWIzRFFFQkFRVUFBNElCRHdBd2dnRUsKQW9JQkFRQzdBaFVvelBhZ2xOTVBFdXlOVlpMRCtJTHhtYVo2UW9pblhTYXF0U3U1eFV5eHI0NXIrWFhJbzljUApSNVFVVlRWWGpKNm9vamtaOVlJOFFxbE9idlU3d3k3YmpjQ3dYUE5aT09mdHoybndXZ3NidnNDVUpDV0gramR4CnN4UG5IS3pobSsvYjVEdEZVa1dXcWNGVHpqVElVdTYxcnUyUDNtQnc0cVZVcTdadERwZWxRRFJySzlPOFp1dG0KTkh6NmE0dVBWeW1aK0RBWFhicHliL3VCeGEzU2hsZzlGOGZuQ2J2eEsvZUczTUhhY1YzVVJ1UE1yU1hCaUx4ZwpaM1Ztcy9FWTk2SmM1bFAvT29pMlI2WC9FeGpxbUFsM1A1MVQrYzhCNWZXbWNCY1VyMk9rLzVtems1M2NVNmNHCi9raUZIYUZwcmlWMXV4UE1VZ1AxN1ZHaGk5c1ZBZ01CQUFHamdnRUlNSUlCQkRBT0JnTlZIUThCQWY4RUJBTUMKQVlZd0hRWURWUjBsQkJZd0ZBWUlLd1lCQlFVSEF3SUdDQ3NHQVFVRkJ3TUJNQklHQTFVZEV3RUIvd1FJTUFZQgpBZjhDQVFBd0hRWURWUjBPQkJZRUZCUXVzeGUzV0ZiTHJsQUpRT1lmcjUyTEZNTEdNQjhHQTFVZEl3UVlNQmFBCkZIbTBXZVo3dHVYa0FYT0FDSWpJR2xqMjZadHVNRElHQ0NzR0FRVUZCd0VCQkNZd0pEQWlCZ2dyQmdFRkJRY3cKQW9ZV2FIUjBjRG92TDNneExta3ViR1Z1WTNJdWIzSm5MekFuQmdOVkhSOEVJREFlTUJ5Z0dxQVloaFpvZEhSdwpPaTh2ZURFdVl5NXNaVzVqY2k1dmNtY3ZNQ0lHQTFVZElBUWJNQmt3Q0FZR1o0RU1BUUlCTUEwR0N5c0dBUVFCCmd0OFRBUUVCTUEwR0NTcUdTSWIzRFFFQkN3VUFBNElDQVFDRnlrNUhQcVAzaFVTRnZOVm5lTEtZWTYxMVRSNlcKUFRObGNsUXRnYURxdyszNElMOWZ6TGR3QUxkdU8vWmVsTjdrSUorbTc0dXlBK2VpdFJZOGtjNjA3VGtDNTN3bAppa2ZtWlc0L1J2VFo4TTZVSys1VXpoSzhqQ2RMdU1HWUw2S3Z6WEdSU2dpM3lMZ2pld1F0Q1BrSVZ6NkQyUVF6CkNrY2hlQW1DSjhNcXlKdTV6bHp5Wk1qQXZubkFUNDV0UkF4ZWtyc3U5NHNRNGVnZFJDbmJXU0R0WTdraCtCSW0KbEpOWG9CMWxCTUVLSXE0UURVT1hvUmdmZnVEZ2hqZTFXckc5TUwrSGJpc3EveUZPR3dYRDlSaVg4RjZzdzZXNAphdkF1dkRzenVlNUwzc3o4NUsrRUM0WS93RlZETnZabzRUWVhhbzZaMGYrbFFLYzB0OERRWXprMU9YVnU4cnAyCnlKTUM2YWxMYkJmT0RBTFp2WUg3bjdkbzFBWmxzNEk5ZDFQNGpua0RyUW94QjNVcVE5aFZsM0xFS1E3M3hGMU8KeUs1R2hERFg4b1ZmR0tGNXUrZGVjSXNINFlhVHc3bVAzR0Z4SlNxdjMrMGxVRkpvaTVMYzVkYTE0OXA5MElkcwpoQ0V4cm9MMSs3bXJ5SWtYUGVGTTVUZ085cjBydlphQkZPdlYyejBncDM1WjArTDRXUGxidUVqTi9seFBGaW4rCkhsVWpyOGdSc0kzcWZKT1FGeS85cktJSlIwWS84T213dC84b1RXZ3kxbWRlSG1tams3ajFuWXN2QzlKU1E2WnYKTWxkbFRUS0IzemhUaFYxK1hXWXA2cmpkNUpXMXpiVldFa0xOeEU3R0pUaEVVRzNzemdCVkdQN3BTV1RVVHNxWApuTFJid0hPb3E3aEh3Zz09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0KLS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUZZRENDQkVpZ0F3SUJBZ0lRUUFGM0lUZlU2VUs0N25hcVBHUUt0ekFOQmdrcWhraUc5dzBCQVFzRkFEQS8KTVNRd0lnWURWUVFLRXh0RWFXZHBkR0ZzSUZOcFoyNWhkSFZ5WlNCVWNuVnpkQ0JEYnk0eEZ6QVZCZ05WQkFNVApEa1JUVkNCU2IyOTBJRU5CSUZnek1CNFhEVEl4TURFeU1ERTVNVFF3TTFvWERUSTBNRGt6TURFNE1UUXdNMW93ClR6RUxNQWtHQTFVRUJoTUNWVk14S1RBbkJnTlZCQW9USUVsdWRHVnlibVYwSUZObFkzVnlhWFI1SUZKbGMyVmgKY21Ob0lFZHliM1Z3TVJVd0V3WURWUVFERXd4SlUxSkhJRkp2YjNRZ1dERXdnZ0lpTUEwR0NTcUdTSWIzRFFFQgpBUVVBQTRJQ0R3QXdnZ0lLQW9JQ0FRQ3Q2Q1J6OUJRMzg1dWVLMWNvSEllKzNMZmZPSkNNYmp6bVY2QjQ5M1hDCm92NzFhbTcyQUU4bzI5NW9obXhFazdheFkvMFVFbXUvSDlMcU1ac2hmdEV6UExwSTlkMTUzN080L3hMeElacEwKd1lxR2NXbEtabVpzajM0OGNMK3RLU0lHOCtUQTVvQ3U0a3VQdDVsK2xBT2YwMGVYZkpsSUkxUG9PSzVQQ20rRApMdEZKVjR5QWRMYmFMOUE0alhzRGNDRWJkZkl3UFBxUHJ0M2FZNnZyRmsvQ2poRkxmczhMNlArMWR5NzBzbnRLCjRFd1NKUXh3alFNcG9PRlRKT3dUMmU0WnZ4Q3pTb3cvaWFOaFVkNnNod2VVOUdOeDdDN2liMXVZZ2VHSlhEUjUKYkhidk81QmllZWJicEpvdkpzWFFFT0VPM3RrUWpoYjd0L2VvOThmbEFnZVlqellJbGVmaU41WU5ObldlK3c1eQpzUjJidkFQNVNRWFlnZDBGdENyV1FlbXNBWGFWQ2cvWTM5VzlFaDgxTHlnWGJOS1l3YWdKWkhkdVJ6ZTZ6cXhaClhtaWRmM0xXaWNVR1FTaytXVDdkSnZVa3lSR25XcU5NUUI5R29abTFwenBSYm9ZN25uMXlweElGZUZudFBsRjQKRlFzRGo0M1FMd1d5UG50S0hFdHpCUkw4eHVyZ1VCTjhRNU4wczhwMDU0NGZBUWpRTU5SYmNUYTBCN3JCTURCYwpTTGVDTzVpbWZXQ0tvcU1wZ3N5NnZZTUVHNktEQTBHaDFnWHhHOEsyOEtoOGhqdEdxRWdxaU54Mm1uYS9IMnFsClBSbVA2emp6Wk43SUt3MEtLUC8zMitJVlF0UWkwQ2RkNFhuK0dPZHdpSzFPNXRtTE9zYmRKMUZ1Lzd4azlUTkQKVHdJREFRQUJvNElCUmpDQ0FVSXdEd1lEVlIwVEFRSC9CQVV3QXdFQi96QU9CZ05WSFE4QkFmOEVCQU1DQVFZdwpTd1lJS3dZQkJRVUhBUUVFUHpBOU1Ec0dDQ3NHQVFVRkJ6QUNoaTlvZEhSd09pOHZZWEJ3Y3k1cFpHVnVkSEoxCmMzUXVZMjl0TDNKdmIzUnpMMlJ6ZEhKdmIzUmpZWGd6TG5BM1l6QWZCZ05WSFNNRUdEQVdnQlRFcDdHa2V5eHgKK3R2aFM1QjEvOFFWWUlXSkVEQlVCZ05WSFNBRVRUQkxNQWdHQm1lQkRBRUNBVEEvQmdzckJnRUVBWUxmRXdFQgpBVEF3TUM0R0NDc0dBUVVGQndJQkZpSm9kSFJ3T2k4dlkzQnpMbkp2YjNRdGVERXViR1YwYzJWdVkzSjVjSFF1CmIzSm5NRHdHQTFVZEh3UTFNRE13TWFBdm9DMkdLMmgwZEhBNkx5OWpjbXd1YVdSbGJuUnlkWE4wTG1OdmJTOUUKVTFSU1QwOVVRMEZZTTBOU1RDNWpjbXd3SFFZRFZSME9CQllFRkhtMFdlWjd0dVhrQVhPQUNJaklHbGoyNlp0dQpNQTBHQ1NxR1NJYjNEUUVCQ3dVQUE0SUJBUUFLY3dCc2xtNy9EbExRcnQyTTUxb0dyUytvNDQrL3lRb0RGVkRDCjVXeEN1MitiOUxSUHdrU0lDSFhNNndlYkZHSnVlTjdzSjdvNVhQV2lvVzVXbEhBUVU3Rzc1Sy9Rb3NNckFkU1cKOU1VZ05UUDUyR0UyNEhHTnRMaTFxb0pGbGNEeXFTTW81OWFoeTJjSTJxQkRMS29ia3gvSjN2V3JhVjBUOVZ1RwpXQ0xLVFZYa2NHZHR3bGZGUmpsQno0cFlnMWh0bWY1WDZEWU84QTRqcXYySWw5RGpYQTZVU2JXMUZ6WFNMcjlPCmhlOFk0SVdTNndZN2JDa2pDV0RjUlFKTUVoZzc2ZnNPM3R4RStGaVlydXE5UlVXaGlGMW15djRRNlcrQ3lCRkMKRGZ2cDdPT0dBTjZkRU9NNCtxUjlzZGpvU1lLRUJwc3I2R3RQQVF3NGR5NzUzZWM1Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+  tls.key: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2UUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktjd2dnU2pBZ0VBQW9JQkFRRDAwS1ZkRDFQTFhZeisKa1VIdEtRblJGTTNLb1pmTG5VMUgvTFpybFVwMmZyaTNHbzJIWHNKd3RzT0FUVXpjWWoyWHM1WmpGYXdhR3ljZwpjQlNhRnVwZHJaZVhadjlwSWpxT2UrcU9qc2hXYm8xanVrS0tub2V0ZkZnOVZoMmc4SWErbHp3c0xWVEIxVmhBCmltd3loNVlxVXhPR1ROOTVvSnFvbTVyWW96WXlvNFVYZHM3dUR2Mjl6cUcwRmY0NStpeFVJb3N5WU13eW5KU3UKdkJUMnNSZlpWajY4eDJoRjRpazZoMEpmZUlkSmZUclk1SGNKUzhFUXZuRkVxcGZCVkZ4T0hkWGZZQXYxRmdZcQpZdWRwUU9CRkVnaUJNQVJwdE9RU3ZlUWRYcDJnSmVQMUsyYXdxbDVnampPenFiODZkZ0RYcExpWElTb3BYV1Q0CkJuWmVmYm1aQWdNQkFBRUNnZ0VCQUpudTk0dGtMOVFYcHFnS3ZlRlpoSXFyQWhyL01Hc2ZKWkMySGgzWGFWTEkKcTJ5MmpYY281aW5wUVZSVFJwanNUTDR1ZGNrbnYyZEsyM2RTQWlKQmRtd2cwc2lvUXNEZ2ZPRkttVm01L2M0YgpCVnhIcWI5dm52QSsxMXo1NFBkcFJkQmhWN3lQWkZQY3lma0xFSzFWQTk3cERjWE1ZRmdoM0IxWWVpenRzdzV5CitFZ3RyS2FYUzg4a0w2dHBkdW15UFl2Y1BZa1BhWFFSTFIrVmlJdjIyckp4OWk5M0Q4NUNIYmQvZGlybDFTdlIKNnB6VE1MSkJJTmszWXhtM0prYkV1aGZUOGUycDNyclMrWUxaNEhuL1lwRlYwYURFd0RCSVh6OGp5aEdwNS9OWQpsUFlFWmY3LzR1bEU1di9iQlZCaUZmaE50RHRhMG56Qk5nbWczNytXem1FQ2dZRUEvaHlxNWdKMGVFYUthQ3dPCjZSeFlkaDlKRysvd0NOTWhmSmQ1eVVSTDlNaWhPUGpsWW52b0REdFlzYWpqKzFaNmFkNW9DQ0M3dW1TVlNFNjMKb1g4WFNKMXVaVENpOXRYWnpwT0FmUGIxOTcwUTZOSzMvRFh5VVlHNzk0QXZ6TC8wdC8wbkg1UVVoZVphb0EwdgppdGREd2loRldod1FTaHFYcGZhSkxnejJqSzhDZ1lFQTlxSkxqb3Aza1dkRGI5cmVkc0U3NGcyR3VnWVROc0N0CkNNZGdRM0FBTk5sMlpkTWJvTjNrOTJvTmJqVVcyM1VnL2svVlFzcWg1Z0Z4WlVuZ2VWUURIMWRXcXF2aDFTRlAKM3YxTEQ3aTNrbVgxUnVjaXlzcmtPTU5pTHhQVzhCcVZ6M3pONGMzR2xxc24vc1dnU3E1bERDMEo2SDBQVEZySwpBTDExUmJzeWdEY0NnWUJQZTRJTkRjbUdjWElMWVhTTWY1dy8za3RNM01EMDBhMVF2a1NPcXJramFMbmRDeVVjCnArc09JR1grcy9nVGZwb3RrUzV6RkdJRHpFQlJiS1hOY3VaQ2hWT3BmUXdNTHhuQW5xeDY2ZmhIdERDYzBvUlAKOUVQR01ORXRlai81U0RWd2MxT1FjZzMxVC9jYXh1VVBCWVFoTDkxNWNQdTdZaFA3Q21FZ01WZlE2d0tCZ0RGeApJNWgxcGJhZWJ1UnppZmxnajNLbnA0U1BSemJJdFdkM0lKTWtWc1pCZWZ5N3IyUTJWM3BKNWx0YmhUT0ZiWkhOCnkwRFNnbFlybitIZ1I0SExGNzBtc3hjUDBmdjU2NXNXUi8vazFkZ2hYR1JVWGFNdHZVYXIxSGovankwZkJ6MUwKRmJMWW42RUF1c25XTUdZSVEvV0c2ZCtUZ29lYUE3aldRall5YXROTkFvR0FJZndvbFNrcHk3d2lIb0R0NFZkVAoyc2Z3bm9yOFFFc3pvZ092NXdzMy8rdkhONEZScWVweWtwMWpTQ0pkTXZCYVFQZWFOSkQ4WWoyZmxZejRqdlNXCldBYUlYSWFycUZzWkhuVlNVZzBBNHBrdzN3NWRmYkJiWU14NHZLQzZpZUJYeGpMVGNNTVNKR1dialMrcXhKVnkKMmxlOEhjOUdZUm9YdzdjNW03cEdMWDg9Ci0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0K
+  ca.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUN4ekNDQWErZ0F3SUJBZ0lKQUlXMXlDVFJEODhYTUEwR0NTcUdTSWIzRFFFQkN3VUFNQkV4RHpBTkJnTlYKQkFNTUJsSnZiM1JEUVRBZ0Z3MHlNVEEyTWpFd01EVTRNalphR0E4eU1USXhNRFV5T0RBd05UZ3lObG93RVRFUApNQTBHQTFVRUF3d0dVbTl2ZEVOQk1JSUJJakFOQmdrcWhraUc5dzBCQVFFRkFBT0NBUThBTUlJQkNnS0NBUUVBCnVHZTVhS2VBWmFEOTkxMFpzcmFjb2pTUnhIbjFDUFFCQW5FMUt2M2dMWjhiS3pBZ0ZDZ3p0T1RQVmJsMExmelAKbjBLTnlGSFJVek9WVHM3Z29kaGhRZXBFbXlLWGxyVWlZZ05Nb2RQSW5Zb2t6OUMzMjJWYkRramNpY0pPNjBVRQpWc3R4K0NuTU95ZWp0bW96MVpiUmpZK2p0NCtvVEcwamtOZ1NDZm1QWThpdUF6cTdlZFFNQVA5Y085bEdYU3ZCCjhGdHdyL2VVUlNDNHM3TVV6MWVNOFVlcGYyWFNPenRITkVIaHh4TmJTQktEa3p3UUtMTXNsYkJLMXR4ajBrMnkKM1BENXhkTDVEMDJUM0o1MFMyMHowOE51Y0NPcTRYNEppUzl0NFk1SUQxTDNuc2lFWlRZeUQzYkdqUkd1RTlDawpCbmdGRXBDKytBbW9DTWY0U3RIL2dRSURBUUFCb3lBd0hqQU1CZ05WSFJNRUJUQURBUUgvTUE0R0ExVWREd0VCCi93UUVBd0lCaGpBTkJna3Foa2lHOXcwQkFRc0ZBQU9DQVFFQWwvYTdycEJLck1YSWNHNm1rR0lQZ0QvdU9ZbloKaysweXRJL3VXWmNqWnRYczlBQk5qcm8wT2pvSmVHYTZ1NVJoT1BEY0FqOVAyRi9hMWlEZlRlRWl5dS90L1lsVApFaWxkcE0waEVrQitSYUxjOXlWajhvQTI2ay9SdkxhRlV4WHh2bmZsazd6QlUyTS94WkpMeG5pVnQ5cWJoN1k2CjdiUkRsK0IycEMxNWlTamVOZm13dGQwSTQvUjBqTGdrT1ljWHNPcnZVSWcxUWZEVFI4bi9VbE9PbnRGZUFyd0EKR0lnZ2dHM09lTlhQb0Z4MmNPUHFjTU5Yc092TWRQWVBpWlYrRUo3NnFyYmdrOEhmaXdTbHZWancrc1dWOXZrUgo5MC96ai8wU0NjbWs3OEloWExyQkZVVXJBTmN1NkRMSURlWlYrQVczd1NxUjZuNExkcmpHb3RRSElRPT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kibana
+  namespace: monitoring
+  labels:
+    app: kibana
+data:
+  kibana.yml: |-
+    server:
+      name: kibana
+      host: "0.0.0.0"
+      ssl:
+        enabled: true
+        key: /usr/share/kibana/config/tls.key
+        certificate: /usr/share/kibana/config/tls.crt
+    elasticsearch:
+      requestTimeout: 360000
+      hosts: https://elasticsearch.${NAMESPACE}.svc:9200
+      username: ${KIBANA_USERNAME}
+      password: ${KIBANA_PASSWORD}
+      requestHeadersWhitelist: ["Authorization", "securitytenant", "security_tenant"]
+      ssl:
+        certificateAuthorities: /usr/share/kibana/config/ca.crt
+        verificationMode: none
+        key: /usr/share/kibana/config/kibana.key
+        certificate: /usr/share/kibana/config/kibana.crt
+    opendistro_security.allow_client_certificates: true
+    opendistro_security.cookie.secure: false
+    #opendistro_security.auth.type: openid
+    #opendistro_security.openid.connect_url: https://hdcard-sso.acloud.run/auth/realms/paas-admin/.well-known/openid-configuration
+    #opendistro_security.openid.client_id: kibana-oidc
+    #opendistro_security.openid.client_secret: 39648dcc-5c7b-4e38-8d0c-391b8b5e41f4
+    #opendistro_security.openid.logout_url: https://hdcard-sso.acloud.run/auth/realms/paas-admin/protocol/openid-connect/logout
+    #opendistro_security.openid.base_redirect_url: https://hdcard-kb.acloud.run/
+    #opendistro_security.openid.header: Authorization
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana
+  namespace: monitoring
+  labels:
+    app: kibana
+spec:
+  type: ClusterIP
+  selector:
+    app: kibana
+  ports:
+  - name: https
+    port: 443
+    targetPort: https
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+  labels:
+    app: kibana
+  name: kibana
+  namespace: monitoring
+spec:
+  #ingressClassName: "nginx"
+  rules:
+  - host: "kb.k3.acornsoft.io"
+    http:
+      paths:
+      - backend:
+          serviceName: kibana
+          servicePort: https
+        path: /
+  tls:
+  - hosts:
+    - "kb.k3.acornsoft.io"
+    secretName: kibana
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kibana
+  namespace: monitoring
+  labels:
+    app: kibana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kibana
+  template:
+    metadata:
+      labels:
+        app: kibana
+    spec:
+      containers:
+        - name: kibana
+          image: opendistroforelasticsearch/opendistroforelasticsearch-kibana:1.9.0
+          imagePullPolicy: Always
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: KIBANA_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: kibana
+                  key: kb-username
+            - name: KIBANA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kibana
+                  key: kb-password
+          resources:
+            limits:
+              cpu: 2500m
+              memory: 2Gi
+            requests:
+              cpu: 500m
+              memory: 512Mi
+          #livenessProbe:
+          #  initialDelaySeconds: 60
+          #  timeoutSeconds: 10
+          #  httpGet:
+          #    path: /status
+          #    port: 5601
+          #readinessProbe:
+          #  initialDelaySeconds: 60
+          #  timeoutSeconds: 10
+          #  httpGet:
+          #    path: /status
+          #    port: 5601
+          ports:
+            - containerPort: 5601
+              name: https
+          volumeMounts:
+            - mountPath: /usr/share/kibana/config/kibana.yml
+              name: config
+              subPath: kibana.yml
+            - mountPath: /usr/share/kibana/config/kibana.crt
+              name: certs
+              subPath: kibana.crt
+            - mountPath: /usr/share/kibana/config/kibana.key
+              name: certs
+              subPath: kibana.key
+            - mountPath: /usr/share/kibana/config/ca.crt
+              name: certs
+              subPath: ca.crt
+            - mountPath: /usr/share/kibana/config/tls.crt
+              name: certs
+              subPath: tls.crt
+            - mountPath: /usr/share/kibana/config/tls.key
+              name: certs
+              subPath: tls.key
+          ports:
+            - containerPort: 5601
+              name: https
+      serviceAccountName: kibana
+      volumes:
+        - name: config
+          configMap:
+            name: kibana
+        - name: certs
+          secret:
+            secretName: kibana
+      #tolerations:
+      #  - effect: NoSchedule
+      #    key: node-type
+      #    operator: Equal
+      #    value: management
+      #affinity:
+      #  nodeAffinity:
+      #    requiredDuringSchedulingIgnoredDuringExecution:
+      #      nodeSelectorTerms:
+      #        - matchExpressions:
+      #            - key: node-type
+      #              operator: In
+      #              values:
+      #                - management
+      #  podAntiAffinity:
+      #    preferredDuringSchedulingIgnoredDuringExecution:
+      #      - weight: 1
+      #        podAffinityTerm:
+      #          topologyKey: "kubernetes.io/hostname"
+      #          labelSelector:
+      #            matchLabels:
+      #              app: elasticsearch
+      #              role: client
+      restartPolicy: Always
