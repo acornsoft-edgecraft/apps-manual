@@ -86,11 +86,11 @@ spec:
 {{ toYaml .Values.server.env | indent 12}}
           {{- end }}
           args:
-          {{- if .Values.server.retention }}
+          {{- if .Values.server.retention and not .Values.server.remoteStorage.enabled }}
             - --storage.tsdb.retention.time={{ .Values.server.retention }}
           {{- end }}
             - --config.file={{ .Values.server.configPath }}
-          {{- if .Values.server.storagePath }}
+          {{- if .Values.server.storagePath and not .Values.server.remoteStorage.enabled }}
             - --storage.tsdb.path={{ .Values.server.storagePath }}
           {{- else }}
             - --storage.tsdb.path={{ .Values.server.persistentVolume.mountPath }}
@@ -131,9 +131,11 @@ spec:
           volumeMounts:
             - name: config-volume
               mountPath: /etc/config
+            {{- if not .Values.server.remoteStorage.enabled }}
             - name: storage-volume
               mountPath: {{ .Values.server.persistentVolume.mountPath }}
               subPath: "{{ .Values.server.persistentVolume.subPath }}"
+            {{- end }}
           {{- range .Values.server.extraHostPathMounts }}
             - name: {{ .name }}
               mountPath: {{ .mountPath }}
@@ -218,7 +220,7 @@ spec:
 {{- if .Values.server.extraVolumes }}
 {{ toYaml .Values.server.extraVolumes | indent 8}}
 {{- end }}
-{{- if .Values.server.persistentVolume.enabled }}
+{{- if .Values.server.persistentVolume.enabled and not .Values.server.remoteStorage.enabled }}
   volumeClaimTemplates:
     - metadata:
         name: storage-volume

@@ -14,13 +14,16 @@ data:
 {{- if eq $key "prometheus.yml" }}
     global:
 {{ $root.Values.server.global | toYaml | trimSuffix "\n" | indent 6 }}
-{{- if $root.Values.server.remoteWrite }}
+
+{{- if $root.Values.server.remoteStorage.enabled }}
+{{- if $root.Values.server.remoteStorage.remoteWrite }}
     remote_write:
-{{ $root.Values.server.remoteWrite | toYaml | indent 4 }}
+{{ $root.Values.server.remoteStorage.remoteWrite | toYaml | indent 4 }}
 {{- end }}
-{{- if $root.Values.server.remoteRead }}
+{{- if $root.Values.server.remoteStorage.remoteRead }}
     remote_read:
-{{ $root.Values.server.remoteRead | toYaml | indent 4 }}
+{{ $root.Values.server.remoteStorage.remoteRead | toYaml | indent 4 }}
+{{- end }}
 {{- end }}
 {{- end }}
 {{- if eq $key "alerts" }}

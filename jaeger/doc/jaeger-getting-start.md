@@ -54,13 +54,22 @@ jaeger:
       enabled: false
     storage:
       type: elasticsearch
+      elasticsearch:
+        resources:
+          requests:
+            cpu: 200m
+            memory: 4Gi
+          limits:
+            cpu: 200m
+            memory: 4Gi
       options:
         es:
           server-urls: https://quickstart-es-http.monitoring.svc:9200
           index-prefix: jaeger-prefix
+          tags-as-fields:
+            all: true
           tls:
             ca: /es/certificates/ca.crt
-          tags-as-fields: all
       secretName: jaeger-secret
     volumeMounts:
       - name: certificates
