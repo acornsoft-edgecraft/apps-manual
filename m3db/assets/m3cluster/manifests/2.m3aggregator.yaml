@@ -1,0 +1,325 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app: m3aggregator
+  name: m3aggregator
+  namespace: m3db
+data:
+  aggregator.yaml: |+
+    logging:
+      level: info
+
+    metrics:
+      scope:
+        prefix: aggregator
+      prometheus:
+        onError: none
+        handlerPath: /metrics
+        listenAddress: 0.0.0.0:6002
+        timerType: histogram
+      sanitization: prometheus
+      samplingRate: 1.0
+      extended: none
+
+    m3msg:
+      server:
+        listenAddress: 0.0.0.0:6000
+        retry:
+          maxBackoff: 10s
+          jitter: true
+      consumer:
+        messagePool:
+          size: 16384
+          watermark:
+            low: 0.2
+            high: 0.5
+
+    http:
+      listenAddress: 0.0.0.0:6001
+      readTimeout: 60s
+      writeTimeout: 60s
+
+    kvClient:
+      etcd:
+        env: m3db/m3-cluster
+        zone: embedded
+        service: m3aggregator # m3db
+        cacheDir: /var/lib/m3kv
+        etcdClusters:
+          - zone: embedded
+            endpoints:
+              - http://etcd-0.etcd:2379
+              - http://etcd-1.etcd:2379
+              - http://etcd-2.etcd:2379
+
+    runtimeOptions:
+      kvConfig:
+        environment: m3db/m3-cluster
+        zone: embedded
+      writeValuesPerMetricLimitPerSecondKey: write-values-per-metric-limit-per-second
+      writeValuesPerMetricLimitPerSecond: 0
+      writeNewMetricLimitClusterPerSecondKey: write-new-metric-limit-cluster-per-second
+      writeNewMetricLimitClusterPerSecond: 0
+      writeNewMetricNoLimitWarmupDuration: 0
+
+    aggregator:
+      hostID:
+        resolver: hostname
+      instanceID:
+        type: host_id
+      verboseErrors: true
+      metricPrefix: ""
+      counterPrefix: ""
+      timerPrefix: ""
+      gaugePrefix: ""
+      aggregationTypes:
+        counterTransformFnType: empty
+        timerTransformFnType: suffix
+        gaugeTransformFnType: empty
+        aggregationTypesPool:
+          size: 1024
+        quantilesPool:
+          buckets:
+            - count: 256
+              capacity: 4
+            - count: 128
+              capacity: 8
+      stream:
+        eps: 0.001
+        capacity: 32
+        streamPool:
+          size: 4096
+        samplePool:
+          size: 4096
+        floatsPool:
+          buckets:
+            - count: 4096
+              capacity: 16
+            - count: 2048
+              capacity: 32
+            - count: 1024
+              capacity: 64
+      client:
+        type: m3msg
+        m3msg:
+          producer:
+            writer:
+              topicName: aggregator_ingest
+              topicServiceOverride:
+                zone: embedded
+                environment: m3db/m3-cluster
+              placement:
+                isStaged: true
+              placementServiceOverride:
+                namespaces:
+                  placement: /placement
+              messagePool:
+                size: 16384
+                watermark:
+                  low: 0.2
+                  high: 0.5
+      placementManager:
+        kvConfig:
+          namespace: /placement
+          environment: m3db/m3-cluster
+          zone: embedded
+        placementWatcher:
+          key: m3aggregator
+          initWatchTimeout: 10s
+      hashType: murmur32
+      bufferDurationBeforeShardCutover: 10m
+      bufferDurationAfterShardCutoff: 10m
+      bufferDurationForFutureTimedMetric: 10m # Allow test to write into future.
+      resignTimeout: 1m
+      flushTimesManager:
+        kvConfig:
+          environment: m3db/m3-cluster
+          zone: embedded
+        flushTimesKeyFmt: shardset/%d/flush
+        flushTimesPersistRetrier:
+          initialBackoff: 100ms
+          backoffFactor: 2.0
+          maxBackoff: 2s
+          maxRetries: 3
+      electionManager:
+        election:
+          leaderTimeout: 10s
+          resignTimeout: 10s
+          ttlSeconds: 10
+        serviceID:
+          name: m3aggregator
+          environment: m3db/m3-cluster
+          zone: embedded
+        electionKeyFmt: shardset/%d/lock
+        campaignRetrier:
+          initialBackoff: 100ms
+          backoffFactor: 2.0
+          maxBackoff: 2s
+          forever: true
+          jitter: true
+        changeRetrier:
+          initialBackoff: 100ms
+          backoffFactor: 2.0
+          maxBackoff: 5s
+          forever: true
+          jitter: true
+        resignRetrier:
+          initialBackoff: 100ms
+          backoffFactor: 2.0
+          maxBackoff: 5s
+          forever: true
+          jitter: true
+        campaignStateCheckInterval: 1s
+        shardCutoffCheckOffset: 30s
+      flushManager:
+        checkEvery: 1s
+        jitterEnabled: true
+        maxJitters:
+          - flushInterval: 5s
+            maxJitterPercent: 1.0
+          - flushInterval: 10s
+            maxJitterPercent: 0.5
+          - flushInterval: 1m
+            maxJitterPercent: 0.5
+          - flushInterval: 10m
+            maxJitterPercent: 0.5
+          - flushInterval: 1h
+            maxJitterPercent: 0.25
+        numWorkersPerCPU: 0.5
+        flushTimesPersistEvery: 10s
+        maxBufferSize: 5m
+        forcedFlushWindowSize: 10s
+      flush:
+        handlers:
+          - dynamicBackend:
+              name: m3msg
+              hashType: murmur32
+              producer:
+                writer:
+                  topicName: aggregated_metrics
+                  topicServiceOverride:
+                    zone: embedded
+                    environment: m3db/m3-cluster
+                  messagePool:
+                    size: 16384
+                    watermark:
+                      low: 0.2
+                      high: 0.5
+      passthrough:
+        enabled: true
+      forwarding:
+        maxConstDelay: 5m # Need to add some buffer window, since timed metrics by default are delayed by 1min.
+      entryTTL: 1h
+      entryCheckInterval: 10m
+      maxTimerBatchSizePerWrite: 140
+      defaultStoragePolicies: []
+      maxNumCachedSourceSets: 2
+      discardNaNAggregatedValues: true
+      entryPool:
+        size: 4096
+      counterElemPool:
+        size: 4096
+      timerElemPool:
+        size: 4096
+      gaugeElemPool:
+        size: 4096
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: m3aggregator
+  name: m3aggregator
+  namespace: m3db
+spec:
+  ports:
+    - name: metrics
+      port: 6002
+      protocol: TCP
+      nodePort: 32332
+      targetPort: 6002
+    - name: http
+      port: 6001
+      protocol: TCP
+      nodePort: 32331
+      targetPort: 6001
+    - name: m3msg
+      port: 6000
+      protocol: TCP
+      nodePort: 32330
+      targetPort: 6000
+  selector:
+    app: m3aggregator
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: m3aggregator
+  labels:
+    app: m3aggregator
+  namespace: m3db
+spec:
+  serviceName: "m3aggregator"
+  replicas: 2
+  selector:
+    matchLabels:
+      app: m3aggregator
+  template:
+    metadata:
+      labels:
+        app: m3aggregator
+    spec:
+      affinity:
+        # nodeAffinity:
+        #   requiredDuringSchedulingIgnoredDuringExecution:
+        #     nodeSelectorTerms:
+        #       - matchExpressions:
+        #           - key: kubernetes.io/hostname
+        #             operator: In
+        #             values:
+        #               - mworker6
+        #               - mworker7
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: "app"
+                      operator: In
+                      values:
+                        - m3db
+                        - m3coordinator
+                        - m3aggregator
+                topologyKey: "kubernetes.io/hostname"
+      containers:
+        - name: m3aggregator
+          image: quay.io/m3db/m3aggregator:latest
+          args:
+            - "-f"
+            - "/etc/m3/aggregator.yaml"
+          volumeMounts:
+            - name: config
+              mountPath: /etc/m3
+          imagePullPolicy: Always
+          ports:
+            - name: metrics
+              containerPort: 6002
+              protocol: TCP
+            - name: http
+              containerPort: 6001
+              protocol: TCP
+            - name: m3msg
+              containerPort: 6000
+              protocol: TCP
+          resources:
+            limits:
+              memory: 3Gi
+            requests:
+              memory: 2Gi
+      volumes:
+        - name: config
+          configMap:
+            name: m3aggregator

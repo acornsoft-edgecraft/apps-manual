@@ -39,7 +39,13 @@ $ sudo usermod -aG docker ${USER}
 $ yum install -y yum-utils device-mapper-persistent-data lvm2
 $ yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 
-$ yum update -y && yum install -y containerd.io-1.4.6 docker-ce-19.03.15 docker-ce-cli-19.03.15
+$ yum update -y && yum install -y http://192.168.77.128:8080/container-selinux-2.158.0-1.el8.4.0.noarch.rpm
+
+- containerd 사용인 경우
+$ yum update -y && yum install -y containerd.io-1.4.6
+
+- docker 사용인 경우
+$ yum update -y && yum install -y docker-ce-19.03.15 docker-ce-cli-19.03.15
 
 $ mkdir -p /data/docker
 $ mkdir /etc/docker
@@ -140,10 +146,24 @@ oom_score = 0
         runtime_root = ""
         privileged_without_host_devices = false
 ...
-        
+
 $ systemctl enable containerd
 $ systemctl restart containerd
 $ systemctl status containerd
+```
+
+ * crictl 설치
+```bash
+# 로컬 repo
+curl -LO http://192.168.77.128:8080/crictl-v1.20.0-Linux-amd64.tar.gz
+# 온라인 설정
+VERSION="v1.21.0"
+curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/$VERSION/crictl-${VERSION}-linux-amd64.tar.gz --output crictl-${VERSION}-linux-amd64.tar.gz
+
+
+sudo tar zxvf crictl-$VERSION-linux-amd64.tar.gz -C /usr/local/bin
+rm -f crictl-$VERSION-linux-amd64.tar.gz
+
 ```
 
  * crictl.yaml 파일 설정

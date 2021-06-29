@@ -1,0 +1,94 @@
+#!/bin/bash
+
+# ETCD Check
+kubectl -n m3db exec etcd-0 -- env ETCDCTL_API=3 etcdctl member list --write-out=table
+kubectl -n m3db exec etcd-0 -- env ETCDCTL_API=3 etcdctl endpoint status --write-out=table
+kubectl -n m3db exec etcd-1 -- env ETCDCTL_API=3 etcdctl endpoint status --write-out=table
+kubectl -n m3db exec etcd-2 -- env ETCDCTL_API=3 etcdctl endpoint status --write-out=table
+
+kubectl -n m3db exec etcd-0 -- env ETCDCTL_API=3 etcdctl del --prefix ""
+
+# Create Namespace on M3DB Cluster (move to Operator)
+# kubectl -n m3db exec m3-cluster-rep2-0 -- curl -X POST http://localhost:7201/api/v1/database/create -d '{
+#   "namespaceName": "default",
+#   "retentionTime": "2h"
+# }' | jq .
+
+# Check Cluster Status
+kubectl -n m3db get po -l operator.m3db.io/app=m3db
+
+kubectl -n m3db exec m3-cluster-rep2-0 -- curl -sSf localhost:9002/health
+kubectl -n m3db exec m3-cluster-rep1-0 -- curl -sSf localhost:9002/health
+kubectl -n m3db exec m3-cluster-rep0-0 -- curl -sSf localhost:9002/health
+
+# Check M3DB Placement
+kubectl -n m3db exec m3-cluster-rep1-0 -- curl http://localhost:7201/api/v1/services/m3db/placement | jq .
+
+# Check M3Aggregator Placement
+kubectl -n m3db exec m3-cluster-rep1-0 -- curl http://localhost:7201/api/v1/services/m3aggregator/placement | jq .
+
+# Check M3Coordinator Placement
+kubectl -n m3db exec m3-cluster-rep2-0 -- curl http://localhost:7201/api/v1/services/m3coordinator/placement | jq .
+
+# Check M3Aggregator Topic
+kubectl -n m3db exec m3-cluster-rep2-0 -- curl http://localhost:7201/api/v1/topic | jq .
+
+# Check M3Coordinator Topic
+
+# Check Namespace
+kubectl -n m3db exec m3-cluster-rep1-0 -- curl http://localhost:7201/api/v1/services/m3db/namespace | jq .
+curl http://192.168.77.171:32555/api/v1/services/m3db/namespace | jq .
+
+# Ready Namespace
+kubectl -n m3db exec m3-cluster-rep2-0 -- curl -X POST http://localhost:7201/api/v1/services/m3db/namespace/ready -d '{
+  "name": "default"
+}' | jq .
+
+kubectl -n m3db exec m3-cluster-rep2-0 -- curl -X POST http://localhost:7201/api/v1/services/m3db/namespace/ready -d '{
+  "name": "metrics-10s_2d"
+}' | jq .
+
+# Check M3Aggregator Metrics
+curl http://192.168.77.171:32330/metrics > monitoring.aggregator
+
+# Check M3Coordinator Metrics
+curl http://192.168.77.171:32556/metrics > monitoring.coordinator
+
+# Check M3Query Metrics
+curl http://192.168.77.171:32558/metrics > monitoring.query
+
+# Write Test Data (On Unix)
+curl -X POST http://192.168.77.171:32555/api/v1/json/write -d '{
+  "tags": {
+    "__name__": "third_avenue",
+    "city": "new_york",
+    "checkout": "1"
+  },
+  "timestamp": '\"$(date "+%s")\"',
+  "value": 3347.26
+}' | jq .
+curl -X POST http://192.168.77.171:32555/api/v1/json/write -d '{
+  "tags": {
+    "__name__": "third_avenue",
+    "city": "new_york",
+    "checkout": "2"
+  },
+  "timestamp": '\"$(date "+%s")\"',
+  "value": 3347.44
+}' | jq .
+curl -X POST http://192.168.77.171:32555/api/v1/json/write -d '{
+  "tags": {
+    "__name__": "third_avenue",
+    "city": "new_york",
+    "checkout": "3"
+  },
+  "timestamp": '\"$(date "+%s")\"',
+  "value": 3347.55
+}' | jq .
+
+# Read Test Data (On Unix)
+curl -X "POST" -G "http://192.168.77.171:32558/api/v1/query_range" \
+  -d "query=query_fetch_success" \
+  -d "start=$(date "+%s" -d "10 hours ago")" \
+  -d "end=$( date "+%s" -d "5 hours ago" )" \
+  -d "step=30m" | jq .  

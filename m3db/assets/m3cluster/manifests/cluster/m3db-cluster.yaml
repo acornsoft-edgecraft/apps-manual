@@ -1,0 +1,104 @@
+apiVersion: operator.m3db.io/v1alpha1
+kind: M3DBCluster
+metadata:
+  name: m3-cluster
+  labels:
+    app: m3dbnode
+  namespace: m3db
+spec:
+  image: quay.io/m3db/m3dbnode:latest
+  replicationFactor: 3
+  numberOfShards: 12
+  keepEtcdDataOnDelete: true
+  # externalCoordinator:
+  #   selector:
+  #     app: m3coordinator
+  #   serviceEndpoint: m3coordinator.m3db:7201
+  etcdEndpoints:
+    - http://etcd-0.etcd:2379
+    - http://etcd-1.etcd:2379
+    - http://etcd-2.etcd:2379
+  isolationGroups:
+    - name: group1
+      numInstances: 1
+      nodeAffinityTerms:
+        - key: kubernetes.io/hostname
+          values:
+            - mworker1
+    - name: group2
+      numInstances: 1
+      nodeAffinityTerms:
+        - key: kubernetes.io/hostname
+          values:
+            - mworker2
+    - name: group3
+      numInstances: 1
+      nodeAffinityTerms:
+        - key: kubernetes.io/hostname
+          values:
+            - mworker3
+  podIdentityConfig:
+    sources:
+      - PodUID
+  namespaces:
+    - name: default
+      options:
+        bootstrapEnabled: true
+        flushEnabled: true
+        writesToCommitLog: true
+        cleanupEnabled: true
+        snapshotEnabled: true
+        repairEnabled: false
+        retentionOptions:
+          retentionPeriod: 2h
+          blockSize: 60m
+          bufferFuture: 10m
+          bufferPast: 10m
+          blockDataExpiry: true
+          blockDataExpiryAfterNotAccessPeriod: 5m
+        indexOptions:
+          enabled: true
+          blockSize: 60m
+        aggregationOptions:
+          aggregations:
+            - aggregated: false
+    - name: metrics-10s_2d
+      options:
+        bootstrapEnabled: true
+        flushEnabled: true
+        writesToCommitLog: true
+        cleanupEnabled: true
+        snapshotEnabled: true
+        repairEnabled: false
+        retentionOptions:
+          retentionPeriod: 48h
+          blockSize: 60m
+          bufferFuture: 10m
+          bufferPast: 10m
+          blockDataExpiry: true
+          blockDataExpiryAfterNotAccessPeriod: 5m
+        indexOptions:
+          enabled: true
+          blockSize: 60m
+        aggregationOptions:
+          aggregations:
+            - aggregated: true
+              attributes:
+                resolution: 10s
+                downsampleOptions:
+                  all: false
+  containerResources:
+    requests:
+      memory: 5Gi
+    limits:
+      memory: 7Gi
+  dataDirVolumeClaimTemplate:
+    metadata:
+      name: m3db-data
+    spec:
+      storageClassName: managed-nfs-storage
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 30Gi

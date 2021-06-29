@@ -4,6 +4,7 @@
 ```bash
 $ timedatectl set-timezone Asia/Seoul
 
+# set-timezone 명령 실패 시 해당 cmd로 재설정 한다.
 $ timedatectl set-local-rtc 0
 $ timedatectl set-timezone Asia/Seoul
 Failed to set time zone: Failed to update /etc/localtime
@@ -76,7 +77,7 @@ $ modprobe : 모듈을 관리하는 명령어다.
         - -l : 모든 모듈 목록을 출력한다. (사용방법 : modprobe -l)
         - -r : 모듈을 제거한다. 의존성이 있는 모듈이 사용되고 있지 않으면 알아서 같이 제거한다. (사용방법 : modprobe -r [모듈명]
         - -c: 모듈 관련 환경설정파일의 내용을 전부 출력한다. (사용방법 : modprobe -c)
-$ demode : module과 연관된, 혹은 module광 상관성이 있는 
+$ demode : module과 연관된, 혹은 module광 상관성이 있는
 $ modinfo : module에 대한 정보를 출력해 준다.
 $ grep -rn 'ip_set' /lib/modules/$(uname -r) : 모듈의 사용 가능 여부를 확인하는 방법
 ```
@@ -175,6 +176,7 @@ EOF
 ```
 
 ## Modprobe nf_conntrack_ipv4 for kernels >= 4.19 when kube-proxy is ipvs mode
+- centos
 ```bash
 ## centos
 $ yum install -y ipvsadm ipset
@@ -183,6 +185,10 @@ $ yum install -y ipvsadm ipset
 $ apt-get install -y ipvsadm ipset
 ```
 
+- ubuntu
+```bash
+$ apt-get install -y ipvsadm ipset
+```
 ## Modprobe nf_conntrack_ipv4 for kernels >= 4.19 when kube-proxy is ipvs mode
 ```bash
 $ sysctl -w net.bridge.bridge-nf-call-iptables=1

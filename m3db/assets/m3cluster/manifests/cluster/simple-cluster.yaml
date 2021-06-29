@@ -1,0 +1,37 @@
+apiVersion: operator.m3db.io/v1alpha1
+kind: M3DBCluster
+metadata:
+  name: simple-cluster
+spec:
+  image: quay.io/m3db/m3dbnode:v1.0.0
+  replicationFactor: 3
+  numberOfShards: 256
+  etcdEndpoints:
+  - http://etcd-0.etcd:2379
+  - http://etcd-1.etcd:2379
+  - http://etcd-2.etcd:2379
+  isolationGroups:
+  - name: group1
+    numInstances: 1
+    nodeAffinityTerms:
+    - key: kubernetes.io/hostname
+      values:
+      - vm-live-01
+  - name: group2
+    numInstances: 1
+    nodeAffinityTerms:
+    - key: kubernetes.io/hostname
+      values:
+      - vm-live-02
+  - name: group3
+    numInstances: 1
+    nodeAffinityTerms:
+    - key: kubernetes.io/hostname
+      values:
+      - vm-live-03
+  podIdentityConfig:
+    sources:
+      - PodUID
+  namespaces:
+    - name: metrics-10s:2d
+      preset: 10s:2d
