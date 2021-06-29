@@ -157,3 +157,7 @@ EOF
 # image list 확인 
 $ crictl images 
 ```
+
+----
+# 참조
+> [Container Runtime Interface (CRI) CLI](https://github.com/kubernetes-sigs/cri-tools/blob/master/docs/crictl.md)

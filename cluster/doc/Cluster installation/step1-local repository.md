@@ -16,7 +16,7 @@ EOF
 ```bash
 $ mv /etc/yum.repos.d /etc/yum.repos.d.bak
 
-$ cat > cat /etc/yum.repos.d/local.repo <<EOF
+$ cat > /etc/yum.repos.d/local.repo <<EOF
 [base]
 name=CentOS-\$releasever - Base
 baseurl=http://192.168.77.128:8080/centos/7/os/\$basearch/

@@ -176,7 +176,10 @@ EOF
 
 ## Modprobe nf_conntrack_ipv4 for kernels >= 4.19 when kube-proxy is ipvs mode
 ```bash
+## centos
 $ yum install -y ipvsadm ipset
+
+## ubuntu
 $ apt-get install -y ipvsadm ipset
 ```
 

@@ -1,5 +1,11 @@
 # Containerd mirrors 설정
 
+## 컨테이너 런타임 인터페이스 (CRI) CLI
+crictl은 CRI 호환 컨테이너 런타임을위한 CLI를 제공합니다. 이를 통해 CRI 런타임 개발자는 Kubernetes 구성 요소를 설정할 필요없이 런타임을 디버깅 할 수 있습니다.
+
+crictl은 현재 베타 버전이며 아직 빠르게 반복되고 있습니다. [cri-tools](https://github.com/kubernetes-sigs/cri-tools) 저장소 에서 호스팅됩니다 . CRI 개발자가 버그를보고하거나 더 많은 기능을 추가하여 적용 범위를 확장하도록 권장합니다.
+
+
 ## containerd에 private 레지스트리 추가
 CTR은 /etc/containerd/config.toml 설정 파일을 사용 하지 않는다.
 이 설정은 CRI에 의해 사용되는 수단 으로  kubectl또는 crictl 명령을 사용합니다.
@@ -39,3 +45,4 @@ sudo crictl <image>
 
 # 참조
 > [containerd에 private 레지스트리 추가](https://stackoverflow.com/questions/65681045/adding-insecure-registry-in-containerd)
+> [Container Runtime Interface (CRI) CLI](https://github.com/kubernetes-sigs/cri-tools/blob/master/docs/crictl.md)
