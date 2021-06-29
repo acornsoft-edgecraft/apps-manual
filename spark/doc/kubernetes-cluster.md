@@ -3,8 +3,8 @@
 > Spark application을 kubernetes상테 driver+executor pod 행태로 배포할 수 있으며,
 > Spark operator를 사용하여 좀 더 편하게 배포할 수 있다.
 
-#1. kubernetes 상에 apiserver 주소를 이용한 배포 
-##1.1 Spark jump pod 실행
+# 1. kubernetes 상에 apiserver 주소를 이용한 배포 
+## 1.1 Spark jump pod 실행
 ```bash
 $ kubectl create ns spark-work
 $ kubectl create sa sparkjumppod -n spark-work
@@ -14,7 +14,7 @@ $ kubectl create sa spark -n spark-work
 $ kubectl create rolebinding spark-sa --clusterrole=edit --serviceaccount=spark-work:spark -n spark-work
 ```
 
-##1.2 Spark jump pod에서 pi 구하는 spark application 배포하기
+## 1.2 Spark jump pod에서 pi 구하는 spark application 배포하기
 ```bash
 $ kubectl run sparkjumppod -it -n spark-work --image=192.168.77.30/spark/spark:3.1.2-debian-10-r17 --serviceaccount='sparkjumppod'
 
@@ -29,7 +29,7 @@ $ spark-submit \
  local:///opt/spark/examples/src/main/python/pi.py
 ```
 
-##1.3 결과 확인하기.
+## 1.3 결과 확인하기.
 ```bash
 // driver, executor pod 상태 확인 
 $ kubectl -n spark-work get pods 
@@ -46,7 +46,7 @@ $ kubectl -n spark-work logs spark-py-pi-5474e37a51cbcbf3-driver
 
 [Getting Startd with Spark on Kubernetes](blog.brainlounge.de/memoryleaks/getting-started-with-spark-on-kubernetes)
 
-#2. K8S cluster에 Operator 방식으로 배포하기
+# 2. K8S cluster에 Operator 방식으로 배포하기
 Spark operator 방식의 chart 설치
 CRD를 기반으로 Spark application을 편하게 deploy할 수 있다.
 

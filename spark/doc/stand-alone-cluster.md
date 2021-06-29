@@ -6,8 +6,8 @@ $ sudo curl -L -o /etc/docker/certs.d/192.168.77.30/ca.crt https://regi.k3.acorn
 $ helm repo add --ca-file /etc/docker/certs.d/192.168.77.30/ca.crt k3lab https://192.168.77.30/chartrepo/k3lab-charts
 ```
 
-#2. spark docker image 및 chart upload
-##2.1 Bitnami spark docker image 변경
+# 2. spark docker image 및 chart upload
+## 2.1 Bitnami spark docker image 변경
  * dockerfile - https://github.com/bitnami/bitnami-docker-spark
  * 제공되는 Spark 이미지내에 python 3.6.x 버전으로 되어 있어서 base image를 **python:3.8-slim-buster**로 하여 따로 이미지를 생성함.
  * Spark 3.1.2 임.
@@ -60,7 +60,7 @@ ENTRYPOINT [ "/opt/bitnami/scripts/spark/entrypoint.sh" ]
 CMD [ "/opt/bitnami/scripts/spark/run.sh" ]
 ```
 
-##2.2 Spark image 빌드 및 registry에 push
+## 2.2 Spark image 빌드 및 registry에 push
 ```bash
 $ docker build -t 192.168.77.30/spark/spark:3.1.2-debian-10-r17 .
 $ docker push 192.168.77.30/spark/spark:3.1.2-debian-10-r17
@@ -95,8 +95,8 @@ $ helm package spark
 ![spark-chart](images/upload-spark-chart.png)
 
 
-#3. Bitnami spark chart 배포하기 (Spark Standalone cluster)
-##3.1 이제 spark docker image와 chart가 준비되었으므로 chart의 values.yaml파일을 수정한 후 실제 Spark Standalone cluster를 배포한다.
+# 3. Bitnami spark chart 배포하기 (Spark Standalone cluster)
+## 3.1 이제 spark docker image와 chart가 준비되었으므로 chart의 values.yaml파일을 수정한 후 실제 Spark Standalone cluster를 배포한다.
 
 ```bash
 $ helm repo remove bitnami
@@ -120,7 +120,7 @@ I have no name!@spark-master-0:/opt/bitnami/spark$ python -V
 Python 3.8.8
 ```
 
-##3.2 Spark UI을 접속하기 위해 spark-ui-proxy를 배포한다.
+## 3.2 Spark UI을 접속하기 위해 spark-ui-proxy를 배포한다.
 ```bash
 $ cd assets/spark-ui-proxy
 $ kubectl apply -f deployment.yaml
@@ -128,7 +128,7 @@ $ kubectl apply -f deployment.yaml
 
 ![spark-dashboard](images/spark-dashboard.png)
 
-##3.3 Spark Standalone cluster에 sample application 배포 및 구성 확인
+## 3.3 Spark Standalone cluster에 sample application 배포 및 구성 확인
 자, 이제 spark standalone cluster를 구성하였음으로 sample application을 구동시켜 보자. 아래에서 주목할 것은 deploy-mode=cluster이다.
 
 ```bash
