@@ -89,6 +89,22 @@ kubectl -n monitoring edit svc istio-ingressgateway
 istioctl proxy-status -i monitoring
 ```
 
+## Disable Istio sidecar injection to the job pod
+- The annotation is in wrong place. You have to put it on the pod template.
+```yaml
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+spec:
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          annotations:
+            sidecar.istio.io/inject: "false"
+```
+
+
 ## Uninstall Istio
 - 클러스터에서 Istio를 완전히 제거 하기
 ```sh
