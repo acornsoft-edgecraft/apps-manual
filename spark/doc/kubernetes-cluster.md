@@ -52,31 +52,35 @@ CRD를 기반으로 Spark application을 편하게 deploy할 수 있다.
 
 ```bash
 // repository 추가하기
-> helm repo add spark-operator https://googlecloudplatform.github.io/spark-on-k8s-operator
+$ helm repo add spark-operator https://googlecloudplatform.github.io/spark-on-k8s-operator
+$ helm pull --untar -d ./assets spark-operator/spark-operator
+```
 
-// spark-operator namespace에 my-spark-operator 이름으로 deploy하기
-> helm upgrade -i -n spark-operator --create-namespace my-spark-operator spark-operator/spark-operator 
+ * spark sparkJobNamespace 를 spark-work2 로 하여 chart 배포하기
+```bash
+$ helm upgrade --cleanup-on-fail -i --create-namespace -n spark-operator spark-operator spark-operator/spark-operator -f values.yaml
+$ kubectl get pods -n spark-operator 
+```
 
-아래와 같이 SparkApplication workload에 spark driver와 executor의 instance 개수, resource, image를 설정하여 deploy하면 된다.
-// Sample download
-> git clone https://github.com/GoogleCloudPlatform/spark-on-k8s-operator.git
-> cd spark-on-k8s-operator/
-> kubectl apply -f spark-py-pi.yaml
+ * Python으로 pi 값을 구하는 sample application 배포
+```bash
+$ git clone https://github.com/GoogleCloudPlatform/spark-on-k8s-operator.git
+$ cd spark-on-k8s-operator/
 
---- spark-py-pi.yaml 내용 --------------------
+$ vi spark-py-pi.yaml
 apiVersion: "sparkoperator.k8s.io/v1beta2"
 kind: SparkApplication
 metadata:
   name: pyspark-pi
-  namespace: default
+  namespace: spark-work2          // 지정된 namespace로 변경
 spec:
   type: Python
-  pythonVersion: "2"
+  pythonVersion: "3"              // 수정해야 함.
   mode: cluster
-  image: "gcr.io/spark-operator/spark-py:v3.0.0"
+  image: "gcr.io/spark-operator/spark-py:v3.1.1"
   imagePullPolicy: Always
   mainApplicationFile: local:///opt/spark/examples/src/main/python/pi.py
-  sparkVersion: "3.0.0"
+  sparkVersion: "3.1.1"
   restartPolicy:
     type: OnFailure
     onFailureRetries: 3
@@ -88,19 +92,23 @@ spec:
     coreLimit: "1200m"
     memory: "512m"
     labels:
-      version: 3.0.0
-    serviceAccount: spark
+      version: 3.1.1
+    serviceAccount: spark-operator-spark       // 지정된 namespace에 sa 명 기입
   executor:
     cores: 1
     instances: 1
     memory: "512m"
     labels:
-      version: 3.0.0
+      version: 3.1.1
 
-// 실행후 상태 조회.
 
-$ kubectl get sparkapplication
-$ kubectl logs -f yms-spark-spark-operator-79dc778db4-hvhbf -n spark-operator
+$ kubectl apply -f spark-py-pi.yaml
+``` 
+
+ * Driver, Executor pod 상태 확인 및 driver pod에서 결과 로그 확인
+```bash
+$ kubectl get sparkapplication -n spark-work2
+$ kubectl -n spark-work2 logs pyspark-pi-driver
 ```
 
 ## 참고사이트
