@@ -23,7 +23,20 @@ CTR은 /etc/containerd/config.toml 설정 파일을 사용 하지 않는다.
 sudo crictl -r /run/containerd/containerd.sock pull <image>
 
 # or config runntime once for all - 다음 명령어로 /etc/crictl.yaml 파일을 생성 한다.
-sudo crictl config runtime-endpoint /run/containerd/containerd.sock
+# crictl 명령어 사용 (crictl config --help )
+$ crictl config \
+    --set runtime-endpoint=unix:///run/containerd/containerd.sock \
+    --set image-endpoint=unix:///run/containerd/containerd.sock \
+    --set timeout=10
+
+# 또는 cat EOF 사용
+$ cat <<EOF > /etc/crictl.yaml
+runtime-endpoint: unix:///run/containerd/containerd.sock
+image-endpoint: unix:///run/containerd/containerd.sock
+timeout: 10
+EOF
+
+## 확인 
 sudo crictl <image>
 
 ## 구성 예 :
@@ -46,3 +59,4 @@ sudo crictl <image>
 # 참조
 > [containerd에 private 레지스트리 추가](https://stackoverflow.com/questions/65681045/adding-insecure-registry-in-containerd)
 > [Container Runtime Interface (CRI) CLI](https://github.com/kubernetes-sigs/cri-tools/blob/master/docs/crictl.md)
+> [Debugging Kubernetes nodes with crictl](https://kubernetes.io/docs/tasks/debug-application-cluster/crictl/)

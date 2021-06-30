@@ -33,7 +33,7 @@ curl -X POST http://192.168.77.34:32555/api/v1/json/write -d '{
 }' | jq .
 curl -X POST http://192.168.77.34:32555/api/v1/json/write -d '{
   "tags": {
-    "__name__": "third_avenue",
+    "__name__": "dongmook--dm",
     "city": "new_york",
     "checkout": "3"
   },
