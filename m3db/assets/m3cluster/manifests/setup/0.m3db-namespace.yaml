@@ -2,3 +2,15 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: m3db
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: m3db-quota
+  namespace: m3db
+spec:
+  hard:
+    requests.cpu: "2500m"
+    requests.memory: 28Gi
+    limits.cpu: "2500m"
+    limits.memory: 28Gi

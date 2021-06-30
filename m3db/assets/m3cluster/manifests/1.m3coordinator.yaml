@@ -133,7 +133,7 @@ metadata:
   namespace: m3db
 spec:
   serviceName: "m3coordinator"
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: m3coordinator
@@ -192,9 +192,11 @@ spec:
               protocol: TCP
           resources:
             limits:
-              memory: 5Gi
+              memory: 4Gi
+              cpu: 300m
             requests:
-              memory: 3Gi
+              memory: 4Gi
+              cpu: 300m
       volumes:
         - name: config
           configMap:

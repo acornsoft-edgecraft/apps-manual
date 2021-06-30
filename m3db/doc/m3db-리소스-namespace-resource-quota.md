@@ -3,7 +3,7 @@
 ## 리소스쿼터 생성
 - 다음은 리소스쿼터 오브젝트의 구성 파일이다.
 ```sh
-cat <<EOF | kubectl -n m3db apply - 
+cat <<EOF | kubectl -n m3db apply -f -
 apiVersion: v1
 kind: ResourceQuota
 metadata:

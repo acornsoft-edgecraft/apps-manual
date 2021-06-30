@@ -67,7 +67,7 @@ metadata:
   namespace: m3db
 spec:
   serviceName: "m3query"
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: m3query
@@ -118,9 +118,11 @@ spec:
               protocol: TCP
           resources:
             limits:
-              memory: 3Gi
+              memory: 4Gi
+              cpu: 200m
             requests:
-              memory: 2Gi
+              memory: 4Gi
+              cpu: 200m
       volumes:
         - name: config
           configMap:

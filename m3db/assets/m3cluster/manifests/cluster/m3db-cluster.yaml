@@ -24,19 +24,19 @@ spec:
       nodeAffinityTerms:
         - key: kubernetes.io/hostname
           values:
-            - mworker1
+            - vm-live-02
     - name: group2
       numInstances: 1
       nodeAffinityTerms:
         - key: kubernetes.io/hostname
           values:
-            - mworker2
+            - vm-live-03
     - name: group3
       numInstances: 1
       nodeAffinityTerms:
         - key: kubernetes.io/hostname
           values:
-            - mworker3
+            - vm-live-04
   podIdentityConfig:
     sources:
       - PodUID
@@ -90,13 +90,15 @@ spec:
   containerResources:
     requests:
       memory: 5Gi
+      cpu: 300m
     limits:
-      memory: 7Gi
+      memory: 5Gi
+      cpu: 300m
   dataDirVolumeClaimTemplate:
     metadata:
       name: m3db-data
     spec:
-      storageClassName: managed-nfs-storage
+      storageClassName: nfs-storageclass
       accessModes:
         - ReadWriteOnce
       resources:
