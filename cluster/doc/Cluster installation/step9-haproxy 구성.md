@@ -1,15 +1,13 @@
 [TOC]
 
-### Haproxy 설정
+### Haproxy 설정 (Worker node에서만 설정한다)
  * haproxy는 k8s apiserver를 위한 internal LB로 사용할 수 있다.(옵션)
  * haproxy는 static pod형태로 /etc/kubernetes/manifests 에 POD yaml를 위치시켜 kubelet이 기동할 떄 자동으로 실행되게 된다.
- * haproxy의 설정파일은 /etc/haproxy/haproxy.cfg에 있
+ * haproxy의 설정파일은 /etc/haproxy/haproxy.cfg에 있음.
  
 ```bash
-$ mkdir /etc/kubernetes/manifests
-
+$ mkdir -p /etc/kubernetes/manifests
 $ mkdir /etc/haproxy
-$ mkdir /var/lib/etcd
 
 $ cat > /etc/kubernetes/manifests/haproxy.yaml <<EOF 
 apiVersion: v1
@@ -27,11 +25,7 @@ spec:
   priorityClassName: system-node-critical
   containers:
   - name: haproxy
-{% if closed_network %}
-    image: "{{ registry_domain }}/addons/haproxy:2.2.0"
-{% else %}
-    image: "haproxy:2.2.0"
-{% endif %}
+    image: "192.168.77.128/library/haproxy:2.2.0"
     imagePullPolicy: IfNotPresent
     resources:
       requests:
@@ -39,6 +33,14 @@ spec:
         memory: 32M
     securityContext:
       privileged: true
+    livenessProbe:
+      httpGet:
+        path: /healthz
+        port: 8081
+    readinessProbe:
+      httpGet:
+        path: /healthz
+        port: 8081
     volumeMounts:
     - mountPath: /usr/local/etc/haproxy/haproxy.cfg
       name: etc-haproxy
@@ -66,14 +68,13 @@ defaults
 
 frontend api-https
    mode tcp
-   bind :{{ haproxy_port }}
+   bind :6443
    default_backend api-backend
 
 backend api-backend
     mode tcp
-{% for host in groups['masters'] %}
-    server  api{{ loop.index }}  {{ hostvars[host]['ip'] }}:{{ api_secure_port }}  check
-{% if not loop.last -%}{%- endif -%}
-{% endfor %}
+    server  api1  192.168.77.121:6443  check
+    server  api2  192.168.77.122:6443  check
+    server  api3  192.168.77.123:6443  check        
 EOF
 ```      

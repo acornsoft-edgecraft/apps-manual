@@ -16,7 +16,6 @@ $ curl -L -O https://github.com/goharbor/harbor/releases/download/v1.10.3/harbor
 ```bash
  * upload_image.sh을 이용한다. k8s버전 및 harbor-ip를 지정하면 docker pull & push 를 수행한다.
 $ upload_image.sh 1.20.7 192.168.77.128
-$ chmod +x /tmp/registry-backup.sh
 ```
 
 ## 2.3 harbor 백업파일 저장
