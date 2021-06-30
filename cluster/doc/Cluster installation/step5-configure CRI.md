@@ -161,19 +161,28 @@ VERSION="v1.21.0"
 curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/$VERSION/crictl-${VERSION}-linux-amd64.tar.gz --output crictl-${VERSION}-linux-amd64.tar.gz
 
 
-sudo tar zxvf crictl-$VERSION-linux-amd64.tar.gz -C /usr/local/bin
+sudo tar zxvf crictl-$VERSION-linux-amd64.tar.gz -C /usr/bin
 rm -f crictl-$VERSION-linux-amd64.tar.gz
 
 ```
 
  * crictl.yaml 파일 설정
+  > 침고: 이미지 엔드 포인트가 설정되지 않은 경우 crictl 기본적으로 런타임 엔드 포인트 설정을 사용합니다
+     
 ```bash
 $ cat > /etc/crictl.yaml <<EOF
 runtime-endpoint: unix:///run/containerd/containerd.sock
 image-endpoint: unix:///run/containerd/containerd.sock
 timeout: 10
 EOF
- 
+
+또는 crictl 명령어 사용 (crictl config --help )
+
+$ crictl config \
+    --set runtime-endpoint=unix:///run/containerd/containerd.sock \
+    --set image-endpoint=unix:///run/containerd/containerd.sock \
+    --set timeout=10
+
 # image list 확인 
 $ crictl images 
 ```
@@ -181,3 +190,4 @@ $ crictl images
 ----
 # 참조
 > [Container Runtime Interface (CRI) CLI](https://github.com/kubernetes-sigs/cri-tools/blob/master/docs/crictl.md)
+> [Debugging Kubernetes nodes with crictl](https://kubernetes.io/docs/tasks/debug-application-cluster/crictl/)
