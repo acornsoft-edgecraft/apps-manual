@@ -83,8 +83,10 @@ spec:
           resources:
             limits:
               memory: 200Mi
+              cpu: 100m
             requests:
-              memory: 50Mi
+              memory: 200Mi
+              cpu: 100m
           env:
             - name: MY_IP
               valueFrom:
@@ -100,7 +102,7 @@ spec:
     - metadata:
         name: etcd-data
       spec:
-        storageClassName: managed-nfs-storage
+        storageClassName: nfs-storageclass
         accessModes:
           - ReadWriteOnce
         resources:

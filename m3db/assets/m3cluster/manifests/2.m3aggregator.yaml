@@ -262,7 +262,7 @@ metadata:
   namespace: m3db
 spec:
   serviceName: "m3aggregator"
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: m3aggregator
@@ -317,8 +317,10 @@ spec:
           resources:
             limits:
               memory: 3Gi
+              cpu: 200m
             requests:
-              memory: 2Gi
+              memory: 3Gi
+              cpu: 200m
       volumes:
         - name: config
           configMap:

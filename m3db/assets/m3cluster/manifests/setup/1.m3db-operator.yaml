@@ -29,6 +29,7 @@ rules:
         "services",
         "secrets",
         "configmaps",
+        "resourcequota",
       ]
     verbs: ["create", "get", "update", "delete", "list"]
   - apiGroups: ["batch"]
@@ -94,4 +95,11 @@ spec:
           env:
             - name: ENVIRONMENT
               value: production
+          resources:
+            limits:
+              memory: 100Mi
+              cpu: 50m
+            requests:
+              memory: 100Mi
+              cpu: 50m
       serviceAccount: m3db-operator
