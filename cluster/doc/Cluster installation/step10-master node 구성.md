@@ -17,10 +17,13 @@
 ### 개별 master node TLS 인증서 생성
  
 ```bash
+$ mkdir /etc/kubernetes/acloud
+
 $ openssl genrsa -out /etc/kubernetes/pki/apiserver.key 2048
 $ openssl req -new -key /etc/kubernetes/pki/apiserver.key -subj '/CN=kube-apiserver' |
   openssl x509 -req -CA /etc/kubernetes/pki/ca.crt -CAkey /etc/kubernetes/pki/ca.key -CAcreateserial -out /etc/kubernetes/pki/apiserver.crt -days 36500 -extensions v3_req_apiserver -extfile /opt/kubernetes/pki/common-openssl.conf
 
+$ openssl genrsa -out /etc/kubernetes/pki/apiserver-kubelet-client.key 2048
 $ openssl req -new -key /etc/kubernetes/pki/apiserver-kubelet-client.key -subj '/CN=kube-apiserver-kubelet-client/O=system:masters' |
   openssl x509 -req -CA /etc/kubernetes/pki/ca.crt -CAkey /etc/kubernetes/pki/ca.key -CAcreateserial -out /etc/kubernetes/pki/apiserver-kubelet-client.crt -days 36500 -extensions v3_req_client -extfile /opt/kubernetes/pki/common-openssl.conf
 
@@ -47,13 +50,14 @@ $ openssl req -new -key /etc/kubernetes/acloud/acloud-client.key -subj '/CN=aclo
 
  * Ubuntu 
 ```bash
-$ apt-get install -y kubelet=1.20.2-00 kubeadm=1.20.2-00 kubectl=1.20.2-00
+$ apt-get install -y kubelet=1.20.8-00 kubeadm=1.20.8-00 kubectl=1.20.8-00
 $ apt-get install -y jq
 
 ```  
  * Centos, RHEL 
 ```bash
-$ yum install -y kubelet-1.20.2 kubeadm-1.20.2 kubectl-1.20.2 --disableexcludes=kubernetes
+$ yum clean all; yum -y udpate
+$ yum install -y kubelet-1.20.8 kubeadm-1.20.8 kubectl-1.20.8
 $ yum install -y jq
 ```  
 
