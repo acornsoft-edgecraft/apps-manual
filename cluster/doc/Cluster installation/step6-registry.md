@@ -92,7 +92,8 @@ registryctl         /home/harbor/start.sh            Up (health: starting)
 
 $ cp /data/harbor/cert/ca.crt /etc/docker/certs.d/{registry-ip}
 
-$ cp /data/harbor/cert/ca.crt /var/lib/cocktail/harbor/common/config/nginx/ca.crt
+$ mkdir /var/lib/cocktail/harbor/common/config/nginx/cert
+$ cp /data/harbor/cert/ca.crt /var/lib/cocktail/harbor/common/config/nginx/cert/ca.crt
 $ vi /var/lib/cocktail/harbor/common/config/nginx/nginx.conf
    ...
      location /ca.crt {

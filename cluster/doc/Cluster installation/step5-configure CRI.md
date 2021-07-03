@@ -114,7 +114,7 @@ oom_score = 0
     stream_idle_timeout = "4h0m0s"
     enable_selinux = false
     selinux_category_range = 1024
-    sandbox_image = "k8s.gcr.io/pause:3.2"
+    sandbox_image = "192.168.77.128/google_containers/pause:3.2"  # 폐쇄망일 경우 반드시 변경햐야 함. 기본값은 k8s.gcr.io/pause:3.2 임.
     stats_collect_period = 10
     systemd_cgroup = true   # systemd_cgroup = true로 변경
     enable_tls_streaming = false

@@ -17,7 +17,7 @@
 ### 개별 master node TLS 인증서 생성
  
 ```bash
-$ mkdir /etc/kubernetes/acloud
+$ mkdir /etc/kubernetes/acloud 
 
 $ openssl genrsa -out /etc/kubernetes/pki/apiserver.key 2048
 $ openssl req -new -key /etc/kubernetes/pki/apiserver.key -subj '/CN=kube-apiserver' |
@@ -43,6 +43,7 @@ $ openssl genrsa -out /etc/kubernetes/pki/scheduler.key 2048
 $ openssl req -new -key /etc/kubernetes/pki/scheduler.key -subj '/CN=system:kube-scheduler' |
   openssl x509 -req -CA /etc/kubernetes/pki/ca.crt -CAkey /etc/kubernetes/pki/ca.key -CAcreateserial -out /etc/kubernetes/pki/scheduler.crt -days 36500 -extensions v3_req_client -extfile /opt/kubernetes/pki/common-openssl.conf
 
+// 아래 acloud 인증서는 master1에서만 작업하면 됨.
 $ openssl genrsa -out /etc/kubernetes/acloud/acloud-client.key 2048
 $ openssl req -new -key /etc/kubernetes/acloud/acloud-client.key -subj '/CN=acloud-client' |
   openssl x509 -req -CA /etc/kubernetes/pki/ca.crt -CAkey /etc/kubernetes/pki/ca.key -CAcreateserial -out /etc/kubernetes/acloud/acloud-client.crt -days 36500 -extensions v3_req_client -extfile /opt/kubernetes/pki/common-openssl.conf
@@ -56,7 +57,7 @@ $ apt-get install -y jq
 ```  
  * Centos, RHEL 
 ```bash
-$ yum clean all; yum -y udpate
+$ yum clean all; yum -y update
 $ yum install -y kubelet-1.20.8 kubeadm-1.20.8 kubectl-1.20.8
 $ yum install -y jq
 ```  
@@ -209,13 +210,13 @@ resources:
 EOF
 ```
 
-### kubeadm init
+### kubeadm.yaml
 ```bash
 $ cat > /etc/kubernetes/kubeadm.yaml <<EOF
 apiVersion: kubeadm.k8s.io/v1beta2
 kind: InitConfiguration
 localAPIEndpoint:
-  advertiseAddress: 192.168.77.223
+  advertiseAddress: 192.168.77.121               // 각 master node IP
   bindPort: 6443
 nodeRegistration:
   criSocket: /run/containerd/containerd.sock
@@ -225,7 +226,9 @@ kind: ClusterConfiguration
 etcd:
   external:
     endpoints:
-    - https://192.168.77.223:2379
+    - https://192.168.77.121:2379
+    - https://192.168.77.122:2379
+    - https://192.168.77.123:2379        
     caFile: /etc/kubernetes/pki/etcd/ca.crt
     certFile: /etc/kubernetes/pki/etcd/server.crt
     keyFile: /etc/kubernetes/pki/etcd/server.key
@@ -233,8 +236,8 @@ networking:
   dnsDomain: cluster.local
   serviceSubnet: 172.16.0.0/16
   podSubnet: 10.0.0.0/16
-kubernetesVersion: 1.20.6
-controlPlaneEndpoint: 192.168.77.223:6443
+kubernetesVersion: 1.20.8
+controlPlaneEndpoint: 192.168.77.121:6443      // master1 node IP or LB IP
 certificatesDir: /etc/kubernetes/pki
 apiServer:
   extraArgs:
@@ -250,7 +253,6 @@ apiServer:
     audit-log-maxsize: "100"
     audit-log-path: /var/log/kubernetes/kubernetes-audit.log
     audit-policy-file: /etc/kubernetes/audit-policy.yaml
-    audit-webhook-config-file: /etc/kubernetes/audit-webhook
   extraVolumes:
   - name: audit-policy
     hostPath: /etc/kubernetes
@@ -262,7 +264,7 @@ apiServer:
     mountPath: /data/k8s-audit
     pathType: DirectoryOrCreate
   certSANs:
-  - 192.168.77.223
+  - 192.168.77.121                            // master1 node IP or LB IP
   - localhost
   - 127.0.0.1
 controllerManager:
@@ -275,7 +277,7 @@ scheduler:
   extraArgs:
     address: "0.0.0.0"
     feature-gates: TTLAfterFinished=true,RemoveSelfLink=false
-imageRepository: k8s.gcr.io
+imageRepository: 192.168.77.128/google_containers
 ---
 apiVersion: kubeproxy.config.k8s.io/v1alpha1
 kind: KubeProxyConfiguration
@@ -290,18 +292,39 @@ readOnlyPort: 0
 clusterDNS:
 - 172.16.0.10
 EOF
+```
 
+### kubelet 설정 및 기동
+```bash
+$ cat > /etc/sysconfig/kubelet <<EOF
+KUBELET_EXTRA_ARGS="--log-dir=/data/log \
+--logtostderr=false \
+--v=2 \
+--cluster-dns=172.16.0.10 \
+--cluster-domain=cluster.local \
+--node-status-update-frequency=4s \
+--node-labels=cube.acornsoft.io/role=master,cube.acornsoft.io/clusterid=test-cluster"
+EOF
+
+$ systemctl enable kubelet
+$ systemctl start kubelet
+
+```
+
+### kubeadm init 으로 master node 초기화
+```bash
 $ kubeadm init --config=/etc/kubernetes/kubeadm.yaml --ignore-preflight-errors=all
 ```
 
-### admin.conf, controller-manager.conf, scheduler.conf 파일 구성
+
+### admin.conf, controller-manager.conf, scheduler.conf 파일 구성 - 인증서 기입 필요
 ```bash
 $ cat > /etc/kubernetes/admin.conf <<EOF
 apiVersion: v1
 clusters:
 - cluster:
-    certificate-authority-data: {{ ca_data.stdout | b64encode }}
-    server: https://{{ hostvars[inventory_hostname]['ip'] }}:{{ api_secure_port }}
+    certificate-authority-data: 
+    server: https://192.168.77.121:6443            // 각 master node ip로 설정
   name: kubernetes
 contexts:
 - context:
@@ -314,16 +337,16 @@ preferences: {}
 users:
 - name: kubernetes-admin
   user:
-    client-certificate-data: {{ admin_crt_data.stdout | b64encode }}
-    client-key-data: {{ admin_key_data.stdout | b64encode }}
+    client-certificate-data: 
+    client-key-data: 
 EOF
 
 $ cat > /etc/kubernetes/controller-manager.conf <<EOF
 apiVersion: v1
 clusters:
 - cluster:
-    certificate-authority-data: {{ ca_data.stdout | b64encode }}
-    server: https://{{ hostvars[inventory_hostname]['ip'] }}:{{ api_secure_port }}
+    certificate-authority-data: 
+    server: https://192.168.77.121:6443             // 각 master node ip로 설정
   name: kubernetes
 contexts:
 - context:
@@ -336,16 +359,16 @@ preferences: {}
 users:
 - name: system:kube-controller-manager
   user:
-    client-certificate-data: {{ controller_manager_crt_data.stdout | b64encode }}
-    client-key-data: {{ controller_manager_key_data.stdout | b64encode }}
+    client-certificate-data: 
+    client-key-data: 
 EOF
 
 $ cat > /etc/kubernetes/scheduler.conf <<EOF
 apiVersion: v1
 clusters:
 - cluster:
-    certificate-authority-data: {{ ca_data.stdout | b64encode }}
-    server: https://{{ hostvars[inventory_hostname]['ip'] }}:{{ api_secure_port }}
+    certificate-authority-data:
+    server: https://192.168.77.121:6443             // 각 master node ip로 설정
   name: kubernetes
 contexts:
 - context:
@@ -358,8 +381,8 @@ preferences: {}
 users:
 - name: system:kube-scheduler
   user:
-    client-certificate-data: {{ scheduler_crt_data.stdout | b64encode }}
-    client-key-data: {{ scheduler_key_data.stdout | b64encode }}
+    client-certificate-data:
+    client-key-data:
 EOF
 ```
 
@@ -387,8 +410,8 @@ $ cat > /etc/kubernetes/acloud/acloud-client-kubeconfig <<EOF
 apiVersion: v1
 clusters:
 - cluster:
-    certificate-authority-data: {{ acloud_client_ca_crt | b64encode }}
-    server: https://{{ lb_ip }}:{{ lb_port }}
+    certificate-authority-data: 
+    server: https://192.168.77.121:6443             // 각 master node ip로 설정
   name: acloud-client
 contexts:
 - context:
@@ -401,14 +424,15 @@ preferences: {}
 users:
 - name: acloud-client
   user:
-    client-certificate-data: {{ acloud_client_crt | b64encode }}
-    client-key-data: {{ acloud_client_key | b64encode }}
+    client-certificate-data: 
+    client-key-data: 
 EOF
 ```
 
 ### alias
+ * RHEL, Centos .bash_profile 설정
 ```bash
-$ cat > /root/.profile <<EOF
+$ cat > /root/.bash_profile <<EOF
 export ETCDCTL_API=3
 export ETCDCTL_CACERT=/etc/kubernetes/pki/etcd/ca.crt
 export ETCDCTL_CERT=/etc/kubernetes/pki/etcd/peer.crt
@@ -417,13 +441,14 @@ export ETCDCTL_KEY=/etc/kubernetes/pki/etcd/peer.key
 export KUBECONFIG=/etc/kubernetes/admin.conf
 
 alias ll='ls -al'
-alias etcdlet="etcdctl --endpoints={{ etcd_access_addresses }} "
+alias etcdlet="etcdctl --endpoints=https://192.168.77.121:2379,https://192.168.77.122:2379,https://192.168.77.123:2379 "
 alias psg="ps -ef | grep "
 alias wp="watch -n1 'kubectl get pods --all-namespaces -o wide'"
 alias k="kubectl "
 EOF
 ```
 
+ * Ubuntu .profile 설정
 ```bash
 $ cat > /root/.profile <<EOF
 export ETCDCTL_API=3
@@ -434,7 +459,7 @@ export ETCDCTL_KEY=/etc/kubernetes/pki/etcd/peer.key
 export KUBECONFIG=/etc/kubernetes/admin.conf
 
 alias ll='ls -al'
-alias etcdlet="etcdctl --endpoints={{ etcd_access_addresses }} "
+alias etcdlet="etcdctl --endpoints=https://192.168.77.121:2379,https://192.168.77.122:2379,https://192.168.77.123:2379 "
 alias psg="ps -ef | grep "
 alias wp="watch -n1 'kubectl get pods --all-namespaces -o wide'"
 alias k="kubectl "
@@ -445,17 +470,19 @@ EOF
 ### alias
  * master isolation 옵션이 있을 경우 taint 구성
 ```bash
-kubectl --kubeconfig=/etc/kubernetes/admin.conf taint nodes node1 node-role.kubernetes.io/master:NoSchedule-
+kubectl --kubeconfig=/etc/kubernetes/admin.conf taint nodes vm-onassis-01 node-role.kubernetes.io/master:NoSchedule-
+kubectl --kubeconfig=/etc/kubernetes/admin.conf taint nodes vm-onassis-02 node-role.kubernetes.io/master:NoSchedule-
+kubectl --kubeconfig=/etc/kubernetes/admin.conf taint nodes vm-onassis-03 node-role.kubernetes.io/master:NoSchedule-
 ```
 
-### metrics-server
+### calco and metrics-server copy 및 변수 치환
 ```bash
-$ scp calico.yaml root@{master1-ip}:/etc/kubernetes/addon/calico/calico.yaml
-$ scp metrics-server-rbac.yaml.j2 root@{master1-ip}:/etc/kubernetes/addon/metrics-server/metrics-server-rbac.yaml
-$ scp metrics-server-controller.yaml.j2 root@{master1-ip}:/etc/kubernetes/addon/metrics-server/metrics-server-controller.yaml
+$ scp calico.yaml root@192.168.77.121:/etc/kubernetes/addon/calico/calico.yaml
+$ scp metrics-server-rbac.yaml.j2 root@192.168.77.121:/etc/kubernetes/addon/metrics-server/metrics-server-rbac.yaml
+$ scp metrics-server-controller.yaml.j2 root@192.168.77.121:/etc/kubernetes/addon/metrics-server/metrics-server-controller.yaml
 ```
 
-### Update apiserver endpoint in kube-proxy configmap in order to using haproxy
+### Update apiserver endpoint in kube-proxy configmap when haproxy used as internal loadbalancer
 ```bash
 kubectl --kubeconfig=/etc/kubernetes/admin.conf get cm kube-proxy -n kube-system -o yaml | sed 's#server:.*#server: https://localhost:6443#g' | kubectl --kubeconfig=/etc/kubernetes/admin.conf apply -f -
 kubectl --kubeconfig=/etc/kubernetes/admin.conf delete pods -n kube-system -l k8s-app=kube-proxy
