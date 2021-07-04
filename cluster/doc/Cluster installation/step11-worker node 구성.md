@@ -13,13 +13,13 @@
  
  * Ubuntu 
 ```bash
-$ apt-get install -y kubelet=1.20.2-00 kubeadm=1.20.2-00 kubectl=1.20.2-00
+$ apt-get install -y kubelet=1.20.8-00 kubeadm=1.20.8-00 kubectl=1.20.8-00
 $ apt-get install -y jq
 
 ```  
  * Centos, RHEL 
 ```bash
-$ yum install -y kubelet-1.20.2 kubeadm-1.20.2 kubectl-1.20.2 --disableexcludes=kubernetes
+$ yum install -y kubelet-1.20.8 kubeadm-1.20.8 kubectl-1.20.8 --disableexcludes=kubernetes
 $ yum install -y jq
 ```  
 
@@ -33,8 +33,8 @@ kind: JoinConfiguration
 caCertPath: /etc/kubernetes/pki/ca.crt
 discovery:
   bootstrapToken:
-    apiServerEndpoint: 192.168.77.223:6443
-    token: s3vhzz.aahlr0idsm3y4wmi
+    apiServerEndpoint: 192.168.77.121:6443
+    token: < token 값 >
     unsafeSkipCAVerification: true
 EOF
 
