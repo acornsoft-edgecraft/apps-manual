@@ -234,7 +234,7 @@ etcd:
     keyFile: /etc/kubernetes/pki/etcd/server.key
 networking:
   dnsDomain: cluster.local
-  serviceSubnet: 172.16.0.0/16
+  serviceSubnet: 172.20.0.0/16
   podSubnet: 10.0.0.0/16
 kubernetesVersion: 1.20.8
 controlPlaneEndpoint: 192.168.77.121:6443      // master1 node IP or LB IP
@@ -290,7 +290,7 @@ cgroupDriver: systemd
 nodeStatusUpdateFrequency: 4s
 readOnlyPort: 0
 clusterDNS:
-- 172.16.0.10
+- 172.20.0.10
 EOF
 ```
 
@@ -432,7 +432,7 @@ EOF
 ### alias
  * RHEL, Centos .bash_profile 설정
 ```bash
-$ cat > /root/.bash_profile <<EOF
+$ cat > /root/.bash_profile1 <<EOF
 export ETCDCTL_API=3
 export ETCDCTL_CACERT=/etc/kubernetes/pki/etcd/ca.crt
 export ETCDCTL_CERT=/etc/kubernetes/pki/etcd/peer.crt

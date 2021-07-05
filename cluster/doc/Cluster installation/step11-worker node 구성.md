@@ -38,7 +38,19 @@ discovery:
     unsafeSkipCAVerification: true
 EOF
 
-// Ubuntu: /etc/default/kubelet, Centos: /etc/default/kubelet
+// Ubuntu
+$ cat > /etc/default/kubelet <<EOF
+KUBELET_EXTRA_ARGS="--root-dir=/data/kubelet \
+--log-dir=/data/log \
+--logtostderr=false \
+--v=2 \
+--container-runtime=remote \
+--runtime-request-timeout=15m \
+--container-runtime-endpoint=unix:///run/containerd/containerd.sock \
+--node-labels=cube.acornsoft.io/clusterid=test-cluster"
+EOF
+
+// RHEL, Centos
 $ cat > /etc/sysconfig/kubelet <<EOF
 KUBELET_EXTRA_ARGS="--root-dir=/data/kubelet \
 --log-dir=/data/log \
@@ -49,6 +61,7 @@ KUBELET_EXTRA_ARGS="--root-dir=/data/kubelet \
 --container-runtime-endpoint=unix:///run/containerd/containerd.sock \
 --node-labels=cube.acornsoft.io/clusterid=test-cluster"
 EOF
+
 
 $ systemctl daemon-reload
 $ systemctl start kubelet

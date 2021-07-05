@@ -52,7 +52,7 @@ DNS.4 = kubernetes.default.svc.cluster.local
 DNS.5 = localhost
 IP.1 = 127.0.0.1
 IP.2 = 192.168.77.121                   // master node 별 IP
-IP.3 = 172.16.0.1                       // kubernetes service ip
+IP.3 = 172.20.0.1                       // kubernetes service ip
 ``` 
 
 ```bash
