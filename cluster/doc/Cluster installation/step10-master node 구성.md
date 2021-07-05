@@ -323,7 +323,7 @@ $ cat > /etc/kubernetes/admin.conf <<EOF
 apiVersion: v1
 clusters:
 - cluster:
-    certificate-authority-data: 
+    certificate-authority-data: $(cat /etc/kubernetes/pki/ca.crt | base64 -w0)
     server: https://192.168.77.121:6443            // 각 master node ip로 설정
   name: kubernetes
 contexts:
@@ -337,15 +337,15 @@ preferences: {}
 users:
 - name: kubernetes-admin
   user:
-    client-certificate-data: 
-    client-key-data: 
+    client-certificate-data: $(cat /etc/kubernetes/admin.crt | base64 -w0)
+    client-key-data: $(cat /etc/kubernetes/admin.key | base64 -w0)
 EOF
 
 $ cat > /etc/kubernetes/controller-manager.conf <<EOF
 apiVersion: v1
 clusters:
 - cluster:
-    certificate-authority-data: 
+    certificate-authority-data: $(cat /etc/kubernetes/pki/ca.crt | base64 -w0)
     server: https://192.168.77.121:6443             // 각 master node ip로 설정
   name: kubernetes
 contexts:
@@ -359,15 +359,15 @@ preferences: {}
 users:
 - name: system:kube-controller-manager
   user:
-    client-certificate-data: 
-    client-key-data: 
+    client-certificate-data: $(cat /etc/kubernetes/controller-manager.crt | base64 -w0)
+    client-key-data: $(cat /etc/kubernetes/controller-manager.key | base64 -w0)
 EOF
 
 $ cat > /etc/kubernetes/scheduler.conf <<EOF
 apiVersion: v1
 clusters:
 - cluster:
-    certificate-authority-data:
+    certificate-authority-data: $(cat /etc/kubernetes/pki/ca.crt | base64 -w0)
     server: https://192.168.77.121:6443             // 각 master node ip로 설정
   name: kubernetes
 contexts:
@@ -381,8 +381,8 @@ preferences: {}
 users:
 - name: system:kube-scheduler
   user:
-    client-certificate-data:
-    client-key-data:
+    client-certificate-data: $(cat /etc/kubernetes/scheduler.crt | base64 -w0)
+    client-key-data: $(cat /etc/kubernetes/scheduler.crt | base64 -w0)
 EOF
 ```
 
@@ -410,7 +410,7 @@ $ cat > /etc/kubernetes/acloud/acloud-client-kubeconfig <<EOF
 apiVersion: v1
 clusters:
 - cluster:
-    certificate-authority-data: 
+    certificate-authority-data: $(cat /etc/kubernetes/pki/ca.crt | base64 -w0)
     server: https://192.168.77.121:6443             // 각 master node ip로 설정
   name: acloud-client
 contexts:
@@ -424,8 +424,8 @@ preferences: {}
 users:
 - name: acloud-client
   user:
-    client-certificate-data: 
-    client-key-data: 
+    client-certificate-data: $(cat /etc/kubernetes/acloud/acloud-client.crt | base64 -w0)
+    client-key-data: $(cat /etc/kubernetes/acloud/acloud-client.key | base64 -w0)
 EOF
 ```
 
