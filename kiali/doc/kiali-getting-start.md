@@ -8,6 +8,7 @@ Follow these steps to get started with Istio:
 ![Kiali Architecture](./images/kiali-architecture.png)
 ## Kiali Operator Helm 차트 설치
 - Helm 차트를 사용하여 Kiali CR (istio 네임 스페이스에 Kiali 서버가 설치되도록 트리거)과 함께 최신 Kiali Operator를 설치하려면 다음을 실행한다.
+- kiali-operator의 버전을 확인 하여 values의 image.tag 항목에 적용 한다.
 ```sh
 helm upgrade kiali-operator -i \
   -n monitoring \
@@ -41,7 +42,7 @@ fullnameOverride: ""
 
 image:
   repo: quay.io/kiali/kiali-operator
-  tag: v1.35.0
+  tag: v1.36.0
   pullPolicy: Always
   pullSecrets: []
 
@@ -114,12 +115,12 @@ cr:
       - '**'
     external_services:
       grafana:
-        in_cluster_url: http://grafana.monitoring:3000
+        in_cluster_url: 'http://grafana.monitoring:3000'
         url: ''
       prometheus:
-        url: http://prometheus-server.monitoring:9090
+        url: 'http://prometheus-server.monitoring:9090'
       tracing:
-        in_cluster_url: http://tracing.monitoring/jaeger
+        in_cluster_url: 'http://jaeger-operator-jaeger-query.monitoring:16686'
         url: ''
 ```
 

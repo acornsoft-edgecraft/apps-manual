@@ -80,14 +80,16 @@ spec:
 {{ toYaml .Values.server.env | indent 12}}
           {{- end }}
           args:
-          {{- if .Values.server.retention and not .Values.server.remoteStorage.enabled }}
+          {{- if and (.Values.server.retention) (not .Values.server.remoteStorage.enabled) }}
             - --storage.tsdb.retention.time={{ .Values.server.retention }}
           {{- end }}
             - --config.file={{ .Values.server.configPath }}
-            {{- if .Values.server.storagePath and not .Values.server.remoteStorage.enabled }}
+            {{- if not .Values.server.remoteStorage.enabled }}
+            {{- if .Values.server.storagePath }}
             - --storage.tsdb.path={{ .Values.server.storagePath }}
             {{- else }}
             - --storage.tsdb.path={{ .Values.server.persistentVolume.mountPath }}
+            {{- end }}
             {{- end }}
             - --web.console.libraries=/etc/prometheus/console_libraries
             - --web.console.templates=/etc/prometheus/consoles

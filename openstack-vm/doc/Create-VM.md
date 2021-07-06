@@ -73,6 +73,11 @@ openstack server list
   - 규칙: 모든 UDP / 들어옴 / CIDR: 0.0.0.0
   - 규칙: 다른 프로토콜 / 들어옴 / IP 프로토콜: 4 / CIDR: 0.0.0.0
     - 참조: [프로토콜 설명](https://realforce111.tistory.com/6)
+  
+<br/>
+
+  ![보안그룹-규칙추가](./images/create-security-group-01.png)
+  ![보안그룹-규칙추가](./images/create-security-group-02.png)
 
 ## 프로젝트 설정 - 네트워크
 - 네트워크 생성
@@ -84,6 +89,9 @@ openstack server list
     - 서브넷 이름 지정 (예: <프로젝트명>-subnet)
     - 네트워크 주소 지정 (CIDR 형식의 주소: 192.16.0.0/16)
     - 게이트우에 IP 지겅 (default: 네트워크 주소의 첫번째 주소(192.16.0.1))
+  - 서브넷 세부 정보 탭에서:
+    - DNS 추가 (192.168.77.11 / 192.168.77.12 / 8.8.8.8)
+  
   ![프로젝트-생성](./images/create-network.png)
   ![프로젝트-생성](./images/create-network-01.png)
   ![프로젝트-생성](./images/create-network-02.png)

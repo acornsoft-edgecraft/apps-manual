@@ -22,6 +22,13 @@ helm upgrade prometheus -i \
   --repo https://prometheus-community.github.io/helm-charts \
   prometheus \
   -f values.yaml
+
+## local directory - mkdir charts/ -> <dependencies> 생성(kube-state-metric)
+helm upgrade prometheus -i \
+  -n monitoring \
+  --create-namespace \
+  --cleanup-on-fail \
+  -f values.yaml .
 ```
 
 ## Prometheus configuration
@@ -196,6 +203,7 @@ metadata:
 - m3coordinator-monitor 서비스 수집 포트 : 7203
 - m3dbnode-cluster 서비스 수집 포트 : 9004
 - m3aggregator 서비스 수집 포트 : 6002
+- m3query-monitor 서비스 수집 포트 : 7203
 
 
 ## Remote Endpoints and Storage 설정 추가 - Helm Chart 수정

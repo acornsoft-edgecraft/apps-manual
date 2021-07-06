@@ -693,14 +693,14 @@ server:
     evaluation_interval: 1m
   ## https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write
   ### m3db 사용
-  remoteWrite:
-    - url: "http://m3coordinator.m3db:7201/api/v1/prom/remote/write"
+  # remoteWrite:
+  #   - url: "http://m3coordinator.m3db:7201/api/v1/prom/remote/write"
 
   ## https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_read
   ### m3db 사용
-  remoteRead:
-    - url: "http://m3query.m3db:7201/api/v1/prom/remote/read"
-      read_recent: true
+  # remoteRead:
+  #   - url: "http://m3query.m3db:7201/api/v1/prom/remote/read"
+  #     read_recent: true
 
   ## Additional Prometheus server container arguments
   ##
@@ -1741,6 +1741,62 @@ serverFiles:
         - source_labels: [__meta_kubernetes_service_name]
           action: replace
           target_label: k8s_sname
+
+
+      # Scrape config for Kubelet cAdvisor.
+      #
+      # This is required for Kubernetes 1.7.3 and later, where cAdvisor metrics
+      # (those whose names begin with 'container_') have been removed from the
+      # Kubelet metrics endpoint.  This job scrapes the cAdvisor endpoint to
+      # retrieve those metrics.
+      #
+      # In Kubernetes 1.7.0-1.7.2, these metrics are only exposed on the cAdvisor
+      # HTTP endpoint; use the "/metrics" endpoint on the 4194 port of nodes. In
+      # that case (and ensure cAdvisor's HTTP server hasn't been disabled with the
+      # --cadvisor-port=0 Kubelet flag).
+      #
+      # This job is not necessary and should be removed in Kubernetes 1.6 and
+      # earlier versions, or it will cause the metrics to be scraped twice.
+      - job_name: kubernetes-cadvisor
+
+        # Default to scraping over https. If required, just disable this or change to
+        # `http`.
+        scheme: https
+
+        # Starting Kubernetes 1.7.3 the cAdvisor metrics are under /metrics/cadvisor.
+        # Kubernetes CIS Benchmark recommends against enabling the insecure HTTP
+        # servers of Kubernetes, therefore the cAdvisor metrics on the secure handler
+        # are used.
+        metrics_path: /metrics/cadvisor
+
+        # This TLS & authorization config is used to connect to the actual scrape
+        # endpoints for cluster components. This is separate to discovery auth
+        # configuration because discovery & scraping are two separate concerns in
+        # Prometheus. The discovery auth config is automatic if Prometheus runs inside
+        # the cluster. Otherwise, more config options have to be provided within the
+        # <kubernetes_sd_config>.
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+          # If your node certificates are self-signed or use a different CA to the
+          # master CA, then disable certificate verification below. Note that
+          # certificate verification is an integral part of a secure infrastructure
+          # so this should only be disabled in a controlled environment. You can
+          # disable certificate verification by uncommenting the line below.
+          #
+        ### 주석 -> 해제
+        insecure_skip_verify: true
+        
+        authorization:
+          credentials_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+
+        kubernetes_sd_configs:
+          - role: node
+
+        relabel_configs:
+          - action: labelmap
+            regex: __meta_kubernetes_node_label_(.+)
+
+
 
 # adds additional scrape configs to prometheus.yml
 # must be a string so you have to add a | after extraScrapeConfigs:

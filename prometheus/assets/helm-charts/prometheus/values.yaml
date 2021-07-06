@@ -178,8 +178,8 @@ alertmanager:
     ## If true, alertmanager will create/use a Persistent Volume Claim
     ## If false, use emptyDir
     ##
-    ### true -> false
-    enabled: false
+    ### false -> true
+    enabled: true
 
     ## alertmanager data Persistent Volume access modes
     ## Must match those of existing PV or dynamic provisioner

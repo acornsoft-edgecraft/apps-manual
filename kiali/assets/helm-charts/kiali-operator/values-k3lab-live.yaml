@@ -3,7 +3,7 @@ fullnameOverride: ""
 
 image:
   repo: quay.io/kiali/kiali-operator
-  tag: v1.35.0
+  tag: v1.36.0
   pullPolicy: Always
   pullSecrets: []
 
@@ -57,7 +57,7 @@ allowAdHocKialiImage: false
 # For what a Kiali CR spec can look like, see:
 # https://github.com/kiali/kiali-operator/blob/master/deploy/kiali/kiali_cr.yaml
 cr:
-  create: true
+  create: false
   name: kiali
   # If you elect to create a Kiali CR (--set cr.create=true)
   # and the operator is watching all namespaces (--set watchNamespace="")
@@ -66,14 +66,14 @@ cr:
 
   spec:
     deployment:
+      accessible_namespaces:
+      - '**'
       ingress_enabled: false
       logger:
         log_level: debug
         log_format: text
         sampler_rate: "1"
         time_field_format: "2006-01-02T15:04:05Z07:00"
-      accessible_namespaces:
-      - '**'
     external_services:
       grafana:
         in_cluster_url: 'http://grafana.monitoring:3000'
@@ -81,5 +81,5 @@ cr:
       prometheus:
         url: 'http://prometheus-server.monitoring:9090'
       tracing:
-        in_cluster_url: 'http://tracing.monitoring/jaeger'
+        in_cluster_url: 'http://jaeger-operator-jaeger-query.monitoring:16686'
         url: ''
