@@ -2,7 +2,7 @@
 
 ```sh
 # 라우트 주소를 변경 한다.
-openstack router set --external-gateway public --fixed-ip subnet=public-subnet,ip-address=192.168.77.130 dongmook-router
+openstack router set --external-gateway public --fixed-ip subnet=public-subnet,ip-address=192.168.77.70 sylee-router
 
 # 프로젝트 리소트 쿼터를 설정 한다. 디폴트 값 확인
 openstack quota set --instances 50 ccambo

@@ -178,7 +178,7 @@ alertmanager:
     ## If true, alertmanager will create/use a Persistent Volume Claim
     ## If false, use emptyDir
     ##
-    ### true -> false
+    ### false -> true
     enabled: true
 
     ## alertmanager data Persistent Volume access modes
@@ -836,8 +836,8 @@ server:
     ## If true, Prometheus server will create/use a Persistent Volume Claim
     ## If false, use emptyDir
     ##
-    ### true
-    enabled: true
+    ### true -> false
+    enabled: false
 
     ## Prometheus server data Persistent Volume access modes
     ## Must match those of existing PV or dynamic provisioner
@@ -1492,8 +1492,6 @@ serverFiles:
           target_label: container
           replacement: $1
           action: replace
-
-        
 
       # Scrape config for service endpoints.
       #

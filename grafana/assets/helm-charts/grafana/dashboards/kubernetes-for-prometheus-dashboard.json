@@ -17,8 +17,8 @@
   "editable": true,
   "gnetId": 13105,
   "graphTooltip": 0,
-  "id": 14,
-  "iteration": 1624525831693,
+  "id": 10,
+  "iteration": 1625201868839,
   "links": [
     {
       "$$hashKey": "object:1091",
@@ -2324,19 +2324,24 @@
               }
             },
             {
-              "id": "merge",
-              "options": {}
-            },
-            {
-              "id": "organize",
+              "id": "filterFieldsByName",
               "options": {
-                "excludeByName": {
-                  "Time": true,
-                  "Value #B": false,
-                  "Value #L": false
-                },
-                "indexByName": {},
-                "renameByName": {}
+                "include": {
+                  "names": [
+                    "container",
+                    "Value #A",
+                    "Value #L",
+                    "Value #B",
+                    "Value #C",
+                    "Value #I",
+                    "Value #D",
+                    "Value #H",
+                    "Value #K",
+                    "Value #E",
+                    "Value #F",
+                    "Value #G"
+                  ]
+                }
               }
             }
           ],
@@ -4146,7 +4151,7 @@
       {
         "allValue": "",
         "current": {
-          "selected": true,
+          "selected": false,
           "text": "All",
           "value": "$__all"
         },
@@ -4270,5 +4275,5 @@
   "timezone": "browser",
   "title": "Kubernetes for Prometheus Dashboard",
   "uid": "SpSQKcpMz",
-  "version": 10
+  "version": 4
 }

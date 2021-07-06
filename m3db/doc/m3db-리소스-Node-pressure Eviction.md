@@ -1,16 +1,14 @@
 # Node-pressure Eviction
 
 Follow these steps to get started with Node-pressure Eviction:
-- 1. 노드 리소스 확인
-- 2. Node-pressure Eviction 정책 정하기
+1. 노드 리소스 확인
+2. Node-pressure Eviction 정책 정하기
   
 ## Architecture
 
 
 ## Node-pressure Eviction
 > Kubelet 노드에서 리소스를 회수하기 위해 사전에 포드를 종료합니다.
-
-
 > kubelet이 회수하는 리소스의 양이 적 으면 시스템이 반복적으로 제거 임계 값에 도달 할 수 있습니다. 이는 잘못된 예약 결정과 Pod의 빈번한 제거로 이어질 수 있으므로 바람직한 동작이 아닙니다.  
 > 이 시나리오를 방지하기 위해 사용자는 —- eviction-minimum-reclaimkubelet 바이너리에서 플래그를 사용하여 리소스 당 최소 회수 수준을 설정할 수 있다.
 
