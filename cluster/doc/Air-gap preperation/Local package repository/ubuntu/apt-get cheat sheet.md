@@ -15,13 +15,13 @@ $ apt-get build-dep [패키지명] : 받은 소스코드를 의존성있게 빌�
 $ apt-cache search [패키지명] : 패키지 검색
 $ apt-cache show [패키지명] : 패키지 정보 보기.
 $ apt-cache madison [패키지명] : 사용 가능한 패키지 버전을 표 형식으로 표시함.
-  $ apt-cache madison containerd.io
+$ apt-cache madison containerd.io
   containerd.io |    1.4.6-1 | https://download.docker.com/linux/ubuntu bionic/stable amd64 Packages
   containerd.io |    1.4.4-1 | https://download.docker.com/linux/ubuntu bionic/stable amd64 Packages
   containerd.io |    1.4.3-2 | https://download.docker.com/linux/ubuntu bionic/stable amd64 Packages
   containerd.io |    1.4.3-1 | https://download.docker.com/linux/ubuntu bionic/stable amd64 Packages
   ...
-  $ apt-cache madison docker-ce
+$ apt-cache madison docker-ce
    docker-ce | 5:20.10.7~3-0~ubuntu-bionic | https://download.docker.com/linux/ubuntu bionic/stable amd64 Packages
    docker-ce | 5:20.10.6~3-0~ubuntu-bionic | https://download.docker.com/linux/ubuntu bionic/stable amd64 Packages
    docker-ce | 5:20.10.5~3-0~ubuntu-bionic | https://download.docker.com/linux/ubuntu bionic/stable amd64 Packages
@@ -33,7 +33,7 @@ $ apt-cache madison [패키지명] : 사용 가능한 패키지 버전을 표 �
    docker-ce | 5:19.03.15~3-0~ubuntu-bionic | https://download.docker.com/linux/ubuntu bionic/stable amd64 Packages
    ...
 $ apt-cache policy [패키지명] : 패키지의 우선 순위 선택에 대한 자세한 정보 출력함.
-  $ apt-cache policy docker-ce
+$ apt-cache policy docker-ce
   
 $ dpkg --get-selections | grep [패키지명] : Get list of selections to stdout.
 $ dpkg -l | grep [패키지명]
