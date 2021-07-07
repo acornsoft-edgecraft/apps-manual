@@ -25,7 +25,7 @@ $ cp /etc/etcd/etcd-v3.4.14-linux-amd64/etcdctl /usr/bin/etcdctl
 $ cat > /etc/etcd/etcd.conf <<EOF 
 
 #[member]
-ETCD_NAME=vm-onassis-01                                         // 각 etcd node별로 hostname 변경
+ETCD_NAME=vm-onassis-01
 
 ETCD_DATA_DIR=/data/etcd
 #ETCD_SNAPSHOT_COUNTER="10000"
@@ -36,8 +36,8 @@ ETCD_DATA_DIR=/data/etcd
 #ETCD_CORS=""
 
 #[cluster]
-ETCD_INITIAL_ADVERTISE_PEER_URLS=https://192.168.77.121:2380    // 각 etcd node별로 ip 변경
-ETCD_INITIAL_CLUSTER=node1=https://192.168.77.121:2380          // 각 etcd node별로 ip 변경
+ETCD_INITIAL_ADVERTISE_PEER_URLS=https://192.168.77.121:2380
+ETCD_INITIAL_CLUSTER=vm-onassis-01=https://192.168.77.121:2380,vm-onassis-02=https://192.168.77.122:2380,vm-onassis-03=https://192.168.77.123:2380
 ETCD_INITIAL_CLUSTER_STATE=new
 ETCD_INITIAL_CLUSTER_TOKEN=etcd-k8-cluster
 #ETCD_DISCOVERY=""
@@ -45,7 +45,7 @@ ETCD_INITIAL_CLUSTER_TOKEN=etcd-k8-cluster
 #ETCD_DISCOVERY_FALLBACK="proxy"
 #ETCD_DISCOVERY_PROXY=""
 ETCD_LISTEN_PEER_URLS=https://0.0.0.0:2380
-ETCD_ADVERTISE_CLIENT_URLS=https://192.168.77.121:2379          // 각 etcd node별로 ip 변경
+ETCD_ADVERTISE_CLIENT_URLS=https://192.168.77.121:2379
 ETCD_LISTEN_CLIENT_URLS="https://0.0.0.0:2379"
 
 #[proxy]

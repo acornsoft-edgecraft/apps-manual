@@ -1,4 +1,4 @@
-s[TOC]
+[TOC]
 
 # 1. Test 장비 정보
  * vm-onassis-01	centos8	172.16.0.121, 192.168.77.121 8Core.8G memory.80G disk
@@ -22,13 +22,12 @@ $ sudo -i
  * rpm package를 192.168.77.128 서버에서 작업한다고 가정함. 
  * 우선 local-repository를 사전 준비하기 위해서는 createrepo, yum-utils package를 설치함. 
  * Repository로 사용할 디렉토리(아래에서는 /data/localrepo)로 생성한 후 필요한 package를 yumdownloader 명령을 사용하여 저장한 후 "createrepo ."으로 yum db를 만들어 주면 됨.
- * yum로 rpm파일을 다운로드할 경우 `--downloadonly --downloaddir` 옵션을 설정하여 지정한 디렉토리에 다운로드만 받도록 한다.
  * yum --downloadonly 옵션으로도 rpm package를 다운로드 할 수는 있으나, **이미 설치된 package일 경우 다운로드 하지 않는 문제가 있음**.
    이를 해결하기 위해 yumdownloader 사용하고, `--arch x86_64` 로 지정함으로써 x86_64 아키텍처를 위한 package만 다운로드 하도록 한다. 단, package가 noarch로만 되어 있는 경우에는 `--arch x86_64`는 지정하지 않는다.
  * 설치 순서는 아래와 같이 진행한다.
     1. 필요한 rpm 파일 다운로드
-    2. createrepo 로 rmp 파일을 스캔하여 repomd.xml 파일 생성
-    3. Nginx로 rmp파일을 다른 node에서 access 할 수 있도록 설정
+    2. createrepo 로 rpm 파일을 스캔하여 repomd.xml 파일 생성
+    3. nginx로 rmp파일을 다른 node에서 access 할 수 있도록 설정
  * yum 주요 사용볍은 [yum cheat sheet](yum cheat sheet.md) 을 참고한다.
 
 
@@ -135,6 +134,7 @@ $ createrepo .
 ```bash
 $ mv /etc/yum.repos.d /etc/yum.repos.d.bak
 
+# 우선 로컬 파일로 repository를 설정한 후 nginx를 설치 & 기동 한 후 다시 URL로 변경하여 jq 패키지가 설치되는지 확인한다.
 $ cat > /etc/yum.repos.d/local.repo <<EOF
 [LocalRepo_BaseOS]
 name=Local Repository
