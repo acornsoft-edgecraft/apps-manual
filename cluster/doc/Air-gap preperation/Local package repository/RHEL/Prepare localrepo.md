@@ -31,6 +31,18 @@ $ sudo -i
     3. Nginx로 rmp파일을 다른 node에서 access 할 수 있도록 설정
  * yum 주요 사용볍은 [yum cheat sheet](yum cheat sheet.md) 을 참고한다.
 
+
+## repoquery / repotrack 사용법
+종속성과 함께 패키지를 다운로드하기 위해 자주 사용되는 "**yumdownloader –resolve**"명령이 모든 종속성을 항상 성공적으로 인식하는 것은 아닙니다. "repoquery"를 사용하여 종속성을 찾은 다음 "yumdownloader"를 사용하여 다운로드하는 것이 좋습니다.
+
+~~~sh
+## 예를 들어 repoquery 명령을 사용하여 firefox RPM에 대한 모든 종속성을 찾은 다음 "yumdownloader"와 함께 명령 출력을 사용하여 종속성을 다운로드 할 수 있습니다.
+$ repoquery -R --resolve --recursive $PACKAGE_NAME | xargs -r yumdownloader
+
+## "repotrack"유틸리티를 사용하여 모든 종속성과 함께 RPM을 다운로드 할 수도 있습니다. 예를 들면 :
+$ repotrack $PACKAGE_NAME
+~~~
+
 ## 2.2 rpm package download
  * docker, kubernetes repository 설정
 ```bash
@@ -71,7 +83,9 @@ $ yumdownloader --arch x86_64 --resolve  --downloaddir=. createrepo
 $ yumdownloader --resolve --downloaddir=. yum-utils
 
 $ yumdownloader --arch x86_64 --resolve --downloaddir=. jq
-$ yumdownloader --resolve --downloaddir=. nginx
+# $ yumdownloader --resolve --downloaddir=. nginx
+# 누락되느 패키지가 생겨서 repotrack 명령을 사용 한다.
+$ repotrack nginx
 $ yumdownloader --arch x86_64 --resolve --downloaddir=. telnet
 $ yumdownloader --arch x86_64 --resolve --downloaddir=. net-tools
 $ yumdownloader --arch x86_64 --resolve --downloaddir=. bind-utils
@@ -196,3 +210,4 @@ $ tar -cvf localrepo_20210607.tar /data/localrepo
  * https://github.com/kubernetes-sigs/kubespray/blob/master/docs/centos8.md
  * https://docs.projectcalico.org/reference/felix/configuration#iptables-dataplane-configuration
  * https://www.redhat.com/en/blog/using-nftables-red-hat-enterprise-linux-8
+ * https://www.thegeekdiary.com/downloading-rpm-packages-with-dependencies-yumdownloader-vs-yum-downloadonly-vs-repoquery/
