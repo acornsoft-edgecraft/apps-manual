@@ -36,7 +36,7 @@ $ sudo -i
 
 ~~~sh
 ## 예를 들어 repoquery 명령을 사용하여 firefox RPM에 대한 모든 종속성을 찾은 다음 "yumdownloader"와 함께 명령 출력을 사용하여 종속성을 다운로드 할 수 있습니다.
-$ repoquery -R --resolve --recursive $PACKAGE_NAME | xargs -r yumdownloader
+$ repoquery --requires --resolve $PACKAGE_NAME | xargs -r yumdownloader
 
 ## "repotrack"유틸리티를 사용하여 모든 종속성과 함께 RPM을 다운로드 할 수도 있습니다. 예를 들면 :
 $ repotrack $PACKAGE_NAME
