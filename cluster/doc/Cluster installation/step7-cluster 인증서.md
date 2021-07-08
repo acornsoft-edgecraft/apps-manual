@@ -67,20 +67,16 @@ $ openssl req -new -key /opt/kubernetes/pki/sa.key -subj '/CN=system:kube-contro
 
 $ openssl genrsa -out /opt/kubernetes/pki/front-proxy-ca.key 2048
 $ openssl req -x509 -new -nodes -key /opt/kubernetes/pki/front-proxy-ca.key -days 36500 -out /opt/kubernetes/pki/front-proxy-ca.crt -subj '/CN=front-proxy-ca' -extensions v3_ca -config /opt/kubernetes/pki/common-openssl.conf
+
+$ openssl genrsa -out /opt/kubernetes/pki/apiserver-etcd-client.key 2048
+$ openssl req -new -key /opt/kubernetes/pki/apiserver-etcd-client.key -subj '/O=system:masters/CN=kube-apiserver-etcd-client' |
+  openssl x509 -req -CA /opt/kubernetes/pki/etcd/ca.crt -CAkey /opt/kubernetes/pki/etcd/ca.key -CAcreateserial -out /opt/kubernetes/pki/apiserver-etcd-client.crt -days 36500 -extensions v3_req_client -extfile /opt/kubernetes/pki/common-openssl.conf
 ```
 
 # 2. ETCD cluster 인증서 생성
 ```bash
 $ openssl genrsa -out /opt/kubernetes/pki/etcd/ca.key 2048
 $ openssl req -x509 -new -nodes -key /opt/kubernetes/pki/etcd/ca.key -days 36500 -out /opt/kubernetes/pki/etcd/ca.crt -subj '/CN=etcd-ca' -extensions v3_ca -config /opt/kubernetes/pki/common-openssl.conf
-
-$ openssl genrsa -out /opt/kubernetes/pki/apiserver-etcd-client.key 2048
-$ openssl req -new -key /opt/kubernetes/pki/apiserver-etcd-client.key -subj '/O=system:masters/CN=kube-apiserver-etcd-client' |
-  openssl x509 -req -CA /opt/kubernetes/pki/etcd/ca.crt -CAkey /opt/kubernetes/pki/etcd/ca.key -CAcreateserial -out /opt/kubernetes/pki/apiserver-etcd-client.crt -days 36500 -extensions v3_req_client -extfile /opt/kubernetes/pki/common-openssl.conf
-
-$ openssl genrsa -out /opt/kubernetes/pki/etcd/healthcheck-client.key 2048
-$ openssl req -new -key /opt/kubernetes/pki/etcd/healthcheck-client.key -subj '/O=system:masters/CN=kube-etcd-healthcheck-client' |
-  openssl x509 -req -CA /opt/kubernetes/pki/etcd/ca.crt -CAkey /opt/kubernetes/pki/etcd/ca.key -CAcreateserial -out /opt/kubernetes/pki/etcd/healthcheck-client.crt -days 36500 -extensions v3_req_client -extfile /opt/kubernetes/pki/common-openssl.conf
 ```
 
 # 3. 인증서 복사
@@ -115,12 +111,6 @@ $ ls -al /etc/kubernetes/pki/etcd
 -rw-r--r--. 1 root root 1046  6월 29 17:18 ca.crt
 -rw-------. 1 root root 1675  6월 29 17:18 ca.key
 -rw-r--r--. 1 root root   41  6월 29 17:20 ca.srl
--rw-r--r--. 1 root root 1127  6월 29 17:20 healthcheck-client.crt
--rw-r--r--. 1 root root 1679  6월 29 17:20 healthcheck-client.key
--rw-r--r--. 1 root root 1139  6월 29 17:20 peer.crt
--rw-r--r--. 1 root root 1679  6월 29 17:20 peer.key
--rw-r--r--. 1 root root 1139  6월 29 17:20 server.crt
--rw-r--r--. 1 root root 1679  6월 29 17:20 server.key
 ```
 
 # 3.2 master 2, 3번 노드
@@ -143,7 +133,7 @@ $ scp /etc/kubernetes/pki/sa.key root@192.168.77.122:/etc/kubernetes/pki/sa.key
 $ scp /etc/kubernetes/pki/sa.crt root@192.168.77.122:/etc/kubernetes/pki/sa.crt
 
 $ scp /etc/kubernetes/pki/etcd/ca.key root@192.168.77.122:/etc/kubernetes/pki/etcd/ca.key
-$ scp /etc/kubernetes/pki/etcd/ca.crt root@192.168.77.122:/etc/kubernetes/pki/etcd/ca.key
+$ scp /etc/kubernetes/pki/etcd/ca.crt root@192.168.77.122:/etc/kubernetes/pki/etcd/ca.crt
 
 
 $ mkdir -p /etc/kubernetes/pki/etcd
@@ -157,7 +147,7 @@ $ scp /etc/kubernetes/pki/sa.key root@192.168.77.123:/etc/kubernetes/pki/sa.key
 $ scp /etc/kubernetes/pki/sa.crt root@192.168.77.123:/etc/kubernetes/pki/sa.crt
 
 $ scp /etc/kubernetes/pki/etcd/ca.key root@192.168.77.123:/etc/kubernetes/pki/etcd/ca.key
-$ scp /etc/kubernetes/pki/etcd/ca.crt root@192.168.77.123:/etc/kubernetes/pki/etcd/ca.key
+$ scp /etc/kubernetes/pki/etcd/ca.crt root@192.168.77.123:/etc/kubernetes/pki/etcd/ca.crt
 ```
 
  * PC에서 SSH 인증키를 가지고 있으면 master1에서 download 후 master 2,3으로 upload
