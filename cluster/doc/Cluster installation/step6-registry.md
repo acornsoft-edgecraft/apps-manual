@@ -21,7 +21,7 @@ $ mkdir -p /var/lib/cocktail/cert
 $ mkdir -p /data/harbor/cert
 $ mkdir -p /etc/docker/certs.d/{harbor-ip}
 
-$ scp etcd-v3.4.14-linux-amd64.tar.gz {user-id}@{harbor-ip}:/tmp
+# curl -O https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64
 $ scp docker-compose-Linux-x86_64 {user-id}@{harbor-ip}:/tmp
 
 $ cp /tmp/harbor-offline-installer-v1.10.3.tgz /var/lib/cocktail
@@ -64,7 +64,7 @@ $ openssl req -x509 -new -nodes -key /var/lib/cocktail/cert/ca.key -days 36000 -
 $ openssl genrsa -out /data/harbor/cert/harbor.key 2048
 $ openssl req -new -key /data/harbor/cert/harbor.key -subj '/CN=harbor' |
   openssl x509 -req -CA /data/harbor/cert/ca.crt -CAkey /var/lib/cocktail/cert/ca.key -CAcreateserial -out /data/harbor/cert/harbor.crt -days 36000 -extensions v3_req_server -extfile /var/lib/cocktail/cert/openssl.conf
-  
+
 // 공인인증서를 지정할 경우에는 해당 인증서를 복사해 준다.
 $ scp harbor.crt root@{harbor-ip}:/data/harbor/cert/harbor.crt
 $ scp harbor.key root@{harbor-ip}:/data/harbor/cert/harbor.key
