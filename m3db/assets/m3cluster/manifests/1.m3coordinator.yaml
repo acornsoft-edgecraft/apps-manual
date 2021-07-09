@@ -146,18 +146,15 @@ spec:
         app: m3coordinator
     spec:
       affinity:
-        # nodeAffinity:
-        #   requiredDuringSchedulingIgnoredDuringExecution:
-        #     nodeSelectorTerms:
-        #       - matchExpressions:
-        #           - key: kubernetes.io/hostname
-        #             operator: In
-        #             values:
-        #               - mworker4
-        #               - mworker5
-        #               - mworker6
-        #               - mworker7
-        #               - mworker8
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - node5
+                      - node7
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 1

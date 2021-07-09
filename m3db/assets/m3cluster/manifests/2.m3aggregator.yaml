@@ -262,7 +262,7 @@ metadata:
   namespace: m3db
 spec:
   serviceName: "m3aggregator"
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: m3aggregator
@@ -272,15 +272,15 @@ spec:
         app: m3aggregator
     spec:
       affinity:
-        # nodeAffinity:
-        #   requiredDuringSchedulingIgnoredDuringExecution:
-        #     nodeSelectorTerms:
-        #       - matchExpressions:
-        #           - key: kubernetes.io/hostname
-        #             operator: In
-        #             values:
-        #               - mworker6
-        #               - mworker7
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - node5
+                      - node7
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 1
@@ -291,7 +291,7 @@ spec:
                       operator: In
                       values:
                         - m3db
-                        - m3coordinator
+                        #- m3coordinator
                         - m3aggregator
                 topologyKey: "kubernetes.io/hostname"
       containers:

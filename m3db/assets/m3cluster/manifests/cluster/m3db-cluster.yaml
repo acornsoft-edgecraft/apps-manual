@@ -24,19 +24,19 @@ spec:
       nodeAffinityTerms:
         - key: kubernetes.io/hostname
           values:
-            - vm-live-02
+            - noee2
     - name: group2
       numInstances: 1
       nodeAffinityTerms:
         - key: kubernetes.io/hostname
           values:
-            - vm-live-03
+            - noee3
     - name: group3
       numInstances: 1
       nodeAffinityTerms:
         - key: kubernetes.io/hostname
           values:
-            - vm-live-04
+            - noee4
   podIdentityConfig:
     sources:
       - PodUID

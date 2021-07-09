@@ -67,7 +67,7 @@ metadata:
   namespace: m3db
 spec:
   serviceName: "m3query"
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: m3query
@@ -77,15 +77,15 @@ spec:
         app: m3query
     spec:
       affinity:
-        # nodeAffinity:
-        #   requiredDuringSchedulingIgnoredDuringExecution:
-        #     nodeSelectorTerms:
-        #       - matchExpressions:
-        #           - key: kubernetes.io/hostname
-        #             operator: In
-        #             values:
-        #               - mworker6
-        #               - mworker7
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - node5
+                      - node7
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 1
@@ -96,7 +96,7 @@ spec:
                       operator: In
                       values:
                         - m3db
-                        - m3coordinator
+                        #- m3coordinator
                         - m3query
                 topologyKey: "kubernetes.io/hostname"
       containers:
