@@ -2,12 +2,19 @@
 
 Follow these steps to get started with nfs-client:
 1. 사전 준비: you must already have an NFS Server
+2. Helm 3
+3. Kubernetes NFS-Client Provisioner Helm chart
   
 ## Architecture
 
 
 ## Installation With Helm
 ```sh
+## Helm is set up properly, add the repo as follows:
+helm repo add stable https://charts.helm.sh/stable
+
+## nfs.server= nfs server ip address
+## nfs.path= nfs server directory
 ## archiveOnDelete=true (default:true) 
 helm upgrade nfs-client-provisioner -i \
   -n kube-system \
@@ -16,7 +23,7 @@ helm upgrade nfs-client-provisioner -i \
   --set nfs.server=x.x.x.x \
   --set nfs.path=/data/nfs/live \
   --set storageClass.archiveOnDelete=true \
-  nfs-client-provisioner
+  stable/nfs-client-provisioner
 ```
 
 ## storageclass 수정
@@ -40,4 +47,4 @@ parameters:
 
 ---
 # 참조
-> [Node-pressure Eviction](https://kubernetes.io/docs/concepts/scheduling-eviction/node-pressure-eviction/)
+> [Kubernetes NFS-Client Provisioner](https://github.com/kubernetes-incubator/external-storage/tree/master/nfs-client)
