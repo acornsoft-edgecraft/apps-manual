@@ -482,8 +482,32 @@ $ scp metrics-server-rbac.yaml.j2 root@192.168.77.121:/etc/kubernetes/addon/metr
 $ scp metrics-server-controller.yaml.j2 root@192.168.77.121:/etc/kubernetes/addon/metrics-server/metrics-server-controller.yaml
 ```
 
-``````
+### metrics-server를 master node에 배포하기 위해서 tolerations 설정을 해준다.
+- metrics-server-controller.yaml 내용을 아래와 같이 수정 한다.
+  - 모든 노드에 스케줄 될수 있도록 tolerations 설정을 한다.
+  - nodeSelector 또는 nodeAffinity 를 사용 해서 master node를 지정 한다.
+  - replicaset을 증가시켜리면 master 노드는 ha 구성 되어 있어야 한다.
+```yaml
+spec:
+  replicas: 2
 
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchLabels:
+                k8s-app: metrics-server
+            topologyKey: kubernetes.io/hostname
+      tolerations:
+      # Make sure metrics-server gets scheduled on all nodes.
+      - effect: NoSchedule
+        operator: Exists
+      nodeSelector:
+        node-role.kubernetes.io/master: ''
+```
+
+- 전체 yaml 내용
 ```yaml
 ---
 apiVersion: v1
@@ -619,8 +643,9 @@ spec:
                 k8s-app: metrics-server
             topologyKey: kubernetes.io/hostname
       tolerations:
-      - key: node-role.kubernetes.io/master
-        effect: NoSchedule
+      # Make sure metrics-server gets scheduled on all nodes.
+      - effect: NoSchedule
+        operator: Exists
       nodeSelector:
         node-role.kubernetes.io/master: ''
       priorityClassName: system-cluster-critical
