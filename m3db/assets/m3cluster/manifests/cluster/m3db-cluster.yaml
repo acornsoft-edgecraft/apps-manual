@@ -24,19 +24,19 @@ spec:
       nodeAffinityTerms:
         - key: kubernetes.io/hostname
           values:
-            - noee2
+            - node2
     - name: group2
       numInstances: 1
       nodeAffinityTerms:
         - key: kubernetes.io/hostname
           values:
-            - noee3
+            - node3
     - name: group3
       numInstances: 1
       nodeAffinityTerms:
         - key: kubernetes.io/hostname
           values:
-            - noee4
+            - node4
   podIdentityConfig:
     sources:
       - PodUID
