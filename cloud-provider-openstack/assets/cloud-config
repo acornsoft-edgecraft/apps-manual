@@ -1,0 +1,16 @@
+# k3lab-live cloud configuration
+[Global]
+auth-url=http://192.168.77.11/identity
+username=admin
+password=@c0rns0ft
+region=RegionOne
+tenant-id=1cf5fa24ba31447d8e8757015af0463b
+domain-id=default
+
+[LoadBalancer]
+use-octavia=true
+subnet-id=d4c17b7f-124d-424d-97ef-a8d038f4144b
+floating-network-id=3bd5f7f4-da7b-4756-8609-514f16666296
+
+#[BlockStorage]
+#bs-version=v2
