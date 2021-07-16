@@ -123,6 +123,20 @@ $ yumdownloader --arch x86_64 --resolve --downloaddir=. --disableexcludes=Kubern
 $ mv container-selinux-2.158.0-1.module_el8.4.0+781+acf4c33b.noarch.rpm container-selinux-2.158.0-1.el8.4.0.noarch.rpm
 
 $ createrepo .
+
+## modulemd-tools install
+## 참고 : https://github.com/rpm-software-management/modulemd-tools
+## 편의상 바이너리 파일로 설치 한다.
+curl -O http://mirror.centos.org/centos/8-stream/AppStream/x86_64/os/Packages/modulemd-tools-0.7-4.el8.noarch.rpm
+yum install modulemd-tools-0.7-4.el8.noarch.rpm
+
+# generate modules meta info
+repo2module  -s stable -d . modules.yaml
+# adjust modules meta info to traditional rpm repo
+modifyrepo_c --mdtype=modules modules.yaml repodata/
+# 이 모든 작업이 끝나면 repodata dir에서 xxxx-modules.yaml.gz와 같은 파일 이름을 찾을 수 있습니다.
+# 이제 repo가 ​​작동해야 합니다
+
 ```
 
 # 3. 검증
@@ -211,3 +225,4 @@ $ tar -cvf localrepo_20210607.tar /data/localrepo
  * https://docs.projectcalico.org/reference/felix/configuration#iptables-dataplane-configuration
  * https://www.redhat.com/en/blog/using-nftables-red-hat-enterprise-linux-8
  * https://www.thegeekdiary.com/downloading-rpm-packages-with-dependencies-yumdownloader-vs-yum-downloadonly-vs-repoquery/
+ * [CentOS 8에 대한 모든 종속성 다운로드](https://unix.stackexchange.com/questions/567057/download-rpm-and-all-dependencies-on-rhel-centos-8)
