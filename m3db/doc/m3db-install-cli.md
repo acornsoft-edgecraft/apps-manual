@@ -17,8 +17,8 @@ curl -X "POST" -G "http://192.168.77.34:32558/api/v1/query_range" \
   -d "step=1m" 
 
 ## mac
-curl -X "POST" -G "http://192.168.77.34:32558/api/v1/query_range" \
-  -d "query=third_avenue > 6000" \
+curl -X "POST" -G "http://192.168.77.233:32558/api/v1/query_range" \
+  -d "query=dongmook" \
   -d "start=$(date -v -4500S "+%s")" \
   -d "end=$( date +%s )" \
   -d "step=5s" | jq .
@@ -48,7 +48,7 @@ curl -X POST http://192.168.77.34:32555/api/v1/json/write -d '{
   "timestamp": '\"$(date "+%s")\"',
   "value": 3347.44
 }' | jq .
-curl -X POST http://192.168.77.34:32555/api/v1/json/write -d '{
+curl -X POST http://192.168.77.233:32555/api/v1/json/write -d '{
   "tags": {
     "__name__": "dongmook",
     "city": "dm",

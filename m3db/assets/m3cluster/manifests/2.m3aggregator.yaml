@@ -291,7 +291,7 @@ spec:
                       operator: In
                       values:
                         - m3db
-                        #- m3coordinator
+                        - m3coordinator
                         - m3aggregator
                 topologyKey: "kubernetes.io/hostname"
       containers:
@@ -316,11 +316,9 @@ spec:
               protocol: TCP
           resources:
             limits:
-              memory: 3Gi
-              cpu: 200m
+              memory: 2Gi
             requests:
-              memory: 3Gi
-              cpu: 200m
+              memory: 2Gi
       volumes:
         - name: config
           configMap:

@@ -95,8 +95,7 @@ spec:
                     - key: "app"
                       operator: In
                       values:
-                        - m3db
-                        #- m3coordinator
+                        - m3dbnode
                         - m3query
                 topologyKey: "kubernetes.io/hostname"
       containers:
@@ -118,11 +117,9 @@ spec:
               protocol: TCP
           resources:
             limits:
-              memory: 4Gi
-              cpu: 200m
+              memory: 5Gi
             requests:
-              memory: 4Gi
-              cpu: 200m
+              memory: 5Gi
       volumes:
         - name: config
           configMap:

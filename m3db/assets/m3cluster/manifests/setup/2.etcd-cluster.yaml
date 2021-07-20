@@ -48,10 +48,33 @@ spec:
       labels:
         app: etcd
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - node2
+                      - node3
+                      - node4
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: "app"
+                      operator: In
+                      values:
+                        - etcd
+                topologyKey: "kubernetes.io/hostname"
       containers:
         - name: etcd
           # 3.3.18
           image: gcr.io/etcd-development/etcd@sha256:e80582131febde2862a530660cb74c6b1cb2e1d2b443e6c563139cedc636f2e7
+          imagePullPolicy: Always
           command:
             - "etcd"
             - "--name"
@@ -82,11 +105,9 @@ spec:
               mountPath: /var/lib/etcd
           resources:
             limits:
-              memory: 200Mi
-              cpu: 100m
+              memory: 100Mi
             requests:
-              memory: 200Mi
-              cpu: 100m
+              memory: 100Mi
           env:
             - name: MY_IP
               valueFrom:

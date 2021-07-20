@@ -36,10 +36,3 @@ spec:
           name: sysctl-setter
           securityContext:
             privileged: true
-          resources:
-            limits:
-              memory: 100Mi
-              cpu: 50m
-            requests:
-              memory: 100Mi
-              cpu: 50m

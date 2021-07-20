@@ -7,8 +7,27 @@ Follow these steps to get started with M3db:
 
 
 ## Installation
+- helm
+```
+helm upgrade m3db -i \
+  -n m3db \
+  --create-namespace \
+  --cleanup-on-fail \
+  --repo m3db \
+  m3db-operator \
+  -f values.yaml
+```
 
 
+## Prometheus configuration
+- Add to your Prometheus configuration the m3coordinator sidecar remote read/write endpoints
+```yaml
+  remoteWrite:
+    - url: http://m3coordinator.m3db:7201/api/v1/prom/remote/write
+  remoteRead:
+    - url: http://m3query.m3db:7201/api/v1/prom/remote/read
+      readRecent: true # To test reading even when lcoal prometheus has the data
+```
 
 ## 노드 리소스 점유에 따른 조치 
 ```sh

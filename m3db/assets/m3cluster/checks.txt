@@ -6,7 +6,8 @@ kubectl -n m3db exec etcd-0 -- env ETCDCTL_API=3 etcdctl endpoint status --write
 kubectl -n m3db exec etcd-1 -- env ETCDCTL_API=3 etcdctl endpoint status --write-out=table
 kubectl -n m3db exec etcd-2 -- env ETCDCTL_API=3 etcdctl endpoint status --write-out=table
 
-kubectl -n m3db exec etcd-0 -- env ETCDCTL_API=3 etcdctl del --prefix ""
+## etcd 초기화
+kubectl -n m3db exec etcd-0 -- env ETCDCTL_API=3 etcdctl del --prefix "" 
 
 # Create Namespace on M3DB Cluster (move to Operator)
 # kubectl -n m3db exec m3-cluster-rep2-0 -- curl -X POST http://localhost:7201/api/v1/database/create -d '{
@@ -37,7 +38,7 @@ kubectl -n m3db exec m3-cluster-rep2-0 -- curl http://localhost:7201/api/v1/topi
 
 # Check Namespace
 kubectl -n m3db exec m3-cluster-rep1-0 -- curl http://localhost:7201/api/v1/services/m3db/namespace | jq .
-curl http://192.168.77.171:32555/api/v1/services/m3db/namespace | jq .
+curl http://192.168.77.233:32555/api/v1/services/m3db/namespace | jq .
 
 # Ready Namespace
 kubectl -n m3db exec m3-cluster-rep2-0 -- curl -X POST http://localhost:7201/api/v1/services/m3db/namespace/ready -d '{
