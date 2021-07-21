@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kid
+  namespace: dex
+  labels:
+    app: kid
+spec:
+  ports:
+  - name: https
+    port: 443
+    targetPort: 5555
+    protocol: TCP
+  selector:
+    app: kid
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kid
+  namespace: dex
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kid
+  template:
+    metadata:
+      labels:
+        app: kid
+    spec:
+      containers:
+      - name: kid
+        command: ["example-app", "--issuer", "https://dex.k3.acornsoft.io/dex","--listen", "http://0.0.0.0:5555",
+        "--redirect-uri", "http://dex.k3.acornsoft.io/callback", "--issuer-root-ca", "/etc/secret/ca.pem"]
+        image: 192.168.77.30/library/dex-example-app:latest
+        ports:
+        - containerPort: 5555
+        volumeMounts:
+        - name: dex-ca-secret
+          mountPath: /etc/secret
+      volumes:
+      - name: dex-ca-secret
+        secret:
+          secretName: dex-k8s-app

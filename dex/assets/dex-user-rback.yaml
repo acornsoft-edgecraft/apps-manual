@@ -1,0 +1,22 @@
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: Role
+metadata:
+  name: dexUser
+  namespace: default
+rules:
+- apiGroups: [""] # "" indicates the core API group
+  resources: ["pods"]
+  verbs: ["get", "watch", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: dexUser
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: dexUser
+subjects:
+- kind: User
+  name: jjssig77@acornsoft.io
+  namespace: default
