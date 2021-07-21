@@ -1,7 +1,7 @@
 ## gitlab 설치 방법
 
 ### 1. 설치
-- install-yaml 디렉토리 하위에 yaml 파일들을 순차적으로 실행 한다.
+- gitlab > assets 디렉토리 하위에 yaml 파일들을 순차적으로 실행 한다.
 ```sh
 kubectl apply -f /install-yaml/01-gitlab-rback.yaml -n gitlab
 ```
