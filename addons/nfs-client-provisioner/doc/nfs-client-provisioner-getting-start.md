@@ -20,11 +20,29 @@ helm upgrade nfs-client-provisioner -i \
   -n kube-system \
   --create-namespace \
   --cleanup-on-fail \
+  --set storageClass.name=nfs-storageclass \
   --set nfs.server=x.x.x.x \
   --set nfs.path=/data/nfs/live \
   --set storageClass.archiveOnDelete=true \
   --repo https://charts.helm.sh/stable \
   nfs-client-provisioner
+```
+
+## PVC 생성 테스트
+```sh
+cat <<EOF | kubectl -n kube-system apply -f -
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs-pvc-test
+spec:
+  storageClassName: nfs-storageclass # SAME NAME AS THE STORAGECLASS
+  accessModes:
+    - ReadWriteMany #  must be the same as PersistentVolume
+  resources:
+    requests:
+      storage: 1Gi
+EOF
 ```
 
 ## storageclass 수정
