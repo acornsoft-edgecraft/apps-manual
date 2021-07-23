@@ -241,7 +241,7 @@ Chl2d3JsNGxkb2tzNmpzNm53N3g3ZzZwaWZtEhlxdWV1N2VvcnVuczJvdjNnbm5ibzVidnQ0
 ```sh
 # ingress 설정에 사용된 공인 인증서를 kube-apiserver 에서 dex 연동시 사용 할수 있도록 인증서를 복사 한다.
 
-$ kubectl get secrk get secret tls-acornsoft-star -n dex -o jsonpath='{.data.tls\.crt}' | base64 --decode > /etc/kubernetes/pki/dex/ca.pem
+$ kubectl get secret tls-acornsoft-star -n dex -o jsonpath='{.data.tls\.crt}' | base64 --decode > /etc/kubernetes/pki/dex/ca.pem
 
 ```
 ### 5-2 Kubernetes API Server option 설정
@@ -368,6 +368,35 @@ CURRENT   NAME            CLUSTER         AUTHINFO            NAMESPACE
 
 $ kubectl config use-context dex-developer
 Switched to context "dex-developer".
+
+# kubeconfig file
+
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUM0VENDQWNtZ0F3SUJBZ0lVRGFZUWt1amM0RXJJZ29LN2ZpaTBjNWo2R1Bvd0RRWUpLb1pJaHZjTkFRRUwKQlFBd0dERVdNQlFHQTFVRUF3d05hM1ZpWlhKdVpYUmxjeTFqWVRBZUZ3MHlNVEEwTURjd09EQTRNRGRhRncwegpNVEEwTURVd09EQTRNRGRhTUJneEZqQVVCZ05WQkFNTURXdDFZbVZ5Ym1WMFpYTXRZMkV3Z2dFaU1BMEdDU3FHClNJYjNEUUVCQVFVQUE0SUJEd0F3Z2dFS0FvSUJBUUQ3dDkvMWRrNUxKalovYUluYmgreVpxQXg1YVdURzZzd3gKOHB2a2dBNzR4OWRaSDI3SkxrM0RneXR0Sk1ZeXJJdWNwbTdDMERSYjdHVEtuTSt3aDYxYytwcnd4MSt3ektxUwpscnpEaEpxUk5kQ3MxbEdxdnM3aVBmRGhXMGZNNERMV296NmtBUFNxU0xDYU90eHA3MktneGZCb2JyYkhCbjV4CmFEcXhOeXo5RVhvQ1ZSMnk4YU5oallXaGNITG8vZ2JaUHNCVTFNZG1BeU85Y0pUbVRDYnlUSVkzMXkwekE0Z2YKbVpaQmNHNmgwVDNQODNVaHpBditjM2tiMDE1VTdxSjZ0c2hHSm5jNG14VHV3M1pHUDlBRVdqVWs2VjNOYjRjMQpFeWo0cjNTV0RzQ0prVUk1SERSaGNpQzIyTTBHdE9EMWhJS0tvVEV5TERmeGtXd2l3R09UQWdNQkFBR2pJekFoCk1BOEdBMVVkRXdFQi93UUZNQU1CQWY4d0RnWURWUjBQQVFIL0JBUURBZ0trTUEwR0NTcUdTSWIzRFFFQkN3VUEKQTRJQkFRQWZjWG5uazZGeWl6Tk5HdUNqOE5DR2dwQ2VjTEFsVVlHSUxMd2dKS3M0WXQxWGJkMFhqWmZxOGtOaQo2ZTQwa21zSmk5d1VZM0IwQS9aS1I0NW1YMFZLMHFJejRFMWpGZzQ0NDZHc2gwRXJ3cTA5OEtnajlCeWhyb2V0CmFjdGcvY0V1REdvUkJTMElwQ1MvS3BBWXZtbG42VmtnYWp4QlpCU291bWFyZm02bmdlSU1IYUgwYTJocTZQQ0kKRFJ1elBRd3VndTRYd2M5UWp0K2QyeSs5dWVFdXVWQ0FUdStMMTZsc2lHR3RxMmIxYy9taENvYmZNdnNjZkZPQwpkTDZJdTdXVzlxTjR3YnFuT0lFTFpUY1I3TnVUTU51d3dhajBrb0pzbDZOdkIyQ1F3c1dsRHN5MGl6TVl0NTdGCmJ0T255K1VpTVRoWGsxREtHM1A4VStJOWd5WGsKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQ==
+    server: https://192.168.77.31:6443
+  name: acloud-client
+contexts:
+- context:
+    cluster: acloud-client
+    namespace: default
+    user: dex-user-jjssig77
+  name: dex-client
+current-context: dex-client
+kind: Config
+preferences: {}
+users:
+- name: dex-user-jjssig77
+  user:
+    auth-provider:
+      config:
+        client-id: example-app
+        id-token: eyJhbGciOiJSUzI1NiIsImtpZCI6IjY3MjkzZmRjZjRjZDliYWY2NjYwMWM5OGQ5YWI0OWM3YWE0ODFhNjUifQ.eyJpc3MiOiJodHRwczovL2RleC5rMy5hY29ybnNvZnQuaW8vZGV4Iiwic3ViIjoiQ2dJeE5oSUdaMmwwYkdGaSIsImF1ZCI6ImV4YW1wbGUtYXBwIiwiZXhwIjoxNjI2ODUwNDQzLCJpYXQiOjE2MjY3NjQwNDMsImF0X2hhc2giOiJ1XzF6MHQySm9FT0UtZ1BVMHhvYVN3IiwiY19oYXNoIjoiWTFGT3NhSjN6RFRYU0xGMFNHdm9PZyIsImVtYWlsIjoiampzc2lnNzdAYWNvcm5zb2Z0LmlvIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsIm5hbWUiOiLsoJXsp4DshJ0iLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJqanNzaWc3NyJ9.K4OzKzzw7NorcmH_yq1ENRsmJEShOJ_alfBWBJq83SG3gjw8CslaoRWKgRyc8V9IEvIHtQth_t6vJWk7_mCMr_FO_mRUJXAPl9HPikS66SZJylPoayGElPQUmZxgSSEp26ZXUfncgTss3FC5GaX2UeJ_pL05-USAF6ro4J98lWfn5gS21sdW_uvJwWDq2dJanNkLcXQ8dxDAMnzOsxkIzwWPmCIFL4TPnSyDZdpbSRd3OkY4hoxSVlKYHHSvGqHxIXmv535RLsRBaZFQ3l63Fb53OHury5QNKLWbY_JbULi36b0Rda3XqSaUK9_y5DcLMLCq7iIccS77bbK16a6iew
+        idp-issuer-url: https://dex.k3.acornsoft.io
+        refresh-token: Chl3YWprZnE0eXI0c2F2Z29vMnpzbWJrdGxxEhlhM3Jlc3F6dnN1MzUyZWtwcGhrdW00bm9w
+      name: oidc
+
 
 $ k config get-contexts
 CURRENT   NAME            CLUSTER         AUTHINFO            NAMESPACE
