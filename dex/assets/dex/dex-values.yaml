@@ -111,6 +111,11 @@ config:
     name: 'Example App'
     secret: ZXhhbXBsZS1hcHAtc2VjcmV0
 
+  - id: kiali-client
+    redirectURIs:
+    - 'https://kiali.k3.acornsoft.io/kiali'
+    name: 'Kiali App'
+    secret: ZXhhbXBsZS1hcHAtc2VjcmV0
 
   staticPasswords:
   - email: "admin@example.com"
