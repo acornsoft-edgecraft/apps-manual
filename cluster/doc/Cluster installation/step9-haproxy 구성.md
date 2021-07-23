@@ -65,6 +65,11 @@ defaults
   timeout connect 5000ms
   timeout client 50000ms
   timeout server 50000ms
+  
+frontend healthz
+  bind *:8081
+  mode http
+  monitor-uri /healthz  
 
 frontend api-https
    mode tcp

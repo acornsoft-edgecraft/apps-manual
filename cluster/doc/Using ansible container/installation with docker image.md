@@ -3,7 +3,7 @@
 > 클러스터 설치 ansible script가 포함된 docker image를 사용할 수 있다.
 > Ansible docker image를 사용하기 위해서는 docker 환경이 구성되어 있어야 한다.
 
-## Docker container 및 ansible-playbook 실행
+# Docker container 및 ansible-playbook 실행
  1. 작업 디렉토리 생성하기
 ```bash
 $ mkdir -p ~/workspace/cluster/lab01
@@ -15,33 +15,48 @@ $ cd ~/workspace/cluster/lab01
 
  3. Inventory 및 클러스터 설치 관련 변수 설정
 ```bash
-knit
+lab01
 ├── group_vars
 │   └── all
 │       ├── basic.yml
 │       └── expert.yml
 └── inventory.ini
+``` 
+ 
+# ansible-playbook을 사용한 클러스터 설치
 
-$ cat knit/inventory.ini
+## 폐쇄망에서 설치를 위한 사전 준비(local-repo, registry 압축 파일 만들기)
+ * ansible 환경 설정 및 작업 디렉토리로 이동
+```bash
+$ export ANSIBLE_CONFIG=/Users/cloud/gows/src/git.acornsoft.io/infra/knit/Dockerfile/scripts/ansible.cfg
+$ cd /Users/cloud/gows/src/git.acornsoft.io/infra/knit/test
+```
+
+ * inventory.ini 파일에 target server ip 설정하기
+```bash
+$ vi inventory/lab01/inventory.ini
 # Inventory sample
 [all]
 master-01   ansible_ssh_host=192.168.77.223  ip=192.168.77.223
+master-02   ansible_ssh_host=192.168.77.224  ip=192.168.77.224
+master-03   ansible_ssh_host=192.168.77.225  ip=192.168.77.225
 etcd-01     ansible_ssh_host=192.168.77.223  ip=192.168.77.223
-node-01     ansible_ssh_host=192.168.77.224  ip=192.168.77.224
-node-02     ansible_ssh_host=192.168.77.225  ip=192.168.77.225
-node-03     ansible_ssh_host=192.168.77.226  ip=192.168.77.226
-node-04     ansible_ssh_host=192.168.77.227  ip=192.168.77.227
+etcd-02     ansible_ssh_host=192.168.77.224  ip=192.168.77.224
+etcd-03     ansible_ssh_host=192.168.77.225  ip=192.168.77.225
+node-01     ansible_ssh_host=192.168.77.226  ip=192.168.77.226
+node-02     ansible_ssh_host=192.168.77.227  ip=192.168.77.227
 storage-01  ansible_ssh_host=192.168.77.228  ip=192.168.77.228
 registry-01 ansible_ssh_host=192.168.77.228  ip=192.168.77.228
 
 [etcd]
 etcd-01
-
-[etcd-private]
-etcd-01
+etcd-02
+etcd-03
 
 [masters]
 master-01
+master-02
+master-03
 
 [sslhost]
 master-01
@@ -49,40 +64,48 @@ master-01
 [node]
 node-01
 node-02
-node-03
-node-04
 
 [gpu-node]
 
 [multi-nic-node]
 
-[registry]
-registry-01
-
 [storage]
 storage-01
 
-$ cat knit/group_vars/all/basic.yml
+[registry]
+registry-01
+
+[cluster:children]
+masters
+node
+gpu-node
+multi-nic-node
+```
+
+ * inventory/lab01/group_vars/all/basic.yml
+```bash
+$ vi inventory/lab01/group_vars/all/basic.yml
 provider: false
 cloud_provider: onpremise
 cluster_name: test-cluster
 
 # install directories
-install_dir: /var/lib/cocktail
+install_dir: /var/lib/knit
 data_root_dir: /data
 
 # kubernetes options
-k8s_version: 1.20.6
+k8s_version: 1.21.2
 cluster_id: test-cluster
 api_lb_ip: https://192.168.77.223:6443
 lb_ip: 192.168.77.223
 lb_port: 6443
 pod_ip_range: 10.0.0.0/16
-service_ip_range: 172.16.0.0/16
+service_ip_range: 172.20.0.0/16
 
 # for air gap installation
-closed_network: false
-local_repository: ""
+closed_network: true              <------------  (중요) 사전준비시에는 반드시 internet 가능한 상태이어야 함.
+local_repository: http://192.168.77.228:8080
+local_repository_archieve_file:
 
 # option for master isolation
 master_isolated: false
@@ -101,17 +124,19 @@ registry_data_dir: /data/harbor
 registry: 192.168.77.228
 registry_domain: 192.168.77.228
 registry_public_cert: false
+registry_archieve_file:
 
 # option for NFS storage
 storage_install: true
 nfs_ip: 192.168.77.228
+nfs_volume_dir: /storage
 
 # for internal load-balancer
 haproxy: true
-haproxy_dir: /etc/haproxy
-haproxy_port: 6443
+``` 
 
-$ cat knit/group_vars/all/expert.yml
+ * inventory/lab01/group_vars/all/expert.yml
+```bash
 # kubernetes images and directories
 kube_config_dir: /etc/kubernetes
 manifest_config_dir: /etc/kubernetes/manifests
@@ -155,6 +180,14 @@ etcd_peer_key_file: /etc/kubernetes/pki/etcd/peer.key
 etcd_healthcheck_cert_file: /etc/kubernetes/pki/etcd/healthcheck-client.crt
 etcd_healthcheck_key_file: /etc/kubernetes/pki/etcd/healthcheck-client.key
 
+# haproxy for internal loadbalancer
+haproxy_dir: /etc/haproxy
+haproxy_port: 6443
+haproxy_health_check_port: 8081
+
+# option for preparing local-repo and registry (do not modify when fully understand this flag)
+archive_repo: true                        <------------  (중요) 리포지터리 압축 여부 true로 설정.
+
 # addons
 metrics_server: true
 addon_install: true
@@ -184,18 +217,12 @@ single_volume_size: 0
 shared_volume_dir: ""
 static_volume_dir: ""
 cluster_type: small
-volume_size: 30
-volume_dir: /storage
 base64_controller_secret: ""
 base64_monitoring_secret: ""
 base64_cluster_seq: ""
 base64_cluster_id: ""
 storage_class_name: default-storage
 storage_type: nfs
-chart_repo_url: https://regi.acloud.run/chartrepo
-chart_repo_project_name: addon-charts-beta
-chart_repo_user: acorn_chart
-chart_repo_password: AcornWkd#3
 sctp_support: false
 multus_install: false
 device_name: ""
@@ -203,21 +230,91 @@ device_ven: ""
 device_dev: ""
 device_driver: ""
 ingress_type: Deployment
-cube_install_dir: /var/lib/cocktail
 fs_type: xfs
 mirror_count: 1
 perf_tier: best-effort
 volume_binding_mode: WaitForFirstConsumer
 istio_install: false
 
-release_name: cocktail
-release_ver: ""
-cocktail: false
 dashboard_public_cert: false
 ha_type: ""
-```
+
+kube_support_versions:
+  [
+    "1.19.10",
+    "1.19.11",
+    "1.19.12",
+    "1.20.6",
+    "1.20.7",
+    "1.20.8",
+    "1.21.0",
+    "1.21.1",
+    "1.21.2"
+  ]
+
+kube_feature_gates: |-
+    [
+      "TTLAfterFinished=true"
+      ,"RemoveSelfLink=false"
+      {%- if sctp_support is defined and sctp_support -%}
+      ,"SCTPSupport=true"
+      {%- endif -%}
+    ]
+
+kubeproxy_feature_gates: |-
+    [
+      "TTLAfterFinished: true"
+      {%- if sctp_support -%}
+      , "SCTPSupport: true"
+      {%- endif -%}
+    ]
+``` 
+
+ * prepare-repository.yml 플래이북 실행으로 local-repo, harbor 압축 파일 생성 및 다운로드 하기
+```bash
+// Centos 8
+
+$ vi inventory/lab01/group_vars/all/basic.yml
+...
+local_repository_archieve_file: /Users/cloud/gows/src/git.acornsoft.io/infra/knit/test/inventory/lab01/local-repo.20210720_095540.tgz
+closed_network: true
+registry_archieve_file: /Users/cloud/gows/src/git.acornsoft.io/infra/knit/test/inventory/lab01/harbor.20210720_100126.tgz
+...
+
+$ ansible-playbook -i inventory/lab01/inventory.ini -u root --private-key ~/cert/knit/id_rsa ../Dockerfile/scripts/prepare-repository.yml
+$ scp root@192.168.77.228:/tmp/local-repo.20210720_095540.tgz .
+$ scp root@192.168.77.228:/tmp/harbor.20210720_100126.tgz .
+$ ansible-playbook -i inventory/lab01/inventory.ini -u root --private-key ~/cert/knit/id_rsa ../Dockerfile/scripts/reset.yml --tags reset-registry
+
+// Ubuntu 20.04
+$ vi inventory/lab03/group_vars/all/basic.yml
+...
+local_repository_archieve_file: /Users/cloud/gows/src/git.acornsoft.io/infra/knit/test/inventory/lab03/local-repo.20210723_041357.tgz
+closed_network: true
+registry_archieve_file: /Users/cloud/gows/src/git.acornsoft.io/infra/knit/test/inventory/lab03/harbor.20210723_041643.tgz
+...
+
  
- 4. Run container and ansible-playbook
+$ ansible-playbook -i inventory/lab03/inventory.ini -u root --private-key ~/cert/knit/id_rsa ../Dockerfile/scripts/prepare-repository.yml
+$ scp root@192.168.77.194:/tmp/local-repo.20210723_041357.tgz .
+$ scp root@192.168.77.194:/tmp/harbor.20210723_041643.tgz .
+$ ansible-playbook -i inventory/lab03/inventory.ini -u root --private-key ~/cert/knit/id_rsa ../Dockerfile/scripts/reset.yml --tags reset-registry
+```
+
+ * 클러스터 설치, 노드 추가, 업그레이드 삭제   
+```bash
+// Centos 8
+$ ansible-playbook -i inventory/lab01/inventory.ini -u root --private-key ~/cert/knit/id_rsa ../Dockerfile/scripts/cluster.yml
+$ ansible-playbook -i inventory/lab01/inventory.ini -u root --private-key ~/cert/knit/id_rsa ../Dockerfile/scripts/add-node.yml
+$ ansible-playbook -i inventory/lab01/inventory.ini -u root --private-key ~/cert/knit/id_rsa ../Dockerfile/scripts/upgrade.yml
+
+// Ubuntu 20.04
+$ ansible-playbook -i inventory/lab03/inventory.ini -u root --private-key ~/cert/knit/id_rsa ../Dockerfile/scripts/cluster.yml
+$ ansible-playbook -i inventory/lab03/inventory.ini -u root --private-key ~/cert/knit/id_rsa ../Dockerfile/scripts/add-node.yml
+$ ansible-playbook -i inventory/lab03/inventory.ini -u root --private-key ~/cert/knit/id_rsa ../Dockerfile/scripts/upgrade.yml
+```
+
+# docker container를 활용한 클러스터 설치 
 ```bash
 $ docker run -it --name=cubepack --rm -v ${PWD}:/cube/work regi.acloud.run/library/knit:1.0.0 /bin/bash
 
@@ -239,13 +336,3 @@ $ ansible-playbook -i knit/inventory.ini -u root --private-key id_rsa ../scripts
 # 클러스터 Worker node 삭제하기
 $ ansible-playbook -i knit/inventory.ini -u root --private-key id_rsa -e remove_node_name=node3 -e target=192.168.77.225 remove-node.yml
 ```
-
-$ yum upgrade -y
-$ reboot
-
-
-[centos@vm-onassis-04 ~]$ uname -r   // CentOS Linux release 8.2.2004
-4.18.0-193.6.3.el8_2.x86_64
-
-[root@vm-onassis-01 ~]# uname -r     // CentOS Linux release 8.4.2105
-4.18.0-305.3.1.el8.x86_64
