@@ -73,7 +73,7 @@ helm package .
 ```sh
 ## Helm is set up properly, add the <Air-gap repository> as follows:
 ## helm repo add metrics-server <Air-gap repository>
-## https://x.x.x.x/chartrepo/k3lab-charts
+## <Air-gap repository> : https://x.x.x.x/chartrepo/k3lab-charts
 
 ## values.yaml을 환경에 맞게 수정후 설치
 ## <Air-gap repository>의 ca.crt를 다운로드 한다.

@@ -919,7 +919,8 @@ server:
 
   ## Use a StatefulSet if replicaCount needs to be greater than 1 (see below)
   ##
-  replicaCount: 1
+  ### 1 -> 2
+  replicaCount: 2
 
   ## Annotations to be added to deployment
   ##
@@ -929,7 +930,8 @@ server:
     ## If true, use a statefulset instead of a deployment for pod management.
     ## This allows to scale replicas to more than 1 pod
     ##
-    enabled: false
+    ### false -> true
+    enabled: true
 
     annotations: {}
     labels: {}
@@ -964,13 +966,13 @@ server:
   ## Prometheus server resource requests and limits
   ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
   ##
-  resources: {}
-    # limits:
-    #   cpu: 500m
-    #   memory: 512Mi
-    # requests:
-    #   cpu: 500m
-    #   memory: 512Mi
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 500m
+      memory: 512Mi
 
   # Required for use in managed kubernetes clusters (such as AWS EKS) with custom CNI (such as calico),
   # because control-plane managed by AWS cannot communicate with pods' IP CIDR and admission webhooks are not working
@@ -1034,9 +1036,10 @@ server:
     ## If using a statefulSet (statefulSet.enabled=true), configure the
     ## service to connect to a specific replica to have a consistent view
     ## of the data.
+    ### false -> true , 0 -> 2
     statefulsetReplica:
-      enabled: false
-      replica: 0
+      enabled: true
+      replica: 2
 
   ## Prometheus server pod termination grace period
   ##

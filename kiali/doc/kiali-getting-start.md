@@ -178,6 +178,7 @@ kubectl delete crd monitoringdashboards.monitoring.kiali.io
 kubectl delete crd kialis.kiali.io
 ```
 
+-----
 # 참조
 > [다른 Prometheus 인스턴스 사용](https://kiali.io/documentation/latest/runtimes-monitoring/)
 > [Kiali에 대한 로그는 어떻게 얻습니까?](https://kiali.io/documentation/latest/faq/#logs)

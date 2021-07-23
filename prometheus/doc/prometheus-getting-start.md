@@ -23,15 +23,18 @@ helm upgrade prometheus -i \
   prometheus \
   -f values.yaml
 
-## local directory - mkdir charts/ -> <dependencies> 생성(kube-state-metric)
-## m3db 내용 수정 후 helm chart package 생성 함.
+## local directory - mkdir charts/ -> <dependencies> 생성(kube-state-metric) : helm package <kube-state-metric>
+## m3db 내용 수정 후 helm chart package 생성 함. : helm package <prometheus-diriectory>
 ##  <Air-gap repository>에 업로드 함.
 ## Private repository 사용 하기 위해서 ca.crt 필요
 helm upgrade prometheus -i \
   -n monitoring \
   --create-namespace \
   --cleanup-on-fail \
-  -f values.yaml .
+  --ca-file ./ca.crt \
+  --repo http://x.x.x.x/chartrepo/k3lab-charts \
+  prometheus \
+  -f values-x-x-m3db.yaml
 ```
 
 ## Prometheus configuration
