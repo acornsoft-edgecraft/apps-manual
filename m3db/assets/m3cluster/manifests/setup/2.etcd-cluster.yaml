@@ -119,15 +119,21 @@ spec:
                   fieldPath: metadata.name
             - name: ETCDCTL_API
               value: "3"
-  volumeClaimTemplates:
-    - metadata:
-        name: etcd-data
-      spec:
-        storageClassName: nfs-storageclass
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 4Gi
-          limits:
-            storage: 4Gi
+      volumes:
+        - name: etcd-data
+          hostPath:
+            # 파일 디렉터리가 생성되었는지 확인한다.
+            path: /data/etcd
+            type: DirectoryOrCreate
+  # volumeClaimTemplates:
+  #   - metadata:
+  #       name: etcd-data
+  #     spec:
+  #       storageClassName: nfs-storageclass
+  #       accessModes:
+  #         - ReadWriteOnce
+  #       resources:
+  #         requests:
+  #           storage: 4Gi
+  #         limits:
+  #           storage: 4Gi

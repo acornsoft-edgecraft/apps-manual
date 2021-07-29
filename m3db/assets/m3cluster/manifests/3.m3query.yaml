@@ -7,6 +7,9 @@ metadata:
   namespace: m3db
 data:
   query.yaml: |+
+    logging:
+      level: debug
+
     listenAddress: "0.0.0.0:7201"
     metrics:
       scope:

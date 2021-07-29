@@ -5,6 +5,9 @@ kubectl -n m3db exec etcd-0 -- env ETCDCTL_API=3 etcdctl member list --write-out
 kubectl -n m3db exec etcd-0 -- env ETCDCTL_API=3 etcdctl endpoint status --write-out=table
 kubectl -n m3db exec etcd-1 -- env ETCDCTL_API=3 etcdctl endpoint status --write-out=table
 kubectl -n m3db exec etcd-2 -- env ETCDCTL_API=3 etcdctl endpoint status --write-out=table
+kubectl -n m3db exec etcd-0 -- env ETCDCTL_API=3 etcdctl endpoint health --write-out=table
+kubectl -n m3db exec etcd-1 -- env ETCDCTL_API=3 etcdctl endpoint health --write-out=table
+kubectl -n m3db exec etcd-2 -- env ETCDCTL_API=3 etcdctl endpoint health --write-out=table
 
 ## etcd 초기화
 kubectl -n m3db exec etcd-0 -- env ETCDCTL_API=3 etcdctl del --prefix "" 

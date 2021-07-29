@@ -17,6 +17,8 @@ M3는 Uber에서 제작한 플랫폼 으로 프로메테우스와 차량 및 온
 
 ![M3DB Architecture](./images/m3db-cluster-architecture.png)
 
+## Installation ETCD
+
 ## Installation Operator
 - helm
 ```
@@ -32,7 +34,8 @@ helm upgrade m3db -i \
 ```sh
 kubectl apply -f https://raw.githubusercontent.com/m3db/m3db-operator/master/bundle.yaml
 ```
-## Creating a Cluster
+
+## Installation ETCD
 - Etcd Cluster installation
   - etcd 배포 yaml을 내려받아 환경에 맞게 수정 한다. (affinity / volumeClaimTemplates)
   ```sh
@@ -64,6 +67,12 @@ kubectl apply -f https://raw.githubusercontent.com/m3db/m3db-operator/master/bun
                         - etcd
                 topologyKey: "kubernetes.io/hostname"
 ```
+## Installation sysctl
+
+## Creating a Cluster
+- Prerequisites
+  - ETCD
+  - sysctl
 
 - M3DBCluster installation
   - 아래와 같이 설정 한다.
@@ -213,7 +222,6 @@ spec:
         read_recent: true
 
 ```
-
 
 
 ---

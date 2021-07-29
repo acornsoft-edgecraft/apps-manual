@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: etcd-viewer
+  labels:
+    app: etcd-viewer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: etcd-viewer
+  template:
+    metadata:
+      labels:
+        app: etcd-viewer
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - node7
+      containers:
+        - name: etcd-viewer
+          image: nikfoundas/etcd-viewer
+          imagePullPolicy: Always
+          ports: 
+            - containerPort: 8080
+              name: client
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: etcd-viewer
+  labels:
+    app: etcd-viewer
+spec:
+  selector:
+    app: etcd-viewer
+  ports:
+    - port: 8080
+      protocol: TCP
+      nodePort: 32326
+  type: NodePort
