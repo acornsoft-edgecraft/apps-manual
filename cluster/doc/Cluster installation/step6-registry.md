@@ -21,7 +21,7 @@ $ mkdir -p /var/lib/cocktail/cert
 $ mkdir -p /data/harbor/cert
 $ mkdir -p /etc/docker/certs.d/{harbor-ip}
 
-# curl -O https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64
+# curl -LO https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64
 $ scp docker-compose-Linux-x86_64 {user-id}@{harbor-ip}:/tmp
 
 $ cp /tmp/harbor-offline-installer-v1.10.3.tgz /var/lib/cocktail
