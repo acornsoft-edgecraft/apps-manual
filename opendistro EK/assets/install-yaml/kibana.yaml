@@ -82,11 +82,11 @@ data:
     opendistro_security.allow_client_certificates: true
     opendistro_security.cookie.secure: false
     #opendistro_security.auth.type: openid
-    #opendistro_security.openid.connect_url: https://hdcard-sso.acloud.run/auth/realms/paas-admin/.well-known/openid-configuration
+    #opendistro_security.openid.connect_url: https://kc-sso.k3.acornsoft.io/auth/realms/k3lab/.well-known/openid-configuration
     #opendistro_security.openid.client_id: kibana-oidc
-    #opendistro_security.openid.client_secret: 39648dcc-5c7b-4e38-8d0c-391b8b5e41f4
-    #opendistro_security.openid.logout_url: https://hdcard-sso.acloud.run/auth/realms/paas-admin/protocol/openid-connect/logout
-    #opendistro_security.openid.base_redirect_url: https://hdcard-kb.acloud.run/
+    #opendistro_security.openid.client_secret: 410c79f7-10b9-48c8-b5e8-dd427e00bb0c
+    #opendistro_security.openid.logout_url: https://kc-sso.k3.acornsoft.io/auth/realms/k3lab/protocol/openid-connect/logout
+    #opendistro_security.openid.base_redirect_url: https://kb.k3.acornsoft.io/
     #opendistro_security.openid.header: Authorization
 ---
 apiVersion: v1

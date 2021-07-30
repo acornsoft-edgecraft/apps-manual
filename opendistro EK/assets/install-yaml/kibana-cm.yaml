@@ -1,0 +1,220 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kibana
+  namespace: monitoring
+  labels:
+    app: kibana
+data:
+  kibana.yml: |-
+    server:
+      name: kibana
+      host: "0.0.0.0"
+      ssl:
+        enabled: true
+        key: /usr/share/kibana/config/tls.key
+        certificate: /usr/share/kibana/config/tls.crt
+    elasticsearch:
+      requestTimeout: 360000
+      hosts: https://elasticsearch.${NAMESPACE}.svc:9200
+      username: ${KIBANA_USERNAME}
+      password: ${KIBANA_PASSWORD}
+      requestHeadersWhitelist: ["Authorization", "securitytenant", "security_tenant"]
+      ssl:
+        certificateAuthorities: /usr/share/kibana/config/ca.crt
+        verificationMode: none
+        key: /usr/share/kibana/config/kibana.key
+        certificate: /usr/share/kibana/config/kibana.crt
+    opendistro_security.allow_client_certificates: true
+    opendistro_security.cookie.secure: false
+    opendistro_security.auth.type: openid
+    opendistro_security.openid.connect_url: https://kc-sso.k3.acornsoft.io/auth/realms/k3lab/.well-known/openid-configuration
+    opendistro_security.openid.client_id: kibana-oidc
+    opendistro_security.openid.client_secret: 410c79f7-10b9-48c8-b5e8-dd427e00bb0c
+    opendistro_security.openid.logout_url: https://kc-sso.k3.acornsoft.io/auth/realms/k3lab/protocol/openid-connect/logout
+    opendistro_security.openid.base_redirect_url: https://kb.k3.acornsoft.io/
+    opendistro_security.openid.header: Authorization
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: elasticsearch-security
+  namespace: monitoring
+  labels:
+    app: elasticsearch
+data:
+  config.yml: |-
+    config:
+      dynamic:
+        # Set filtered_alias_mode to 'disallow' to forbid more than 2 filtered aliases per index
+        # Set filtered_alias_mode to 'warn' to allow more than 2 filtered aliases per index but warns about it (default)
+        # Set filtered_alias_mode to 'nowarn' to allow more than 2 filtered aliases per index silently
+        #filtered_alias_mode: warn
+        #do_not_fail_on_forbidden: false
+        #kibana:
+        # Kibana multitenancy
+        #multitenancy_enabled: true
+        #server_username: kibanaserver
+        #index: '.kibana'
+        http:
+          anonymous_auth_enabled: false
+          xff:
+            enabled: false
+            internalProxies: '192\.168\.0\.10|192\.168\.0\.11' # regex pattern
+            #internalProxies: '.*' # trust all internal proxies, regex pattern
+            #remoteIpHeader:  'x-forwarded-for'
+        authc:
+          basic_internal_auth_domain:
+            description: "Authenticate via HTTP Basic against internal users database"
+            http_enabled: true
+            transport_enabled: true
+            order: 0
+            http_authenticator:
+              type: basic
+              challenge: false
+            authentication_backend:
+              type: internal
+          openid_auth_domain:
+            http_enabled: true
+            transport_enabled: true
+            order: 1
+            http_authenticator:
+              type: openid
+              challenge: false
+              config:
+                subject_key: preferred_username
+                roles_key: roles
+                openid_connect_url: https://kc-sso.k3.acornsoft.io/auth/realms/k3lab/.well-known/openid-configuration
+            authentication_backend:
+              type: noop
+        authz:
+          roles_from_myldap:
+            description: "Authorize via LDAP or Active Directory"
+            http_enabled: false
+            transport_enabled: false
+            authorization_backend:
+              # LDAP authorization backend (gather roles from a LDAP or Active Directory, you have to configure the above LDAP authentication backend settings too)
+              type: ldap
+              config:
+                # enable ldaps
+                enable_ssl: false
+                # enable start tls, enable_ssl should be false
+                enable_start_tls: false
+                # send client certificate
+                enable_ssl_client_auth: false
+                # verify ldap hostname
+                verify_hostnames: true
+                hosts:
+                - localhost:8389
+                bind_dn: null
+                password: null
+                rolebase: 'ou=groups,dc=example,dc=com'
+                rolesearch: '(member={0})'
+                # Specify the name of the attribute which value should be substituted with {2} above
+                userroleattribute: null
+                # Roles as an attribute of the user entry
+                userrolename: disabled
+                #userrolename: memberOf
+                # The attribute in a role entry containing the name of that role, Default is "name".
+                # Can also be "dn" to use the full DN as rolename.
+                rolename: cn
+                # Resolve nested roles transitive (roles which are members of other roles and so on ...)
+                resolve_nested_roles: true
+                userbase: 'ou=people,dc=example,dc=com'
+                # Filter to search for users (currently in the whole subtree beneath userbase)
+                # {0} is substituted with the username
+                usersearch: '(uid={0})'
+                # Skip users matching a user name, a wildcard or a regex pattern
+                #skip_users:
+                #  - 'cn=Michael Jackson,ou*people,o=TEST'
+                #  - '/\S*/'
+          roles_from_another_ldap:
+            description: "Authorize via another Active Directory"
+            http_enabled: false
+            transport_enabled: false
+            authorization_backend:
+              type: ldap
+              #config goes here ...
+          #auth_failure_listeners:
+          #  ip_rate_limiting:
+          #    type: ip
+          #    allowed_tries: 10
+          #    time_window_seconds: 3600
+          #    block_expiry_seconds: 600
+          #    max_blocked_clients: 100000
+          #    max_tracked_clients: 100000
+          #  internal_authentication_backend_limiting:
+          #    type: username
+          #    authentication_backend: intern
+          #    allowed_tries: 10
+          #    time_window_seconds: 3600
+          #    block_expiry_seconds: 600
+          #    max_blocked_clients: 100000
+          #    max_tracked_clients: 100000
+    _meta:
+      type: "config"
+      config_version: 2
+
+  roles_mapping.yml: |-
+    manage_snapshots:
+      reserved: true
+      hidden: false
+      backend_roles:
+      - "snapshotrestore"
+      hosts: []
+      users: []
+      and_backend_roles: []
+    logstash:
+      reserved: false
+      hidden: false
+      backend_roles:
+      - "logstash"
+      hosts: []
+      users: []
+      and_backend_roles: []
+    own_index:
+      reserved: false
+      hidden: false
+      backend_roles: []
+      hosts: []
+      users:
+      - "*"
+      and_backend_roles: []
+      description: "Allow full access to an index named like the username"
+    kibana_user:
+      reserved: false
+      hidden: false
+      backend_roles:
+      - "kibanauser"
+      hosts: []
+      users: []
+      and_backend_roles: []
+      description: "Maps kibanauser to kibana_user"
+    all_access:
+      reserved: false
+      hidden: false
+      backend_roles:
+      - "admin"
+      hosts: []
+      users: ["admin","kibana-admin@acornsoft.io", "jjssig77"]
+      and_backend_roles: []
+      description: "Maps admin to all_access"
+    readall:
+      reserved: true
+      hidden: false
+      backend_roles:
+      - "readall"
+      hosts: []
+      users: []
+      and_backend_roles: []
+    kibana_server:
+      reserved: true
+      hidden: false
+      backend_roles: []
+      hosts: []
+      users:
+      - "kibanaserver"
+      and_backend_roles: []
+    _meta:
+      type: "rolesmapping"
+      config_version: 2
