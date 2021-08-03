@@ -117,3 +117,10 @@ fluent-bit
   kubectl apply -f elasticsearch.yaml (관리 클러스터)
   kubectl apply -f kibana.yaml        (관리 클러스터)
   kubectl apply -f fluentbit.yaml     (모든 클러스터)
+
+  4. configmap 수정 후 es-master-0에 적용 시키기(confimap 수정 후 pod를 재시작해도 map 적용이 되질 않는다. 반듯이 아래의 명령어를 통해야지만 적용됨.)
+    $ k exec -it es-master-0 -n monitoring bash
+    $ chmod +x /usr/share/elasticsearch/plugins/opendistro_security/tools/securityadmin.sh
+    $ /usr/share/elasticsearch/plugins/opendistro_security/tools/securityadmin.sh -cacert /usr/share/elasticsearch/config/ca.crt -cert /usr/share/elasticsearch/config/admin.crt -key /usr/share/elasticsearch/config/admin.key -cd /usr/share/elasticsearch/plugins/opendistro_security/securityconfig/ -nhnv -icl -h es-master-0
+
+
