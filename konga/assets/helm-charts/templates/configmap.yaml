@@ -15,7 +15,7 @@ data:
   SSL_CRT_PATH: {{ .Values.config.ssl_crt_path }}
   KONGA_HOOK_TIMEOUT: "{{ default 60000 .Values.config.konga_hook_timeout }}"
   DB_ADAPTER: {{ default "postgres" .Values.config.db_adapter }}
-  DB_URI: {{ .Values.config.db_uri }}
+  # DB_URI: {{ .Values.config.db_uri }}
   DB_HOST: {{ default "localhost" .Values.config.db_host }}
   DB_PORT: "{{ default 5432 .Values.config.db_port }}"
   DB_USER: {{ .Values.config.db_user }}

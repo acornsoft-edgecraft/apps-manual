@@ -29,10 +29,10 @@ ingress:
   # The Service port targeted by the Ingress
   servicePort: http
   # Ingress annotations
-  annotations: {}
-    ## Resolve HTTP 502 error using ingress-nginx:
-    ## See https://www.ibm.com/support/pages/502-error-ingress-keycloak-response
-    # nginx.ingress.kubernetes.io/proxy-buffer-size: 128k
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: 50000m
 
   # Additional Ingress labels
   labels: {}
@@ -67,66 +67,9 @@ ingress:
 
 ............................
 
-ingress:
-  # -- Enable [ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/).
-  enabled: true
-
-  # -- Ingress [class name](https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-class).
-  className: ""
-
-  # -- Annotations to be added to the ingress.
-  annotations:
-    kubernetes.io/ingress.class: nginx
-    kubernetes.io/tls-acme: "true"
-    nginx.ingress.kubernetes.io/proxy-body-size: 50000m
-
-  # -- Ingress host configuration.
-  # @default -- See [values.yaml](values.yaml).
-
-  # ===========================Dex Server URL===========================
-  # https://dex.k3.acornsoft.io/dex, https://dex.k3.acornsoft.io/dex/callback(gitlab에 정의된 callback url)
-
-    # ===========================Dex Client URL===========================
-  # https://dex.k3.acornsoft.io (Dex client login), https://dex.k3.acornsoft.io/callback(Dex Server에서 gitlab 콜백을 받은 후에 Dex client로 콜백해주는 URL)
-  hosts:
-    - host: dex.k3.acornsoft.io
-      paths:
-        - path: /dex
-          pathType: Prefix
-          fullName: dex
-          svcPort: 5556
-        - path: /
-          pathType: Prefix
-          fullName: kid
-          svcPort: 5555
-
-  # -- Ingress TLS configuration.
-  # @default -- See [values.yaml](values.yaml).
-  tls:
-   - secretName: tls-acornsoft-star
-     hosts:
-       - dex.k3.acornsoft.io
-
-# -- Container resource [requests and limits](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/).
-# See the [API reference](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#resources) for details.
-# @default -- No requests or limits.
-resources:
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  limits:
-    cpu: 100m
-    memory: 128Mi
-  requests:
-    cpu: 100m
-    memory: 128Mi
-
-............................
-
 ```
 
-## 3. Keycloak 설치
+## 3. Keycloak 설치 및 확인
 ```
 $ helm upgrade -i dex k3lab/cloak --cleanup-on-fail -f keycloak-values.yaml -n keycloak
 
@@ -157,20 +100,24 @@ keycloak-console   <none>   kc-sso.k3.acornsoft.io   172.16.77.31   80, 443   3d
 
 ### 4 - 2 Realm 생성
 - 왼쪽 상단 Master realm 에 마우스를 올리면 Add realm 버튼 활성화 후 클릭
-- ![jaeger-spans-traces](images/add-realm-menu.png)
+![jaeger-spans-traces](images/add-realm-menu.png)
 
 - realm 명 등록 후 생성 클릭
-- ![jaeger-spans-traces](images/create-realm.png)
+![jaeger-spans-traces](images/create-realm.png)
 
 ### 4 - 3 Clients 등록
-- SSO로 인증하길 원하는 Application(예: kiali, kibana)들을 Clients에 등록 시킨다.
-- 등록된 App들이 Keycloak에 접속하는 방식(oidc or saml)이 제각각 이므로 추후에 문서로 재정의가 필요해 보임.
+- SSO로 인증하길 원하는 Application(예: kiali, kibana)을 Clients에 등록 시킨다.
 - Path : Clients > Create 클릭(예시: kiali)
-- ![jaeger-spans-traces](images/addclient.png)
+![jaeger-spans-traces](images/addclient.png)
 - Clients > Settings 탭에 Kiali 정보를 입력 한다.
 ![jaeger-spans-traces](images/clientsettings.png)
 - kiali client 등록 후 Client ID, Secret 데이터를 kiali 에 등록 시킨다.(설치 방식에 따라 달라질 수 있다. 예: operator, helm chart)
+### 4 - 4 Keycloak 사용자 생성
+- Manage > Users > Add user 생성 후 패스워드 설정
+![jaeger-spans-traces](images/kiali-user-add.png)
+![jaeger-spans-traces](images/kiali-user-pwd.png)
 
+### 4 - 5 Keycloak SSO 연동을 위한 Kiali 설정
 ```sh
 # operator로 설치 된 경우 custom resource 수정
 # helm chart로 설치된 경우 configmap 수정
@@ -196,4 +143,47 @@ spec:
 - Login with OpenID 클릭 후 Keycloak 로그인 화면으로 이동
 ![jaeger-spans-traces](images/keycloaklogin.png)
 
-### 4 - 4 Keycloak + GitLab 연동
+- Keycloak에서 생성된 Kiali 사용자를 통해 로그인 시도
+![jaeger-spans-traces](images/keycloaklogin.png)
+
+### 4 - 6 Keycloak + GitLab Identity Providers 설정
+- GitLab Identity Provider 설정은 두가지 방식으로 설정 가능하다.
+
+  #### 4-6-1 공식 GitLab 을 사용 하는 방식 (https://about.gitlab.com/) : Identity Providers > Add provider > Social > Gitlab
+  - Redirect URI : Gitlab Application 등록 처리 시 Redirect URI에 등록될 주소
+  - Application Id: Gitlab Application 등록 처리 후 ID 정보를 해당 필드에 등록 시킨다.
+  - Application Secret: Gitlab Application 등록 처리 후 Secret 정보를 해당 필드에 등록 시킨다.
+  - Gitlab Application(keycloak 등록) 생성 후 발급 받은 Application ID and Secret을 각각 필드에 등록 후 최종 저장을 해야함(아래 Gitlab 설정 먼저 처리함)
+
+  ![jaeger-spans-traces](images/gitlab.png)
+
+  - Gitlab 로그인 후 상단 Preferences > Applications
+    - Application 이름 등록
+    - Redirect URI 는 Keycloak에서 발급 받은 Redirect URI 등록(바로 상단에 Redirect URI)
+    - Scopes[read_user, openid, profile, email] 선택 후 Save Application 클릭
+
+    ![jaeger-spans-traces](images/applications.png)
+    ![jaeger-spans-traces](images/application-save.png)
+
+  - 설정 완료 후 Keycloak 로그인 화면에서 GitLab Identity Provider 버튼 활성화
+  ![jaeger-spans-traces](images/gitlab-login.png)
+
+  #### 4-6-2 Private GitLab을 사용하는 방식 (http://git.k3.acornsoft.io/) : Identity Providers > Add provider > User-defined > OpenID Connect v1.0
+  - Gitlab Application 등록 처리는 상단과 동일함
+  - Identity Provider 정보 등록 처리(Private Gitlab 이기 때문에 OpenID Connect Config에 대한 부분을 수동으로 등록 해야 함)
+  ![jaeger-spans-traces](images/k3gitlab.png)
+  - Mappers 탭에 설정된 필드 정보 등록(Gitlab 과 Keycloak 의 사용자 정보를 매핑 처리)
+  ![jaeger-spans-traces](images/gitlabmapper.png)
+
+
+## 5. Keycloak으로 부터 OIDC or SAML 연동이 가능한 어플리케이션 정리
+![jaeger-spans-traces](images/opensource.png)
+
+
+
+
+
+
+
+
+

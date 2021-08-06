@@ -20,12 +20,12 @@ service:
 config:
   port: 1337
   node_env: development
-  # ssl_key_path: "/"
-  # ssl_crt_path: "/"
+  ssl_key_path: "/"
+  ssl_crt_path: "/"
   konga_hook_timeout: 60000
   db_adapter: postgres
-  db_uri: kong-pgsql
-  db_host: kong
+  db_host: kong-postgresql.kong.svc
+  db_uri: kong
   db_port: 5432
   db_user: konga
   db_password: konga

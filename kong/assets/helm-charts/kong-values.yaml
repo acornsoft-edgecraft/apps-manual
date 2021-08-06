@@ -54,7 +54,7 @@ deployment:
 # is set below. In general, you should not set values here if they are set elsewhere.
 env:
     database: "postgres"
-    pg_host : kong-pgsql
+    pg_host : kong-postgresql
     pg_port : 5432
     pg_timeout : 5000
     pg_user : konga
@@ -104,7 +104,7 @@ admin:
   http:
     # Enable plaintext HTTP listen for the admin API
     # Disabling this and using a TLS listen only is recommended for most configuration
-    enabled: false
+    enabled: true
     servicePort: 8001
     containerPort: 8001
     # Set a nodePort which is available if service type is NodePort
@@ -114,7 +114,7 @@ admin:
 
   tls:
     # Enable HTTPS listen for the admin API
-    enabled: true
+    enabled: false
     servicePort: 8444
     containerPort: 8444
     # Set a target port for the TLS port in the admin API service, useful when using TLS
@@ -188,7 +188,7 @@ cluster:
 proxy:
   # Enable creating a Kubernetes service for the proxy
   enabled: true
-  type: LoadBalancer
+  type: NodePort
   # To specify annotations or labels for the proxy service, add them to the respective
   # "annotations" or "labels" dictionaries below.
   annotations: {}
@@ -335,7 +335,7 @@ dblessConfig:
 # created in k8s.  It uses CRDs for more fine grained control over routing and
 # for Kong specific configuration.
 ingressController:
-  enabled: true
+  enabled: false
   image:
     repository: kong/kubernetes-ingress-controller
     tag: "1.2"
@@ -425,11 +425,11 @@ ingressController:
 
 postgresql:
   enabled: true
-    postgresqlUsername: konga
-    postgresqlPassword: konga
-    postgresqlDatabase: kong
-    service:
-      port: 5432
+  postgresqlUsername: konga
+  postgresqlPassword: konga
+  postgresqlDatabase: kong
+  service:
+    port: 5432
 
 # -----------------------------------------------------------------------------
 # Miscellaneous parameters
