@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: m3db-config
+data:
+  m3.yml: |2
+
+    coordinator: {}
+
+    db:
+      hostID:
+        resolver: file
+        file:
+          path: /etc/m3db/pod-identity/identity
+          timeout: 5m
+
+      client:
+        writeConsistencyLevel: majority
+        readConsistencyLevel: unstrict_majority
+
+      discovery:
+        config:
+          service:
+            env: "m3db/m3-cluster"
+            zone: embedded
+            service: m3db
+            cacheDir: /var/lib/m3kv
+            etcdClusters:
+            - zone: embedded
+              endpoints:
+              - "https://192.168.77.229:2379"
+              # TLS configuration
+              tls:
+                # Certificate path
+                crtPath: /etcd-secret-tls/etcd-client.crt
+                # Key store path
+                keyPath: /etcd-secret-tls/etcd-client.key
+                # Certificiate authority path
+                caCrtPath: /etcd-secret-tls/ca.crt

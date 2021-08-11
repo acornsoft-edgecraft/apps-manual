@@ -1,0 +1,127 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app: m3query
+  name: m3query
+  namespace: m3db
+data:
+  query.yaml: |+
+    logging:
+      level: debug
+
+    listenAddress: "0.0.0.0:7201"
+    metrics:
+      scope:
+        prefix: "query"
+      prometheus:
+        handlerPath: /metrics
+        listenAddress: 0.0.0.0:7203 # until https://github.com/m3db/m3/issues/682 is resolved
+      sanitization: prometheus
+      samplingRate: 1.0
+      extended: none
+    clusters:
+      - client:
+          config:
+            service:
+              env: m3db/m3-cluster
+              zone: embedded
+              service: m3db
+              cacheDir: /var/lib/m3kv
+              etcdClusters:
+              - zone: embedded
+                endpoints:
+                - 192.168.77.229:2379
+
+    tagOptions:
+      idScheme: quoted
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: m3query
+  name: m3query
+  namespace: m3db
+spec:
+  ports:
+    - name: query
+      port: 7201
+      nodePort: 32558
+      protocol: TCP
+      targetPort: 7201
+    - name: query-debug
+      port: 7203
+      nodePort: 32559
+      protocol: TCP
+      targetPort: 7203
+  selector:
+    app: m3query
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: m3query
+  labels:
+    app: m3query
+  namespace: m3db
+spec:
+  serviceName: "m3query"
+  replicas: 2
+  selector:
+    matchLabels:
+      app: m3query
+  template:
+    metadata:
+      labels:
+        app: m3query
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - node3
+                      - node3
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: "app"
+                      operator: In
+                      values:
+                        - m3dbnode
+                        - m3query
+                topologyKey: "kubernetes.io/hostname"
+      containers:
+        - name: m3query
+          image: quay.io/m3db/m3query:latest
+          args:
+            - "-f"
+            - "/etc/m3/query.yaml"
+          volumeMounts:
+            - name: config
+              mountPath: /etc/m3
+          imagePullPolicy: Always
+          ports:
+            - name: query
+              containerPort: 7201
+              protocol: TCP
+            - name: query-debug
+              containerPort: 7203
+              protocol: TCP
+          resources:
+            limits:
+              memory: 5Gi
+            requests:
+              memory: 5Gi
+      volumes:
+        - name: config
+          configMap:
+            name: m3query

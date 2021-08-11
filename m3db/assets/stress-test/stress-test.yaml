@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stress-test
+  labels:
+    app: stress-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stress-test
+  template:
+    metadata:
+      labels:
+        app: stress-test
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - node4
+      containers:
+      - name: stress-test
+        image: progrium/stress:latest
+        imagePullPolicy: Always
+        args: ['--vm', '2', '--vm-bytes', '2048M']

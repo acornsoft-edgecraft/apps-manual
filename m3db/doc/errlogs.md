@@ -1107,3 +1107,202 @@ grafana 에서 확인 했을때 datasource(prometheus/mequery) 별로 쿼리를 
 > Content-Type: application/x-www-form-urlencoded
 >
 ```
+
+
+## 20210802 - error
+- shards leaving 상태
+```json
+"unable to satisfy consistency requirements, shards=4: failed to meet consistency level unstrict_majority with 4/4 success, 4 nodes responded, errors: []"
+
+
+
+9:19 dongmook:/Users/dongmook/git-workspaces/onassis/m3db/assets/m3cluster> kubectl -n m3db exec m3-cluster-rep0-0 -- curl http://localhost:7201/api/v1/services/m3db/placement | jq .
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  3372    0  3372    0     0   411k      0 --:--:-- --:--:-- --:--:--  411k
+{
+  "placement": {
+    "instances": {
+      "{\"name\":\"m3-cluster-rep0-0\",\"uid\":\"3fdc951a-5781-4134-a9ef-ca31a192d49b\"}": {
+        "id": "{\"name\":\"m3-cluster-rep0-0\",\"uid\":\"3fdc951a-5781-4134-a9ef-ca31a192d49b\"}",
+        "isolationGroup": "group1",
+        "zone": "embedded",
+        "weight": 100,
+        "endpoint": "m3-cluster-rep0-0.m3dbnode-m3-cluster:9000",
+        "shards": [
+          {
+            "id": 0,
+            "state": "INITIALIZING",
+            "sourceId": "{\"name\":\"m3-cluster-rep0-0\",\"uid\":\"fbc74004-9704-492e-9342-0f511761832b\"}",
+            "cutoverNanos": "0",
+            "cutoffNanos": "0"
+          },
+          {
+            "id": 2,
+            "state": "INITIALIZING",
+            "sourceId": "{\"name\":\"m3-cluster-rep0-0\",\"uid\":\"fbc74004-9704-492e-9342-0f511761832b\"}",
+            "cutoverNanos": "0",
+            "cutoffNanos": "0"
+          },
+          {
+            "id": 3,
+            "state": "INITIALIZING",
+            "sourceId": "{\"name\":\"m3-cluster-rep0-0\",\"uid\":\"fbc74004-9704-492e-9342-0f511761832b\"}",
+            "cutoverNanos": "0",
+            "cutoffNanos": "0"
+          },
+          {
+            "id": 7,
+            "state": "INITIALIZING",
+            "sourceId": "{\"name\":\"m3-cluster-rep0-0\",\"uid\":\"fbc74004-9704-492e-9342-0f511761832b\"}",
+            "cutoverNanos": "0",
+            "cutoffNanos": "0"
+          }
+        ],
+        "shardSetId": 0,
+        "hostname": "m3-cluster-rep0-0.m3dbnode-m3-cluster",
+        "port": 9000,
+        "metadata": {
+          "debugPort": 0
+        }
+      },
+      "{\"name\":\"m3-cluster-rep0-0\",\"uid\":\"fbc74004-9704-492e-9342-0f511761832b\"}": {
+        "id": "{\"name\":\"m3-cluster-rep0-0\",\"uid\":\"fbc74004-9704-492e-9342-0f511761832b\"}",
+        "isolationGroup": "group1",
+        "zone": "embedded",
+        "weight": 100,
+        "endpoint": "m3-cluster-rep0-0.m3dbnode-m3-cluster:9000",
+        "shards": [
+          {
+            "id": 0,
+            "state": "LEAVING",
+            "sourceId": "",
+            "cutoverNanos": "0",
+            "cutoffNanos": "0"
+          },
+          {
+            "id": 2,
+            "state": "LEAVING",
+            "sourceId": "",
+            "cutoverNanos": "0",
+            "cutoffNanos": "0"
+          },
+          {
+            "id": 3,
+            "state": "LEAVING",
+            "sourceId": "",
+            "cutoverNanos": "0",
+            "cutoffNanos": "0"
+          },
+          {
+            "id": 7,
+            "state": "LEAVING",
+            "sourceId": "",
+            "cutoverNanos": "0",
+            "cutoffNanos": "0"
+          }
+        ],
+        "shardSetId": 0,
+        "hostname": "m3-cluster-rep0-0.m3dbnode-m3-cluster",
+        "port": 9000,
+        "metadata": {
+          "debugPort": 0
+        }
+      },
+      "{\"name\":\"m3-cluster-rep0-1\",\"uid\":\"99ac3c12-5581-449c-9cea-7e789f2bd037\"}": {
+        "id": "{\"name\":\"m3-cluster-rep0-1\",\"uid\":\"99ac3c12-5581-449c-9cea-7e789f2bd037\"}",
+        "isolationGroup": "group1",
+        "zone": "embedded",
+        "weight": 100,
+        "endpoint": "m3-cluster-rep0-1.m3dbnode-m3-cluster:9000",
+        "shards": [
+          {
+            "id": 1,
+            "state": "AVAILABLE",
+            "sourceId": "",
+            "cutoverNanos": "0",
+            "cutoffNanos": "0"
+          },
+          {
+            "id": 5,
+            "state": "AVAILABLE",
+            "sourceId": "",
+            "cutoverNanos": "0",
+            "cutoffNanos": "0"
+          },
+          {
+            "id": 9,
+            "state": "AVAILABLE",
+            "sourceId": "",
+            "cutoverNanos": "0",
+            "cutoffNanos": "0"
+          },
+          {
+            "id": 11,
+            "state": "AVAILABLE",
+            "sourceId": "",
+            "cutoverNanos": "0",
+            "cutoffNanos": "0"
+          }
+        ],
+        "shardSetId": 0,
+        "hostname": "m3-cluster-rep0-1.m3dbnode-m3-cluster",
+        "port": 9000,
+        "metadata": {
+          "debugPort": 0
+        }
+      },
+      "{\"name\":\"m3-cluster-rep0-2\",\"uid\":\"df427b81-a305-4f3e-945d-fc1e8054992e\"}": {
+        "id": "{\"name\":\"m3-cluster-rep0-2\",\"uid\":\"df427b81-a305-4f3e-945d-fc1e8054992e\"}",
+        "isolationGroup": "group1",
+        "zone": "embedded",
+        "weight": 100,
+        "endpoint": "m3-cluster-rep0-2.m3dbnode-m3-cluster:9000",
+        "shards": [
+          {
+            "id": 4,
+            "state": "AVAILABLE",
+            "sourceId": "",
+            "cutoverNanos": "0",
+            "cutoffNanos": "0"
+          },
+          {
+            "id": 6,
+            "state": "AVAILABLE",
+            "sourceId": "",
+            "cutoverNanos": "0",
+            "cutoffNanos": "0"
+          },
+          {
+            "id": 8,
+            "state": "AVAILABLE",
+            "sourceId": "",
+            "cutoverNanos": "0",
+            "cutoffNanos": "0"
+          },
+          {
+            "id": 10,
+            "state": "AVAILABLE",
+            "sourceId": "",
+            "cutoverNanos": "0",
+            "cutoffNanos": "0"
+          }
+        ],
+        "shardSetId": 0,
+        "hostname": "m3-cluster-rep0-2.m3dbnode-m3-cluster",
+        "port": 9000,
+        "metadata": {
+          "debugPort": 0
+        }
+      }
+    },
+    "replicaFactor": 1,
+    "numShards": 12,
+    "isSharded": true,
+    "cutoverTime": "0",
+    "isMirrored": false,
+    "maxShardSetId": 0
+  },
+  "version": 5
+}
+```
