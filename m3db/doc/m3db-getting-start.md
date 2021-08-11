@@ -226,10 +226,13 @@ spec:
 ```
 
 ## Prometheus configuration
+프로메테우스의 모니터링 설정은 [여기](./m3db-prometheus-monitoring.md)에서 확인 할 수 있다.
 - Add to your Prometheus configuration.
   - remote read/write endpoints를 설정 한다.
+  Prometheus의 [Remote Endpoints and Storage](https://prometheus.io/docs/operating/integrations/#remote-endpoints-and-storage)에서 확인 할 수 있다.
   > [ 참조 ]
-  > 
+  > [REMOTE WRITE TUNING](https://prometheus.io/docs/practices/remote_write/#remote-write-tuning)
+  > CONFIGURATION 속성: [<remote_write>](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write), [<remote_read>](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_read)
 ```yaml
   remoteWrite:
     - url: http://m3coordinator.m3db:7201/api/v1/prom/remote/write
@@ -245,14 +248,13 @@ spec:
 - "--storage.tsdb.wal-compression"
 - "--storage.tsdb.path=/prometheus/"
 ```
-- 
 
-- 
-## Prometheus Helm Chart 변경
+## Prometheus Helm Chart 변경 사항
 - m3db 사용시 tsdb 설정을 사용 안함으로 변경 함.
   - deployment에서 args: tsdb 설정 삭제
 - m3db 사용시 pvc 설정을 사용 안함으로 변경 함.
 - m3db 사용시 remoteWrite/remoteRead 설정 변경
+  - remoteStorage 항목을 추가 하여 사용여부(enabled)를 설정 한다.
 ```yaml
 ## values.yaml 샘플
   ### m3db 사용
@@ -268,7 +270,6 @@ spec:
         read_recent: true
 
 ```
-
 
 ---
 # 참조
