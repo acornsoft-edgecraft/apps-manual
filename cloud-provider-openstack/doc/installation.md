@@ -1,4 +1,4 @@
-# cloud-provider-openstack 설치 방법
+# cloud-provider-openstack 및 cinder-csi-plugin 설치 방법 및 테스트
 
 ## 1. MasterNode 설정
 > Master 노드별 설정
