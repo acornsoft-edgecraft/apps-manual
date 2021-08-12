@@ -234,3 +234,86 @@ nginx        LoadBalancer   10.107.33.228   192.168.77.108   80:32326/TCP   73m
 # EXTERNAL-IP 로 접속 시도
 ```
 ![jaeger-spans-traces](images/nginx.png)
+
+## 5. cinder-csi-plugin 배포 확인 및 테스트
+
+### 5 - 1 cinder plugin 배포
+- Cinder CSI 드라이버는 OpenStack Cinder 볼륨의 수명 주기를 관리하기 위해 Container Orchestrator에서 사용하는 CSI 사양 호환 드라이버 이다.
+- 현재 openstack 내에 지원 가능한 볼륨 타입 : iscsi, nfs, ceph(192.168.77.11 장비에서 service 중단 상태)
+- 참고 : https://github.com/kubernetes/cloud-provider-openstack
+```sh
+# cinder plugin 설치
+
+$ kubectl apply -f cinder-csi-plugin/
+
+# cinder 배포 확인
+$ kubectl get po -n kube-system
+
+NAME                                       READY   STATUS    RESTARTS   AGE     IP             NODE         NOMINATED NODE   READINESS GATES
+csi-cinder-controllerplugin-0              6/6     Running   0          16h     10.47.21.226   vm-live-05   <none>           <none>
+csi-cinder-nodeplugin-9lmxq                3/3     Running   0          16h     172.16.77.31   vm-live-01   <none>           <none>
+csi-cinder-nodeplugin-gh55g                3/3     Running   0          16h     172.16.77.32   vm-live-02   <none>           <none>
+csi-cinder-nodeplugin-jg8dz                3/3     Running   0          16h     172.16.77.36   vm-live-06   <none>           <none>
+csi-cinder-nodeplugin-kvfd7                3/3     Running   0          16h     172.16.77.35   vm-live-05   <none>           <none>
+csi-cinder-nodeplugin-wv5vn                3/3     Running   0          16h     172.16.77.34   vm-live-04   <none>           <none>
+csi-cinder-nodeplugin-xl5kz                3/3     Running   0          16h     172.16.77.33   vm-live-03   <none>           <none>
+
+```
+### 5 - 2 cinder 통해 kubernetes에 볼륨 생성 테스트
+- cinder 드라이버가 설치된 이후 StorageClass, PersistentVolumeClaim, Pod 배포 하여 openstack 내에 볼륨이 생성되는지 확인한다.
+```sh
+
+# StorageClass 생성
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: csi-sc-cinderplugin
+provisioner: cinder.csi.openstack.org
+parameters:
+  type: nfs or iscsi (현재 ceph는 설정 불가 이며 default는 nfs로 설정됨)
+---
+
+# PersistentVolumeClaim 생성
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: csi-pvc-cinderplugin
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: csi-sc-cinderplugin
+
+---
+
+# Pod 생성
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+spec:
+  containers:
+  - image: nginx
+    imagePullPolicy: IfNotPresent
+    name: nginx
+    ports:
+    - containerPort: 80
+      protocol: TCP
+    volumeMounts:
+      - mountPath: /var/lib/www/html
+        name: csi-data-cinderplugin
+  nodeSelector:                         #특정노드에 배포 테스트
+    kubernetes.io/hostname: vm-live-04
+  volumes:
+  - name: csi-data-cinderplugin
+    persistentVolumeClaim:
+      claimName: csi-pvc-cinderplugin
+      readOnly: false
+```
+
+- StorageClass, PersistentVolumeClaim, Pod 생성 이후 openstack에서 배포된 pvc가 생성되었는지 확인한다.
+  - path: 프로젝트 > 볼륨 > 볼륨
+
+  ![jaeger-spans-traces](images/volume.png)
