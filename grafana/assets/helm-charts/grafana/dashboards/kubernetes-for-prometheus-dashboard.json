@@ -32,7 +32,7 @@
   "panels": [
     {
       "collapsed": false,
-      "datasource": "Prometheus",
+      "datasource": "$datasource",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -46,7 +46,7 @@
     },
     {
       "cacheTimeout": null,
-      "datasource": "Prometheus",
+      "datasource": "$datasource",
       "fieldConfig": {
         "defaults": {
           "decimals": 1,
@@ -129,7 +129,7 @@
     },
     {
       "cacheTimeout": null,
-      "datasource": "Prometheus",
+      "datasource": "$datasource",
       "fieldConfig": {
         "defaults": {
           "decimals": 1,
@@ -207,7 +207,7 @@
       "type": "bargauge"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": "$datasource",
       "description": "클러스터 노드 수, 노드 POD 수, 노드 POD 상한",
       "fieldConfig": {
         "defaults": {
@@ -287,7 +287,7 @@
       "type": "bargauge"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": "$datasource",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -495,7 +495,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "Prometheus",
+      "datasource": "$datasource",
       "decimals": 2,
       "editable": true,
       "error": false,
@@ -617,7 +617,7 @@
       }
     },
     {
-      "datasource": "Prometheus",
+      "datasource": "$datasource",
       "fieldConfig": {
         "defaults": {
           "decimals": 1,
@@ -702,7 +702,7 @@
       "type": "bargauge"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": "$datasource",
       "fieldConfig": {
         "defaults": {
           "decimals": 1,
@@ -787,7 +787,7 @@
       "type": "bargauge"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": "$datasource",
       "fieldConfig": {
         "defaults": {
           "decimals": 2,
@@ -906,7 +906,7 @@
       "type": "bargauge"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": "$datasource",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1617,7 +1617,7 @@
     },
     {
       "collapsed": true,
-      "datasource": "Prometheus",
+      "datasource": "$datasource",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1627,7 +1627,7 @@
       "id": 61,
       "panels": [
         {
-          "datasource": "Prometheus",
+          "datasource": "$datasource",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -2348,7 +2348,7 @@
           "type": "table"
         },
         {
-          "datasource": "Prometheus",
+          "datasource": "$datasource",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -3135,7 +3135,7 @@
     },
     {
       "collapsed": true,
-      "datasource": "Prometheus",
+      "datasource": "$datasource",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -3149,7 +3149,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": "$datasource",
           "decimals": 3,
           "editable": true,
           "error": false,
@@ -3266,7 +3266,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": "$datasource",
           "decimals": 2,
           "editable": true,
           "error": false,
@@ -3387,7 +3387,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": "$datasource",
           "decimals": 2,
           "editable": true,
           "error": false,
@@ -3523,7 +3523,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": "$datasource",
           "decimals": 2,
           "editable": true,
           "error": false,
@@ -3640,7 +3640,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": "$datasource",
           "decimals": 2,
           "editable": true,
           "error": false,
@@ -3771,7 +3771,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": "$datasource",
           "decimals": 2,
           "editable": true,
           "error": false,
@@ -3917,7 +3917,7 @@
     },
     {
       "collapsed": true,
-      "datasource": "Prometheus",
+      "datasource": "$datasource",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -3934,7 +3934,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": "$datasource",
           "decimals": 2,
           "editable": true,
           "error": false,
@@ -4093,7 +4093,7 @@
           "text": "None",
           "value": ""
         },
-        "datasource": "Prometheus",
+        "datasource": "$datasource",
         "definition": "label_values(origin_prometheus)",
         "description": null,
         "error": null,
@@ -4124,7 +4124,7 @@
           "text": "All",
           "value": "$__all"
         },
-        "datasource": "Prometheus",
+        "datasource": "$datasource",
         "definition": "label_values(kube_node_info{origin_prometheus=~\"$origin_prometheus\"},node)",
         "description": null,
         "error": null,
@@ -4155,7 +4155,7 @@
           "text": "All",
           "value": "$__all"
         },
-        "datasource": "Prometheus",
+        "datasource": "$datasource",
         "definition": "label_values(kube_namespace_labels{origin_prometheus=~\"$origin_prometheus\"},namespace)",
         "description": null,
         "error": null,
@@ -4186,7 +4186,7 @@
           "text": "All",
           "value": "$__all"
         },
-        "datasource": "Prometheus",
+        "datasource": "$datasource",
         "definition": "label_values(kube_pod_container_info{origin_prometheus=~\"$origin_prometheus\",namespace=~\"$NameSpace\"},container)",
         "description": null,
         "error": null,
@@ -4217,7 +4217,7 @@
           "text": "All",
           "value": "$__all"
         },
-        "datasource": "Prometheus",
+        "datasource": "$datasource",
         "definition": "label_values(kube_pod_container_info{origin_prometheus=~\"$origin_prometheus\",namespace=~\"$NameSpace\",container=~\"$Container\"},pod)",
         "description": null,
         "error": null,

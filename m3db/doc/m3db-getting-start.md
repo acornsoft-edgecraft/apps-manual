@@ -97,7 +97,7 @@ k8s Control plane etcd를 사용시에는 [Configuring an External etcd](./m3db-
   sysctl -w fs.nr_open=3000000
   ```
 
-## Creating a Cluster
+## Create M3DB Cluster
 - Prerequisites
   - M3DB Operator 
   - ETCD
@@ -224,6 +224,136 @@ spec:
         requests:
           storage: 30Gi
 ```
+## M3 Aggregator로 지표(Metrics) 집계 설정 - Setup Placement for M3Coordinator and M3Aggregator
+M3 Aggregator는 M3DB 노드에 메트릭을 저장하기 전에 상태 기반 스트림 기반 다운샘플링을 제공하는 전용 메트릭 애그리게이터입니다. etcd에 저장된 동적 규칙을 사용합니다.
+
+- Initializing aggregator topology(placement)
+```sh
+kubectl -n m3db exec m3-cluster-rep0-0 -- curl -vvvsSf -H "Cluster-Environment-Name: m3db/m3-cluster" -X POST http://localhost:7201/api/v1/services/m3aggregator/placement/init -d '{
+    "num_shards": 12,
+    "replication_factor": 2,
+    "instances": [
+        {
+            "id": "m3aggregator-0",
+            "isolation_group": "group1",
+            "zone": "embedded",
+            "weight": 100,
+            "endpoint": "m3aggregator.m3db:6000",
+            "hostname": "m3aggregator-0",
+            "port": 6000
+        },
+        {
+            "id": "m3aggregator-1",
+            "isolation_group": "group2",
+            "zone": "embedded",
+            "weight": 100,
+            "endpoint": "m3aggregator.m3db:6000",
+            "hostname": "m3aggregator-1",
+            "port": 6000
+        }
+    ]
+}' | jq .
+
+## 확인
+# kubectl -n m3db exec m3-cluster-rep0-0 -- curl http://localhost:7201/api/v1/services/m3aggregator/placement | jq .
+```
+
+- Initialize m3msg topic for m3aggregator to receive from m3coordinator to aggregate metrics - m3aggregator가 m3coordinators로부터 수신하여 메트릭을 집계하도록 m3msg topic 초기화
+```sh
+kubectl -n m3db exec m3-cluster-rep0-0 -- curl -vvvsSf -H "Cluster-Environment-Name: m3db/m3-cluster" -H "Topic-Name: aggregator_ingest" -X POST http://localhost:7201/api/v1/topic/init -d '{
+    "numberOfShards": 12
+}' | jq .
+```
+- # Add m3aggregator consumer group to ingest topic - 주제 수집에 m3aggregator 소비자 그룹 추가
+m3aggregator 주제에서 트래픽을 수신 할 배치(placement)를 추가합니다
+```sh
+kubectl -n m3db exec m3-cluster-rep0-0 -- curl -vvvsSf -H "Cluster-Environment-Name: m3db/m3-cluster" -H "Topic-Name: aggregator_ingest" -X POST http://localhost:7201/api/v1/topic -d '{
+  "consumerService": {
+    "serviceId": {
+      "name": "m3aggregator",
+      "environment": "m3db/m3-cluster",
+      "zone": "embedded"
+    },
+    "consumptionType": "REPLICATED",
+    "messageTtlNanos": "300000000000"
+  }
+}' | jq .
+
+## 확인
+# kubectl -n m3db exec m3-cluster-rep0-0 -- curl -vvvsSf -H "Cluster-Environment-Name: m3db/m3-cluster" -H "Topic-Name: aggregator_ingest" http://localhost:7201/api/v1/topic | jq .
+```
+
+
+- Initializing m3msg topic for m3coordinator to receive from m3aggregator to write m3db - M3DB에 쓰기 위해 m3aggregator에서 수신할 m3coordinator에 대한 m3msg 주제 초기화
+m3coordinator 인스턴스에서 집계된 메트릭을 m3aggregator에서 수신하여 M3DB에 쓸 주제를 설정해야 한다.
+```sh
+kubectl -n m3db exec m3-cluster-rep0-0 -- curl -vvvsSf -H "Cluster-Environment-Name: m3db/m3-cluster" -H "Topic-Name: aggregated_metrics" -X POST http://localhost:7201/api/v1/topic/init -d '{
+    "numberOfShards": 12
+}' | jq .
+```
+
+- Add m3coordinator consumer group to outbound topic - 아웃바운드 주제에 m3coordinator 소비자 그룹 추가 
+m3coordinator 주제에서 트래픽을 수신 할 배치(placement)를 추가합니다
+```sh
+kubectl -n m3db exec m3-cluster-rep0-0 -- curl -vvvsSf -H "Cluster-Environment-Name: m3db/m3-cluster" -H "Topic-Name: aggregated_metrics" -X POST http://localhost:7201/api/v1/topic -d '{
+  "consumerService": {
+    "serviceId": {
+      "name": "m3coordinator",
+      "environment": "m3db/m3-cluster",
+      "zone": "embedded"
+    },
+    "consumptionType": "SHARED",
+    "messageTtlNanos": "300000000000"
+  }
+}' | jq .
+
+## 확인
+# kubectl -n m3db exec m3-cluster-rep0-0 -- curl -vvvsSf -H "Cluster-Environment-Name: m3db/m3-cluster" -H "Topic-Name: aggregated_metrics" http://localhost:7201/api/v1/topic | jq .
+```
+
+
+- Initializing m3coordinator topology(placement)
+m3coordinator에서 이 주제에 대한 트래픽을 수신하도록 인스턴스를 구성해야 한다
+```sh
+kubectl -n m3db exec m3-cluster-rep0-0 -- curl -vvvsSf -H "Cluster-Environment-Name: m3db/m3-cluster" -X POST http://localhost:7201/api/v1/services/m3coordinator/placement/init -d '{
+    "instances": [
+        {
+            "id": "m3coordinator-0",
+            "zone": "embedded",
+            "endpoint": "m3coordinator.m3db:7507",
+            "hostname": "m3coordinator-0",
+            "port": 7507
+        },
+        {
+            "id": "m3coordinator-1",
+            "zone": "embedded",
+            "endpoint": "m3coordinator.m3db:7507",
+            "hostname": "m3coordinator-1",
+            "port": 7507
+        }
+    ]
+}' | jq .
+
+## 확인
+# kubectl -n m3db exec m3-cluster-rep0-0 -- curl -vvvsSf -H "Cluster-Environment-Name: m3db/m3-cluster" http://localhost:7201/api/v1/services/m3coordinator/placement | jq .
+```
+
+## Create M3Coordinator
+M3 Coordinator는 Prometheus와 같은 업스트림 시스템과 M3DB와 같은 다운스트림 시스템 간의 읽기 및 쓰기를 조정하는 서비스다.
+
+
+- 사전준비
+  - Initializing m3coordinator topology
+
+- installation Manual
+  - External etcd의 tls 설정을 configMap에 추가 한다.
+  - External etcd의 tls 시크릿 사용을 위해 statefulset에 볼륨을 추가 한다.
+```sh
+kubectl -n m3db apply -f 
+```
+
+ 
+
 
 ## Prometheus configuration
 프로메테우스의 모니터링 설정은 [여기](./m3db-prometheus-monitoring.md)에서 확인 할 수 있다.

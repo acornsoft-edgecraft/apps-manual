@@ -27,14 +27,15 @@ helm upgrade prometheus -i \
 ## m3db 내용 수정 후 helm chart package 생성 함. : helm package <prometheus-diriectory>
 ##  <Air-gap repository>에 업로드 함.
 ## Private repository 사용 하기 위해서 ca.crt 필요
-helm upgrade prometheus -i \
-  -n monitoring \
-  --create-namespace \
-  --cleanup-on-fail \
-  --ca-file ./ca.crt \
-  --repo http://x.x.x.x/chartrepo/k3lab-charts \
-  prometheus \
-  -f values-x-x-m3db.yaml
+### prometheus local storage를 필수로 사용 한다.(https://prometheus.io/docs/prometheus/latest/storage/#on-disk-layout)
+# helm upgrade prometheus -i \
+#   -n monitoring \
+#   --create-namespace \
+#   --cleanup-on-fail \
+#   --ca-file ./ca.crt \
+#   --repo http://x.x.x.x/chartrepo/k3lab-charts \
+#   prometheus \
+#   -f values-x-x-m3db.yaml
 ```
 
 ## Prometheus configuration
@@ -211,6 +212,12 @@ metadata:
 - m3aggregator 서비스 수집 포트 : 6002
 - m3query-monitor 서비스 수집 포트 : 7203
 
+
+
+
+---------------------
+--- 아래 내용 helm chart 수정본 사용 안함
+--- 이유 : prometheus에서 local storage 사용이 디폴트로 설정 되어 있다. 
 
 ## Remote Endpoints and Storage 설정 추가 - Helm Chart 수정
 - ConfigMap에 remoteStorage 사용 여부 추가

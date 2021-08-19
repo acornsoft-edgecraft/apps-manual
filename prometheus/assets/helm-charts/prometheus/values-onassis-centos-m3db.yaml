@@ -178,7 +178,7 @@ alertmanager:
     ## If true, alertmanager will create/use a Persistent Volume Claim
     ## If false, use emptyDir
     ##
-    ### false -> true
+    ### true -> false
     enabled: true
 
     ## alertmanager data Persistent Volume access modes
@@ -292,13 +292,13 @@ alertmanager:
   ## alertmanager resource requests and limits
   ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
   ##
-  resources: {}
-    # limits:
-    #   cpu: 10m
-    #   memory: 32Mi
-    # requests:
-    #   cpu: 10m
-    #   memory: 32Mi
+  resources:
+    limits:
+      cpu: 10m
+      memory: 32Mi
+    requests:
+      cpu: 10m
+      memory: 32Mi
 
   # Custom DNS configuration to be added to alertmanager pods
   dnsConfig: {}
@@ -425,7 +425,7 @@ configmapReload:
 kubeStateMetrics:
   ## If false, kube-state-metrics sub-chart will not be installed
   ##
-  enabled: false
+  enabled: true
 
 ## kube-state-metrics sub-chart configurable values
 ## Please see https://github.com/kubernetes/kube-state-metrics/tree/master/charts/kube-state-metrics
@@ -439,11 +439,11 @@ nodeExporter:
 
   ## If true, node-exporter pods share the host network namespace
   ##
-  hostNetwork: true
+  hostNetwork: false
 
   ## If true, node-exporter pods share the host PID namespace
   ##
-  hostPID: true
+  hostPID: false
 
   ## If true, node-exporter pods mounts host / at /host/root
   ##
@@ -509,7 +509,9 @@ nodeExporter:
   ## Node tolerations for node-exporter scheduling to nodes with taints
   ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
   ##
-  tolerations: []
+  tolerations:
+    - effect: NoSchedule
+      operator: Exists
     # - key: "key"
     #   operator: "Equal|Exists"
     #   value: "value"
@@ -539,13 +541,13 @@ nodeExporter:
   ## node-exporter resource limits & requests
   ## Ref: https://kubernetes.io/docs/user-guide/compute-resources/
   ##
-  resources: {}
-    # limits:
-    #   cpu: 200m
-    #   memory: 50Mi
-    # requests:
-    #   cpu: 100m
-    #   memory: 30Mi
+  resources:
+    limits:
+      cpu: 200m
+      memory: 50Mi
+    requests:
+      cpu: 100m
+      memory: 30Mi
 
   # Custom DNS configuration to be added to node-exporter pods
   dnsConfig: {}
@@ -666,18 +668,13 @@ server:
     # - web.enable-admin-api
     ##
     ## storage.tsdb.no-lockfile flag controls BD locking
-    ### 주석 : m3db 사용
     # - storage.tsdb.no-lockfile
     ##
     ## storage.tsdb.wal-compression flag enables compression of the write-ahead log (WAL)
-    ### 주석 -> m3db 사용
     # - storage.tsdb.wal-compression
 
   ## Path to a configuration file on prometheus server container FS
   configPath: /etc/config/prometheus.yml
-
-  ## 
-
 
   ### The data directory used by prometheus to set --storage.tsdb.path
   ### When empty server.persistentVolume.mountPath is used instead
@@ -694,19 +691,21 @@ server:
     ## How frequently to evaluate rules
     ##
     evaluation_interval: 1m
+    ## external_labels
+    external_labels:
+      cluster_id: onassis
+      application_id: monitoring
 
   ## https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write
   ### m3db 사용
-  remoteStorage:
-    enabled: true
-  
-    remoteWrite:
-      - url: "http://192.168.77.232:32555/api/v1/prom/remote/write"
+  remoteWrite:
+    - url: "http://192.168.77.229:32555/api/v1/prom/remote/write"
 
-    ## https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_read
-    remoteRead:
-      - url: "http://192.168.77.232:32558/api/v1/prom/remote/read"
-        read_recent: true
+  ## https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_read
+  ### m3db 사용
+  remoteRead:
+    - url: "http://192.168.77.232:32558/api/v1/prom/remote/read"
+      read_recent: true
 
   ## Additional Prometheus server container arguments
   ##
@@ -836,7 +835,6 @@ server:
     ## If true, Prometheus server will create/use a Persistent Volume Claim
     ## If false, use emptyDir
     ##
-    ### true -> false
     enabled: false
 
     ## Prometheus server data Persistent Volume access modes
@@ -919,8 +917,7 @@ server:
 
   ## Use a StatefulSet if replicaCount needs to be greater than 1 (see below)
   ##
-  ### 1 -> 2
-  replicaCount: 2
+  replicaCount: 1
 
   ## Annotations to be added to deployment
   ##
@@ -930,8 +927,7 @@ server:
     ## If true, use a statefulset instead of a deployment for pod management.
     ## This allows to scale replicas to more than 1 pod
     ##
-    ### false -> true
-    enabled: true
+    enabled: false
 
     annotations: {}
     labels: {}
@@ -1036,10 +1032,9 @@ server:
     ## If using a statefulSet (statefulSet.enabled=true), configure the
     ## service to connect to a specific replica to have a consistent view
     ## of the data.
-    ### false -> true , 0 -> 2
     statefulsetReplica:
-      enabled: true
-      replica: 2
+      enabled: false
+      replica: 0
 
   ## Prometheus server pod termination grace period
   ##
@@ -1496,6 +1491,8 @@ serverFiles:
           replacement: $1
           action: replace
 
+        
+
       # Scrape config for service endpoints.
       #
       # The relabeling allows the actual service scrape endpoint to be configured
@@ -1748,6 +1745,7 @@ serverFiles:
         - source_labels: [__meta_kubernetes_service_name]
           action: replace
           target_label: k8s_sname
+
 
 # adds additional scrape configs to prometheus.yml
 # must be a string so you have to add a | after extraScrapeConfigs:

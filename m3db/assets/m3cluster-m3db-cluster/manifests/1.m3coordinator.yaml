@@ -12,7 +12,7 @@ metadata:
 data:
   coordinator.yaml: |+
     logging:
-      level: info
+      level: debug
       
     listenAddress: "0.0.0.0:7201"
     metrics:
@@ -43,7 +43,16 @@ data:
               etcdClusters:
               - zone: embedded
                 endpoints:
-                - 192.168.77.229:2379
+                - https://192.168.77.229:2379
+                # TLS configuration
+                tls:
+                  # Certificiate authority path
+                  caCrtPath: /etcd-secret-tls/ca.crt
+                  # Certificate path
+                  crtPath: /etcd-secret-tls/etcd-client.crt
+                  # Key store path
+                  keyPath: /etcd-secret-tls/etcd-client.key
+                
 
     # This is for sending metrics to the remote m3aggregators
     downsample:
@@ -175,8 +184,12 @@ spec:
             - "-f"
             - "/etc/m3/coordinator.yaml"
           volumeMounts:
+            - name: cache
+              mountPath: /var/lib/m3kv/
             - name: config
               mountPath: /etc/m3
+            - mountPath: /etcd-secret-tls/
+              name: etcd-secret-tls
           imagePullPolicy: Always
           ports:
             - name: coordinator
@@ -194,6 +207,11 @@ spec:
             requests:
               memory: 5Gi
       volumes:
+        - name: cache
+          emptyDir: {}
         - name: config
           configMap:
             name: m3coordinator
+        - name: etcd-secret-tls
+          secret:
+            secretName: etcd-tls

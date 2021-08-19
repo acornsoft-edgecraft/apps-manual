@@ -178,7 +178,7 @@ alertmanager:
     ## If true, alertmanager will create/use a Persistent Volume Claim
     ## If false, use emptyDir
     ##
-    ### true -> false
+    ### false -> true
     enabled: true
 
     ## alertmanager data Persistent Volume access modes
@@ -292,13 +292,13 @@ alertmanager:
   ## alertmanager resource requests and limits
   ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
   ##
-  resources:
-    limits:
-      cpu: 10m
-      memory: 32Mi
-    requests:
-      cpu: 10m
-      memory: 32Mi
+  resources: {}
+    # limits:
+    #   cpu: 10m
+    #   memory: 32Mi
+    # requests:
+    #   cpu: 10m
+    #   memory: 32Mi
 
   # Custom DNS configuration to be added to alertmanager pods
   dnsConfig: {}
@@ -541,13 +541,13 @@ nodeExporter:
   ## node-exporter resource limits & requests
   ## Ref: https://kubernetes.io/docs/user-guide/compute-resources/
   ##
-  resources:
-    limits:
-      cpu: 200m
-      memory: 50Mi
-    requests:
-      cpu: 100m
-      memory: 30Mi
+  resources: {}
+    # limits:
+    #   cpu: 200m
+    #   memory: 50Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 30Mi
 
   # Custom DNS configuration to be added to node-exporter pods
   dnsConfig: {}
@@ -668,13 +668,18 @@ server:
     # - web.enable-admin-api
     ##
     ## storage.tsdb.no-lockfile flag controls BD locking
+    ### 주석 : m3db 사용
     # - storage.tsdb.no-lockfile
     ##
     ## storage.tsdb.wal-compression flag enables compression of the write-ahead log (WAL)
+    ### 주석 -> m3db 사용
     # - storage.tsdb.wal-compression
 
   ## Path to a configuration file on prometheus server container FS
   configPath: /etc/config/prometheus.yml
+
+  ## 
+
 
   ### The data directory used by prometheus to set --storage.tsdb.path
   ### When empty server.persistentVolume.mountPath is used instead
@@ -698,14 +703,16 @@ server:
 
   ## https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write
   ### m3db 사용
-  remoteWrite:
-    - url: "http://192.168.77.229:32555/api/v1/prom/remote/write"
+  remoteStorage:
+    enabled: true
+  
+    remoteWrite:
+      - url: "http://192.168.77.229:32555/api/v1/prom/remote/write"
 
-  ## https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_read
-  ### m3db 사용
-  remoteRead:
-    - url: "http://192.168.77.232:32558/api/v1/prom/remote/read"
-      read_recent: true
+    ## https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_read
+    remoteRead:
+      - url: "http://192.168.77.229:32558/api/v1/prom/remote/read"
+        read_recent: true
 
   ## Additional Prometheus server container arguments
   ##
@@ -835,6 +842,7 @@ server:
     ## If true, Prometheus server will create/use a Persistent Volume Claim
     ## If false, use emptyDir
     ##
+    ### true -> false
     enabled: false
 
     ## Prometheus server data Persistent Volume access modes
@@ -962,13 +970,13 @@ server:
   ## Prometheus server resource requests and limits
   ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
   ##
-  resources:
-    limits:
-      cpu: 500m
-      memory: 512Mi
-    requests:
-      cpu: 500m
-      memory: 512Mi
+  resources: {}
+    # limits:
+    #   cpu: 500m
+    #   memory: 512Mi
+    # requests:
+    #   cpu: 500m
+    #   memory: 512Mi
 
   # Required for use in managed kubernetes clusters (such as AWS EKS) with custom CNI (such as calico),
   # because control-plane managed by AWS cannot communicate with pods' IP CIDR and admission webhooks are not working
@@ -1491,8 +1499,6 @@ serverFiles:
           replacement: $1
           action: replace
 
-        
-
       # Scrape config for service endpoints.
       #
       # The relabeling allows the actual service scrape endpoint to be configured
@@ -1745,7 +1751,6 @@ serverFiles:
         - source_labels: [__meta_kubernetes_service_name]
           action: replace
           target_label: k8s_sname
-
 
 # adds additional scrape configs to prometheus.yml
 # must be a string so you have to add a | after extraScrapeConfigs:

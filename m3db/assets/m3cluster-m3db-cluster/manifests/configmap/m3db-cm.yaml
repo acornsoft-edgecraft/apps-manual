@@ -31,9 +31,9 @@ data:
               - "https://192.168.77.229:2379"
               # TLS configuration
               tls:
+                # Certificiate authority path
+                caCrtPath: /etcd-secret-tls/ca.crt
                 # Certificate path
                 crtPath: /etcd-secret-tls/etcd-client.crt
                 # Key store path
                 keyPath: /etcd-secret-tls/etcd-client.key
-                # Certificiate authority path
-                caCrtPath: /etcd-secret-tls/ca.crt

@@ -698,14 +698,17 @@ server:
 
   ## https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write
   ### m3db 사용
-  remoteWrite:
-    - url: "http://192.168.77.229:32555/api/v1/prom/remote/write"
+  remoteStorage:
+    enabled: true
+    
+    remoteWrite:
+      - url: "http://192.168.77.229:32555/api/v1/prom/remote/write"
 
-  ## https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_read
-  ### m3db 사용
-  remoteRead:
-    - url: "http://192.168.77.232:32558/api/v1/prom/remote/read"
-      read_recent: true
+    ## https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_read
+    ### m3db 사용
+    remoteRead:
+      - url: "http://192.168.77.232:32558/api/v1/prom/remote/read"
+        read_recent: true
 
   ## Additional Prometheus server container arguments
   ##

@@ -94,7 +94,7 @@ kubectl -n m3db exec m3-cluster-rep0-0 -- curl -vvvsSf -H "Cluster-Environment-N
     ]
 }' | jq .
 
-# kubectl -n m3db exec m3-cluster-rep2-0 -- curl -vvvsSf -H "Cluster-Environment-Name: m3db/m3-cluster" http://localhost:7201/api/v1/services/m3coordinator/placement | jq .
+# kubectl -n m3db exec m3-cluster-rep0-0 -- curl -vvvsSf -H "Cluster-Environment-Name: m3db/m3-cluster" http://localhost:7201/api/v1/services/m3coordinator/placement | jq .
 
 # Add m3coordinator consumer group to outbound topic
 kubectl -n m3db exec m3-cluster-rep0-0 -- curl -vvvsSf -H "Cluster-Environment-Name: m3db/m3-cluster" -H "Topic-Name: aggregated_metrics" -X POST http://localhost:7201/api/v1/topic -d '{
