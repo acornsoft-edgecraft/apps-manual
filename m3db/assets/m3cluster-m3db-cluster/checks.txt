@@ -9,8 +9,44 @@ kubectl -n m3db exec etcd-0 -- env ETCDCTL_API=3 etcdctl endpoint health --write
 kubectl -n m3db exec etcd-1 -- env ETCDCTL_API=3 etcdctl endpoint health --write-out=table
 kubectl -n m3db exec etcd-2 -- env ETCDCTL_API=3 etcdctl endpoint health --write-out=table
 
+## etcd 조회 - in m3-cluster-rep0-0 pod
+kubectl -n m3db exec m3-cluster-rep0-0 sh
+
+## etcdctl 설치
+ETCD_VER=v3.3.12
+wget https://storage.googleapis.com/etcd/${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64.tar.gz
+tar xzvf etcd-${ETCD_VER}-linux-amd64.tar.gz
+mv etcd-${ETCD_VER}-linux-amd64/etcdctl /usr/local/bin/etcdctl
+etcdctl --version
+rm -rf etcd-${ETCD_VER}-linux-amd64/
+rm -f etcd-${ETCD_VER}-linux-amd64.tar.gz
+
+## etcd 조회 - tls 옵션
+ETCDCTL_API=3 etcdctl --endpoints=https://192.168.77.229:2379 --cacert=/etcd-secret-tls/ca.crt --cert=/etcd-secret-tls/etcd-client.crt --key=/etcd-secret-tls/etcd-client.key \
+  get "" get --prefix --keys-only | sed '/^\s*$/d'
+
+ETCDCTL_API=3 etcdctl --endpoints=https://192.168.77.229:2379 --cacert=/etcd-secret-tls/ca.crt --cert=/etcd-secret-tls/etcd-client.crt --key=/etcd-secret-tls/etcd-client.key get --prefix "_sd.placement/m3db/m3-cluster/m3db" --keys-only | sed '/^\s*$/d'
+
+ETCDCTL_API=3 etcdctl --endpoints=https://192.168.77.229:2379 --cacert=/etcd-secret-tls/ca.crt --cert=/etcd-secret-tls/etcd-client.crt --key=/etcd-secret-tls/etcd-client.key endpoint status --write-out=table
+ETCDCTL_API=3 etcdctl --endpoints=https://192.168.77.229:2379 --cacert=/etcd-secret-tls/ca.crt --cert=/etcd-secret-tls/etcd-client.crt --key=/etcd-secret-tls/etcd-client.key endpoint health --write-out=table
+
 ## etcd 초기화
 kubectl -n m3db exec etcd-0 -- env ETCDCTL_API=3 etcdctl del --prefix "" 
+
+## etcd backup
+kubectl -n m3db exec etcd-0 -- env ETCDCTL_API=3 etcdctl snapshot save snapshot.db
+
+## etcd backup file copy to local directory
+kubectl -n m3db cp etcd-0:snapshot.db snapshot.db
+
+## etcd restore file copy to pod 
+kubectl -n m3db cp snapshot.db etcd-0:snapshot.db
+
+## etcd 클러스터 복원
+kubectl -n m3db exec etcd-0 -- env ETCDCTL_API=3 etcdctl snapshot restore snapshotdb
+kubectl -n m3db exec etcd-1 -- env ETCDCTL_API=3 etcdctl snapshot restore snapshotdb
+kubectl -n m3db exec etcd-2 -- env ETCDCTL_API=3 etcdctl snapshot restore snapshotdb
+
 
 # Create Namespace on M3DB Cluster (move to Operator)
 # kubectl -n m3db exec m3-cluster-rep2-0 -- curl -X POST http://localhost:7201/api/v1/database/create -d '{

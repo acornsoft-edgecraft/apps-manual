@@ -57,7 +57,7 @@ spec:
         snapshotEnabled: true
         repairEnabled: false
         retentionOptions:
-          retentionPeriod: 240h
+          retentionPeriod: 48h
           blockSize: 60m
           bufferFuture: 10m
           bufferPast: 10m
@@ -78,7 +78,7 @@ spec:
         snapshotEnabled: true
         repairEnabled: false
         retentionOptions:
-          retentionPeriod: 280h
+          retentionPeriod: 480h
           blockSize: 60m
           bufferFuture: 10m
           bufferPast: 10m

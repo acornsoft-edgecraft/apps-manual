@@ -179,7 +179,7 @@ alertmanager:
     ## If false, use emptyDir
     ##
     ### false -> true
-    enabled: true
+    enabled: false
 
     ## alertmanager data Persistent Volume access modes
     ## Must match those of existing PV or dynamic provisioner
@@ -213,7 +213,7 @@ alertmanager:
     ##   GKE, AWS & OpenStack)
     ##
     ### "-" -> "nfs-storageclass"
-    storageClass: "default-storage"
+    storageClass: "nfs-storageclass"
 
     ## alertmanager data Persistent Volume Binding Mode
     ## If defined, volumeBindingMode: <volumeBindingMode>
@@ -695,8 +695,8 @@ server:
     evaluation_interval: 1m
     ## external_labels
     external_labels:
-      cluster_id: onassis
-      application_id: monitoring
+      cluster_id: cloudjung
+      application_id: m3db-test
 
   ## https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write
   ### m3db 사용
@@ -874,7 +874,7 @@ server:
     ##   GKE, AWS & OpenStack)
     ##
     ### "-" -> "nfs-storageclass"
-    storageClass: "default-storage"
+    storageClass: "nfs-storageclass"
 
     ## Prometheus server data Persistent Volume Binding Mode
     ## If defined, volumeBindingMode: <volumeBindingMode>
@@ -970,10 +970,10 @@ server:
   resources:
     limits:
       cpu: 500m
-      memory: 1Gi
+      memory: 512Mi
     requests:
       cpu: 500m
-      memory: 1Gi
+      memory: 512Mi
 
   # Required for use in managed kubernetes clusters (such as AWS EKS) with custom CNI (such as calico),
   # because control-plane managed by AWS cannot communicate with pods' IP CIDR and admission webhooks are not working

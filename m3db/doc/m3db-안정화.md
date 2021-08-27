@@ -1,10 +1,8 @@
 # M3db 안정화
 
 ## chek list
-
 - [x] ETCD 안정화 확인
   - [x] 동기화 시간 체크 : 1s 미만
-
 
 - [x] m3db-cluster 안정화 확인
   - [x] kernel 관련 에러 확인 : quay.io/m3/sysctl-setter 가 노드 설정을 변경 하는 daemenset 이다.
@@ -14,6 +12,8 @@
   fs.nr_open = 3000000
   ```
 
+  - [x] ETCD tls 연결
+    - k8s Control plane의 embedded etcd를 사용시에는 [Configuring an External etcd](./m3db-etcd-operations.md)를 참조 한다.
   
 
 - [ ] 노드 Not ready 상태 원인 분석
@@ -21,9 +21,9 @@
 
 
 ## 변경 사항
-
-- ETCD : container 볼륨 사용(임시): product 환경에선 비권장
-  - [ ] master nodes 의 etcd를 사용 하는 것 으로 변경중
+- [X] ETCD : container 볼륨 사용(임시): product 환경에선 비권장.
+- [x] master nodes 의 etcd를 사용 하는 것 으로 변경 완료.
+- [x] ETCD 백업/복원 절차 확인
   
 
 ## 확인 해야 할 사항
@@ -36,3 +36,5 @@
   ## 변경 확인 할 것
   "m3aggregator-0.m3aggregator:6000",
   ```
+
+## 

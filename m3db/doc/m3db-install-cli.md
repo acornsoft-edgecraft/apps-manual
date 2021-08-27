@@ -16,7 +16,18 @@ curl -X "POST" -G "http://192.168.77.34:32558/api/v1/query_range" \
   -d "end=$( date "+%s" -d "1 minutes ago" )" \
   -d "step=1m" 
 
-## mac
+## mac - write
+curl -X POST http://192.168.77.233:32555/api/v1/json/write -d '{
+  "tags": {
+    "__name__": "dongmook",
+    "city": "dm",
+    "checkout": "1"
+  },
+  "timestamp": '\"$(date "+%s")\"',
+  "value": 3347.55
+}' | jq .
+
+## mac - read
 curl -X "POST" -G "http://192.168.77.233:32558/api/v1/query_range" \
   -d "query=dongmook" \
   -d "start=$(date -v -4500S "+%s")" \

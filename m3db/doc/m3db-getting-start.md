@@ -35,7 +35,7 @@ kubectl apply -f https://raw.githubusercontent.com/m3db/m3db-operator/master/bun
 ```
 
 ## Installation External etcd (etcd pod 배포시)
-k8s Control plane etcd를 사용시에는 [Configuring an External etcd](./m3db-etcd-operations.md)를 참조 한다.
+k8s Control plane의 embedded etcd를 사용시에는 [Configuring an External etcd](./m3db-etcd-operations.md)를 참조 한다.
 - Etcd Cluster installation
   - etcd 배포 yaml을 내려받아 환경에 맞게 수정 한다. (affinity / volumeClaimTemplates)
   > [ 주의 ]
@@ -171,7 +171,7 @@ spec:
         snapshotEnabled: true
         repairEnabled: false
         retentionOptions:
-          retentionPeriod: 240h
+          retentionPeriod: 48h
           blockSize: 60m
           bufferFuture: 10m
           bufferPast: 10m
@@ -192,7 +192,7 @@ spec:
         snapshotEnabled: true
         repairEnabled: false
         retentionOptions:
-          retentionPeriod: 280h
+          retentionPeriod: 240h
           blockSize: 60m
           bufferFuture: 10m
           bufferPast: 10m
