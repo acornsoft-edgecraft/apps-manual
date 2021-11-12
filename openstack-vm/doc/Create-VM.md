@@ -56,6 +56,12 @@ openstack server list
   
   ![프로젝트-생성](./images/project-cli.png)
 
+## 외부 네트워크 생성 - public
+- admin 권한으로 로그인 한다.
+- 좌측 메뉴 관리 > 네트워크 > 네트워크 생성
+- 공급자 네트워크 유형: Flat
+- 물리적인 네트워크: public (* )
+
 ## 프로젝트 생성
 - admin 권한으로 로그인 한다.
 - 인증 메뉴에서 사용자를 생성 한다.
