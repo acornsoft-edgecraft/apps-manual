@@ -9,6 +9,7 @@ image:
   tag: 3.29.0
   pullPolicy: IfNotPresent
 
+
 nexus:
   docker:
     enabled: false
@@ -159,10 +160,10 @@ persistence:
 
 tolerations: []
 
-# # Enable configmap and add data in configmap	
-config:	
-  enabled: false	
-  mountPath: /sonatype-nexus-conf	
+# # Enable configmap and add data in configmap
+config:
+  enabled: false
+  mountPath: /sonatype-nexus-conf
   data: []
 
 # # To use an additional secret, set enable to true and add data
