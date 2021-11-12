@@ -8,6 +8,8 @@ data:
     coordinator: {}
 
     db:
+      logging:
+        level: debug
       hostID:
         resolver: file
         file:

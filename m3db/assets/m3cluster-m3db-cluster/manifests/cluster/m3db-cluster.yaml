@@ -47,9 +47,9 @@ spec:
     #     - key: kubernetes.io/hostname
     #       values:
     #         - node4
-  podIdentityConfig:
-    sources:
-      - PodUID
+  # podIdentityConfig:
+  #   sources:
+  #     - PodUID
   namespaces:
     - name: default
       options:

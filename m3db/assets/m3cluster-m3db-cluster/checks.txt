@@ -22,8 +22,7 @@ rm -rf etcd-${ETCD_VER}-linux-amd64/
 rm -f etcd-${ETCD_VER}-linux-amd64.tar.gz
 
 ## etcd 조회 - tls 옵션
-ETCDCTL_API=3 etcdctl --endpoints=https://192.168.77.229:2379 --cacert=/etcd-secret-tls/ca.crt --cert=/etcd-secret-tls/etcd-client.crt --key=/etcd-secret-tls/etcd-client.key \
-  get "" get --prefix --keys-only | sed '/^\s*$/d'
+ETCDCTL_API=3 etcdctl --endpoints=https://192.168.77.229:2379 --cacert=/etcd-secret-tls/ca.crt --cert=/etcd-secret-tls/etcd-client.crt --key=/etcd-secret-tls/etcd-client.key get "" --prefix --keys-only | sed '/^\s*$/d'
 
 ETCDCTL_API=3 etcdctl --endpoints=https://192.168.77.229:2379 --cacert=/etcd-secret-tls/ca.crt --cert=/etcd-secret-tls/etcd-client.crt --key=/etcd-secret-tls/etcd-client.key get --prefix "_sd.placement/m3db/m3-cluster/m3db" --keys-only | sed '/^\s*$/d'
 
@@ -34,13 +33,13 @@ ETCDCTL_API=3 etcdctl --endpoints=https://192.168.77.229:2379 --cacert=/etcd-sec
 kubectl -n m3db exec etcd-0 -- env ETCDCTL_API=3 etcdctl del --prefix "" 
 
 ## etcd backup
-kubectl -n m3db exec etcd-0 -- env ETCDCTL_API=3 etcdctl snapshot save snapshot.db
+ETCDCTL_API=3 etcdctl --endpoints=https://192.168.77.229:2379 --cacert=/etcd-secret-tls/ca.crt --cert=/etcd-secret-tls/etcd-client.crt --key=/etcd-secret-tls/etcd-client.key snapshot save snapshot.db
 
 ## etcd backup file copy to local directory
-kubectl -n m3db cp etcd-0:snapshot.db snapshot.db
+kubectl -n m3db cp m3query-0:snapshot.db snapshot.db
 
-## etcd restore file copy to pod 
-kubectl -n m3db cp snapshot.db etcd-0:snapshot.db
+## etcd restore file copy to master node 
+scp snapshot.db root@master-node-IP:./
 
 ## etcd 클러스터 복원
 kubectl -n m3db exec etcd-0 -- env ETCDCTL_API=3 etcdctl snapshot restore snapshotdb

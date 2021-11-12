@@ -32,7 +32,8 @@ kubectl -n m3db cp etcd-0:snapshot.db snapshot.db
 kubectl -n m3db cp snapshot.db etcd-0:snapshot.db
 
 ## etcd 클러스터 복원
-kubectl -n m3db exec etcd-0 -- env ETCDCTL_API=3 etcdctl snapshot restore snapshot.db
+# kubectl -n m3db exec etcd-0 -- env ETCDCTL_API=3 etcdctl snapshot restore snapshot.db
+kubectl -n m3db exec etcd-0 -- env ETCDCTL_API=3 etcdctl --name etcd-0 --data-dir="/var/lib/etcd" --initial-cluster="etcd-0=http://etcd-0.etcd:2380,etcd-1=http://etcd-1.etcd:2380,etcd-2=http://etcd-2.etcd:2380" --initial-cluster-token="etcd-cluster-1" --initial-advertise-peer-urls="http://etcd-0.etcd:2380" snapshot restore snapshot.db
 ```
 
 ## M3DB ETCD 클러스터 백업 / 복원 for embedded ETCD(master node)
@@ -56,7 +57,7 @@ ETCDCTL_API=3 etcdctl del --prefix ""
 ETCDCTL_API=3 etcdctl --endpoints $ENDPOINT snapshot save snapshot.db
 
 ## snapshot 확인
-ETCDCTL_API=3 etcdctl --write-out=table snapshot status snapshotd.b
+ETCDCTL_API=3 etcdctl --write-out=table snapshot status snapshot.db
 
 ## etcd 클러스터 복원
 ## 모든 M3DB 인스턴스 중지 > 복원 > 재가동
