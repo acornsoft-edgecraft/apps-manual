@@ -2,11 +2,9 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-nameOverride: ""
-
 image:
   repository: jaegertracing/jaeger-operator
-  tag: 1.23.0
+  tag: 1.22.1
   pullPolicy: IfNotPresent
   imagePullSecrets: []
 
@@ -15,35 +13,16 @@ crd:
 
 jaeger:
   # Specifies whether Jaeger instance should be created
-  create: true
+  create: false
   # namespace where Jaeger resource should be created default to .Release.Namespace
   namespace:
-  spec:
-    strategy: production
-    agent:
-      strategy: DaemonSet
-    ingress:
-      enabled: false
-    storage:
-      type: badger
-      options:
-        badger:
-          ephemeral: false
-          directory-key: "/badger/key"
-          directory-value: "/badger/data"
-    volumeMounts:
-    - name: data
-      mountPath: /badger
-    volumes:
-    - name: data
-      emptyDir: {}
+  spec: {}
 
 rbac:
   # Specifies whether RBAC resources should be created
   create: true
-  # PodSecurityPolicy는 Kubernetes v1.21부터 더 이상 사용되지 않으며 v1.25에서 제거됩니다.
   pspEnabled: false
-  clusterRole: true
+  clusterRole: false
 
 service:
   type: ClusterIP
@@ -63,13 +42,13 @@ extraEnv: []
   # - name: LOG-LEVEL
   #   value: debug
 
-resources:
-  limits:
-   cpu: 100m
-   memory: 128Mi
-  requests:
-   cpu: 100m
-   memory: 128Mi
+resources: {}
+  # limits:
+  #  cpu: 100m
+  #  memory: 128Mi
+  # requests:
+  #  cpu: 100m
+  #  memory: 128Mi
 
 nodeSelector: {}
 
