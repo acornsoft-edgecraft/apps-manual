@@ -42,7 +42,7 @@ fullnameOverride: ""
 
 image:
   repo: quay.io/kiali/kiali-operator
-  tag: v1.36.0
+  tag: v1.36
   pullPolicy: Always
   pullSecrets: []
 
@@ -105,6 +105,8 @@ cr:
 
   spec:
     deployment:
+      image_name: quay.io/kiali/kiali
+      image_version: v1.36
       ingress_enabled: false
       logger:
         log_level: debug
@@ -173,11 +175,16 @@ EOF
   - Kiali CR을 성공적으로 삭제 한 후 Helm을 사용하여 Kiali Operator를 제거 할 수 있다
   - Helm은 CRD를 삭제하지 않기 때문에 모든 것을 정리하려면 아래 명령어를 수행해야 한다.
 ```sh
+kubectl -n monitoring delete kialis.kiali.io kiali
 helm uninstall --namespace monitoring kiali-operator
 kubectl delete crd monitoringdashboards.monitoring.kiali.io
 kubectl delete crd kialis.kiali.io
 ```
 
+#### Kiali CR stuck 해결
+```sh
+$ kubectl -n monitoring patch kialis.kiali.io kiali -p '{"metadata":{"finalizers": []}}' --type=merge ; true
+```
 -----
 # 참조
 > [다른 Prometheus 인스턴스 사용](https://kiali.io/documentation/latest/runtimes-monitoring/)

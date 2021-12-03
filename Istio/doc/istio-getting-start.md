@@ -106,6 +106,12 @@ spec:
 
 
 ## Uninstall Istio
+-  Uninstall a single control plane
+```sh
+# Uninstall a single control plane by iop file
+$ istioctl x uninstall -f istio-op.yaml
+```
+
 - 클러스터에서 Istio를 완전히 제거 하기
 ```sh
 istioctl x uninstall --purge

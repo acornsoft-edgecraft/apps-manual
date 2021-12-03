@@ -5,8 +5,14 @@ metadata:
   namespace: monitoring
 spec:
   profile: default
+  components:
+    ingressGateways:
+      k8s:
+        service:
+          type: NodePort
   values:
     global:
+      # namespqce 변경 - default: istio-system
       istioNamespace: monitoring
   meshConfig:
     accessLogFile: /dev/stdout
