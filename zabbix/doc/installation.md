@@ -177,4 +177,4 @@ $ systemctl status zabbix-agent                          [서비스 상태 확�
 
 ![jaeger-spans-traces](images/cpuusagehost.png)
 
-![jaeger-spans-traces](images/networkinterface.png)
+![jaeger-spans-traces](images/networkinterface.png) 
