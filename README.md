@@ -1,5 +1,2 @@
 # apps-manual
 
-
-
-
