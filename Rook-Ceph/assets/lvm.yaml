@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+ name: lvm
+ namespace: kube-system
+spec:
+ revisionHistoryLimit: 10
+ selector:
+   matchLabels:
+     name: lvm
+ template:
+   metadata:
+     labels:
+       name: lvm
+   spec:
+     containers:
+     - args:
+       - apt -y update; apt -y install lvm2
+       command:
+       - /bin/sh
+       - -c
+       image: debian:10
+       imagePullPolicy: IfNotPresent
+       name: lvm
+       securityContext:
+         privileged: true
+       volumeMounts:
+       - mountPath: /etc
+         name: etc
+       - mountPath: /sbin
+         name: sbin
+       - mountPath: /usr
+         name: usr
+       - mountPath: /lib
+         name: lib
+     dnsPolicy: ClusterFirst
+     restartPolicy: Always
+     schedulerName: default-scheduler
+     securityContext:
+     volumes:
+     - hostPath:
+         path: /etc
+         type: Directory
+       name: etc
+     - hostPath:
+         path: /sbin
+         type: Directory
+       name: sbin
+     - hostPath:
+         path: /usr
+         type: Directory
+       name: usr
+     - hostPath:
+         path: /lib
+         type: Directory
+       name: lib

@@ -155,6 +155,44 @@ spec:
 EOF
 ```
 
+## Jaeger local Storage 사용 설정
+- values.yaml 수정
+```yaml
+
+## spec 설정
+## 배포 전략 -> production
+## jager agent는 -> DaemonSet
+## storage: -> local storage 사용 - emptyDir
+
+jaeger:
+  # Specifies whether Jaeger instance should be created
+  create: true
+  # namespace where Jaeger resource should be created default to .Release.Namespace
+  namespace:
+  spec:
+    strategy: production
+    agent:
+      strategy: DaemonSet
+    ingress:
+      enabled: false
+    query:
+      serviceType: NodePort
+      nodePort: 30186
+    storage:
+      type: badger
+      options:
+        badger:
+          ephemeral: false
+          directory-key: "/badger/key"
+          directory-value: "/badger/data"
+    volumeMounts:
+    - name: data
+      mountPath: /badger
+    volumes:
+    - name: data
+      emptyDir: {}
+```
+
 ## ElasticSearch 사용 설정
 - 환경 변수 ES_PASSWORD및 ES_USERNAME의 값을 secret으로 생성 한다.
 ```sh
