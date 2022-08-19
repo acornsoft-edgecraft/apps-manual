@@ -26,6 +26,7 @@ spec:
 EOF
 ```
 
+## etcd client
 cat <<EOF | kubectl apply -f -
 apiVersion: v1
 kind: Service
