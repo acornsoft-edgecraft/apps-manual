@@ -157,7 +157,6 @@ repository: https://nexus.k3.acornsoft.io/repository/pypi-proxy/
 - 패키지 설치
 ```
 # 수동설치 방식(pip.conf가 설정이 안된 경우)
-
   $ pip install zipp -i https://nexus.k3.acornsoft.io/repository/pypi-proxy/sample
   $ pip install -r requirements.txt -i https://nexus.k3.acornsoft.io/repository/pypi-proxy/sample
 
