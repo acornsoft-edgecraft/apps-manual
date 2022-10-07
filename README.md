@@ -15,3 +15,5 @@ Applications Manual for Users
 - Kubesphere
 - Nexus
 - Rook Ceph
+
+**- Update Required -**
