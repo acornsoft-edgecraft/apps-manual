@@ -20,5 +20,3 @@ Applications Manual for Users
 
 
 
-
-
