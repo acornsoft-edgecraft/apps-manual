@@ -18,7 +18,3 @@ Applications Manual for Users
 
 
 
-
-
-
-
