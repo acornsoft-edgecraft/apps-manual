@@ -4,8 +4,23 @@
 
 ## Management Cluster 기능
 
-### CAPI Addon Provider for Helm 구성
+### CAPI Addon Provider for Helm (CAAPH) 구성
 
+- CAPI 기능을 확장해 클러스터에 Helm을 기반으로 추가 기능을 설치/구성/업그레이드 및 삭제를 관리하는 솔루션이다.
+- [Repository](https://github.com/kubernetes-sigs/cluster-api-addon-provider-helm)
+- CAPI 의 CLI 와 통합되어 설치가 가능하다.
+
+CAAPH 오퍼레이터는 아래의 명령을 통해서 설치할 수 있다.
+
+[`clusterctl`](https://cluster-api.sigs.k8s.io/clusterctl/overview.html) 버전 `1.5` 이상에서 통합된 명령을 통해 CAAPH를 구성할 수 있다.
+
+```bash
+$ clusterctl init --addon helm
+```
+
+실제 라벨을 통해서 동작하게될 Addon 은 [edgecraft-caaph](https://github.com/acornsoft-edgecraft/edgecraft-caaph) 에서 `manifests/addons` 에 포맷에 맞는 YAML 파일로 구성한다.
+
+구성된 Addon 들을 매니지먼트 클러스터에 설치하는 방법은 `minifests/1.install_addon_22apps.sh` 스크립트를 통해서 CR로 배포한다.
 
 
 ## Backup & Restore 기능
@@ -363,7 +378,3 @@ $ mcli --insecure admin service restart <alias name>
 ```bash
 mcli --insecure admin service stop <alias name>
 ```
-
-
-### CAPI Addon Provider for Helm 구성
-
