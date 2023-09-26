@@ -25,7 +25,7 @@ $ clusterctl init --addon helm
 
 ## Backup & Restore 기능
 
-### MinIO 설처 (Standalone)
+### MinIO 설치 (Standalone)
 
 - Size : m1.medium, 20G Disk
 - IP : 192.168.88.74
