@@ -89,7 +89,7 @@ $ sudo mkdir /mnt/data
 $ sudo chown minio-user:minio-user /mnt/data
 ```
 
-MinIO 구동에 필욯한 기본 환경 파일 구성
+MinIO 구동에 필요한 기본 환경 파일 구성
 
 ```
 sudo nano /etc/default/minio
