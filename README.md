@@ -17,6 +17,3 @@ Applications Manual for Users
 - Rook Ceph
 - Harbor
 
-
-
-
