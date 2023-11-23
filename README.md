@@ -8,7 +8,7 @@ Platform Application에 대한 구성에 대한 애플리케이션들의 배포 
 
 ## Documentations
 
-|  Name | <div style="width: 600px"> Documents </div>  | Notice  |
+|  Name | Documents  | Notice  |
 |---|--------------------------------------------------|---|
 | Istio | [Istio Docs Index](./Istio/docs/README.md)  | *  |
 | Rook-Ceph  | [Rook Ceph Docs Index](./Rook-Ceph/docs/README.md)  | *  |
@@ -31,3 +31,15 @@ Platform Application에 대한 구성에 대한 애플리케이션들의 배포 
 | Harbor  | [Harbor Docs Index](./harbor/docs/README.md)  | *  |
 | Velero  | [Velero Docs Index](./velero/docs/README.md)  | *  |
 | Open Distro  | [Open Distro Docs Index](./opendistro-EK/docs/README.md)  | *  |
+
+<style>
+table th:first-of-type {
+    width: 10%;
+}
+table th:nth-of-type(2) {
+    width: 60%;
+}
+table th:nth-of-type(3) {
+    width: 10%;
+}
+</style>
