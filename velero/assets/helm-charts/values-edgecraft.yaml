@@ -1,0 +1,130 @@
+##
+## Configuration settings that directly affect the Velero deployment YAML.
+##
+
+# Annotations to add to the Velero deployment's. Optional.
+#
+# If you are using reloader use the following annotation with your VELERO_SECRET_NAME
+annotations:
+  annotation: velero
+# secret.reloader.stakater.com/reload: "<VELERO_SECRET_NAME>"
+
+# Labels to add to the Velero deployment's. Optional.
+labels:
+  label: velero
+
+# Annotations to add to the Velero deployment's pod template. Optional.
+#
+# If using kube2iam or kiam, use the following annotation with your AWS_ACCOUNT_ID
+# and VELERO_ROLE_NAME filled in:
+podAnnotations:
+  pod-annotation: velero
+
+# Additional pod labels for Velero deployment's template. Optional
+podLabels:
+  pod-label: velero
+
+# Resource requests/limits to specify for the Velero deployment.
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
+
+# The kubectl upgrade/cleanup job
+kubectl:
+  # Annotations to kubectl job
+  annotations:
+    annotation: kubectl
+  # Labels to kubectl job
+  labels:
+    label: kubectl
+  # Resources to kubectl job
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+# This job upgrades the CRDs.
+upgradeCRDs: true
+
+# This job is meant primarily for cleaning up CRDs on CI systems.
+# Using this on production systems, especially those that have multiple releases of Velero, will be destructive.
+cleanUpCRDs: true
+
+configuration:
+  # Parameters for the BackupStorageLocation(s). Configure multiple by adding other element(s) to the backupStorageLocation slice.
+  # See https://velero.io/docs/v1.6/api-types/backupstoragelocation/
+  backupStorageLocation:
+    # name is the name of the backup storage location where backups should be stored. If a name is not provided,
+    # a backup storage location will be created with the name "default". Optional.
+  - name: edgecraft
+    # provider is the name for the backup storage location provider.
+    provider: aws
+    # bucket is the name of the bucket to store backups in. Required.
+    bucket: velero
+    caCert:
+    prefix:
+    default: true
+    validationFrequency:
+    accessMode: ReadWrite
+    credential:
+      name: test-credential
+      key: test-key
+    config:
+      region: minio
+      s3ForcePathStyle: true
+      s3Url: http://192.168.88.181:32000
+      publicUrl: http://192.168.88.181:32000
+
+# Information about the Kubernetes service account Velero uses.
+serviceAccount:
+  server:
+    create: true
+    name: velero
+    annotations:
+    labels:
+
+# Whether to create backupstoragelocation crd, if false => do not create a default backup location
+backupsEnabled: true
+# Whether to create volumesnapshotlocation crd, if false => disable snapshot feature
+snapshotsEnabled: true
+
+
+# Details of the container image to use in the Velero deployment & daemonset (if
+# enabling node-agent). Required.
+# Whether to deploy the node-agent daemonset.
+deployNodeAgent: true
+
+nodeAgent:
+  ## kubelet rootDir path
+  podVolumePath: /data/kubelet/pods
+  privileged: false
+  # Pod priority class name to use for the node-agent daemonset. Optional.
+  priorityClassName: ""
+  # Resource requests/limits to specify for the node-agent daemonset deployment. Optional.
+  # https://velero.io/docs/v1.6/customize-installation/#customize-resource-requests-and-limits
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1024Mi
+
+  # Annotations to set for the node-agent daemonset. Optional.
+  annotations:
+    annotation: node-agent
+
+  # labels to set for the node-agent daemonset. Optional.
+  labels:
+    label: node-agent
+
+##
+## End of additional Velero resource settings.
+##
